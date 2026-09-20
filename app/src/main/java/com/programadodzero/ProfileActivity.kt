@@ -10,15 +10,17 @@ import android.widget.LinearLayout
 import android.widget.TextView
 
 class ProfileActivity : Activity() {
+    companion object { private const val TOTAL = 8 }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val language = intent.getStringExtra("language") ?: "🐍  Python"
-        val totalLessons = 8
+        val language = intent.getStringExtra("language") ?: ProgressManager.getActiveLanguage(this) ?: "🐍  Python"
         val xp = ProgressManager.getXp(this)
-        val completed = ProgressManager.completedCount(this, language, totalLessons)
-        val percent = completed * 100 / totalLessons
+        val lessons = ProgressManager.completedCount(this, language, TOTAL)
+        val exercises = ProgressManager.completedExerciseCount(this, language, TOTAL)
+        val percent = (lessons + exercises) * 100 / (TOTAL * 2)
+        val complete = ProgressManager.isLanguageComplete(this, language, TOTAL)
 
         val screen = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -36,7 +38,7 @@ class ProfileActivity : Activity() {
         }
 
         val subtitle = TextView(this).apply {
-            text = language
+            text = if (complete) "🏆 $language • trilha concluída" else "🎯 $language • linguagem em foco"
             textSize = 19f
             setTextColor(Color.LTGRAY)
             gravity = Gravity.CENTER
@@ -44,24 +46,14 @@ class ProfileActivity : Activity() {
         }
 
         val stats = TextView(this).apply {
-            text = """
-                ⭐ XP: $xp
-                📚 Aulas concluídas: $completed/$totalLessons
-                🧩 Exercícios concluídos: $completed/$totalLessons
-                📈 Progresso: $percent%
-            """.trimIndent()
+            text = "⭐ XP: $xp\n📚 Aulas concluídas: $lessons/$TOTAL\n🧩 Exercícios concluídos: $exercises/$TOTAL\n📈 Progresso: $percent%"
             textSize = 20f
             setTextColor(Color.WHITE)
             setPadding(0, 20, 0, 30)
         }
 
         val message = TextView(this).apply {
-            text = when {
-                percent == 0 -> "🌱 Comece sua primeira aula. Cada passo conta!"
-                percent < 50 -> "🔥 Você começou! Continue construindo sua base."
-                percent < 100 -> "🚀 Muito bem! Você já está avançando bastante."
-                else -> "🏆 Trilha concluída! Agora é hora de construir um projeto."
-            }
+            text = if (complete) "🎉 Você concluiu esta linguagem!\n\nAgora outra linguagem pode ser desbloqueada." else "🌱 Continue nesta linguagem até concluir a trilha completa.\n\nSó depois disso outra linguagem será liberada."
             textSize = 18f
             setTextColor(Color.LTGRAY)
             gravity = Gravity.CENTER
@@ -74,12 +66,11 @@ class ProfileActivity : Activity() {
             setOnClickListener { finish() }
         }
 
-        screen.addView(title, LinearLayout.LayoutParams(-1, -2))
-        screen.addView(subtitle, LinearLayout.LayoutParams(-1, -2))
-        screen.addView(stats, LinearLayout.LayoutParams(-1, -2))
+        screen.addView(title)
+        screen.addView(subtitle)
+        screen.addView(stats)
         screen.addView(message, LinearLayout.LayoutParams(-1, 0, 1f))
         screen.addView(back, LinearLayout.LayoutParams(-1, 60))
-
         setContentView(screen)
     }
 }
