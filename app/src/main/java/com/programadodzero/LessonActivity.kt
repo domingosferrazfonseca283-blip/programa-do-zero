@@ -39,7 +39,7 @@ class LessonActivity : Activity() {
             setBackgroundColor(Color.rgb(15, 23, 42))
         }
         val header = TextView(this).apply {
-            text = "📚 $language • $level"
+            text = "📚 $language • $level\n${moduleSummary()}"
             textSize = 21f
             setTextColor(Color.WHITE)
             setTypeface(null, Typeface.BOLD)
@@ -81,7 +81,7 @@ class LessonActivity : Activity() {
         progress.text = "Aula $number de ${lessons.size} • ${((number - 1) * 100 / lessons.size)}% estudado"
         title.text = lesson.title
         body.text = lesson.body
-        code.text = "Exemplo:\n\n${lesson.code}"
+        code.text = "Módulo ${lesson.module} • Exemplo:\n\n${lesson.code}"
         nextButton.text = when {
             !completed -> "🧩 Fazer prática da aula"
             currentLesson < lessons.lastIndex -> "✅ Prática concluída • Próxima aula →"
@@ -96,6 +96,14 @@ class LessonActivity : Activity() {
             putExtra(PracticeCodingActivity.EXTRA_LEVEL, level)
             putExtra(PracticeCodingActivity.EXTRA_LESSON, currentLesson)
         })
+    }
+
+    private fun moduleSummary(): String {
+        if (lessons.isEmpty()) return "Conteúdo em construção"
+        val module = lessons[currentLesson.coerceIn(0, lessons.lastIndex)].module
+        val levelNumber = lessons[currentLesson.coerceIn(0, lessons.lastIndex)].level
+        val info = ContentRepository.modulesFor(language).firstOrNull { it.level == levelNumber && it.order == module }
+        return if (info != null) "Módulo $module — ${info.title}" else "Módulo $module"
     }
 
     private fun firstIncompleteLesson(): Int =
