@@ -6,37 +6,46 @@ package com.programadodzero
  */
 object ChallengeValidator {
 
-    fun validate(lesson: Int, code: String): Boolean {
+    fun validate(exerciseId: String, code: String): Boolean {
         if (code.isBlank()) return false
-        if (lesson == 3) return validateAgeChallenge(code)
-        if (lesson == 7) return validateProjectChallenge(code)
-        if (lesson >= 8) return validateAdvancedChallenge(lesson, code)
 
-        val execution = PythonRunner.run(code)
-        if (!execution.success) return false
+        return when (exerciseId) {
+            "python-04" -> validateAgeChallenge(code)
+            "python-08" -> validateProjectChallenge(code)
+            "python-09" -> validateAdvancedChallenge(exerciseId, code)
+            "python-10" -> validateAdvancedChallenge(exerciseId, code)
+            "python-11" -> validateAdvancedChallenge(exerciseId, code)
+            "python-12" -> validateAdvancedChallenge(exerciseId, code)
+            "python-13" -> validateAdvancedChallenge(exerciseId, code)
+            "python-14" -> validateAdvancedChallenge(exerciseId, code)
+            else -> {
+                val execution = PythonRunner.run(code)
+                if (!execution.success) return false
 
-        return when (lesson) {
-            0 -> execution.output.trim() == "Olá, mundo!"
-            1 -> hasAssignment(code) && execution.output.isNotBlank()
-            2 -> hasTextAndNumberAssignment(code)
-            4 -> validateLoopChallenge(code)
-            5 -> validateFunctionChallenge(code)
-            6 -> validateListChallenge(code, execution.output)
-            else -> false
+                when (exerciseId) {
+                    "python-01" -> execution.output.trim() == "Olá, mundo!"
+                    "python-02" -> hasAssignment(code) && execution.output.isNotBlank()
+                    "python-03" -> hasTextAndNumberAssignment(code)
+                    "python-05" -> validateLoopChallenge(code)
+                    "python-06" -> validateFunctionChallenge(code)
+                    "python-07" -> validateListChallenge(code, execution.output)
+                    else -> false
+                }
+            }
         }
     }
 
-    private fun validateAdvancedChallenge(lesson: Int, code: String): Boolean {
-        return when (lesson) {
-            8 -> code.contains("{") && code.contains("}") &&
+    private fun validateAdvancedChallenge(exerciseId: String, code: String): Boolean {
+        return when (exerciseId) {
+            "python-09" -> code.contains("{") && code.contains("}") &&
                 code.contains("\"nome\"") && Regex("""\[[\"']nome[\"']\]""").containsMatchIn(code)
-            9 -> code.contains(".upper()") && code.contains("print(")
-            10 -> code.contains("try:") && code.contains("except")
-            11 -> code.contains("open(") || (code.contains("dados.txt") && code.contains("#"))
-            12 -> code.contains("class Pessoa") &&
+            "python-10" -> code.contains(".upper()") && code.contains("print(")
+            "python-11" -> code.contains("try:") && code.contains("except")
+            "python-12" -> code.contains("open(") || (code.contains("dados.txt") && code.contains("#"))
+            "python-13" -> code.contains("class Pessoa") &&
                 code.contains("__init__") && code.contains("self.nome") &&
                 code.contains("Pessoa(")
-            13 -> code.contains("class Conta") &&
+            "python-14" -> code.contains("class Conta") &&
                 code.contains("__init__") && code.contains("self.saldo") &&
                 code.contains("Conta(")
             else -> false
