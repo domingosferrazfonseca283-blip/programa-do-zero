@@ -116,19 +116,26 @@ class PracticeCodingActivity : Activity() {
 
     private fun validatePython(lesson: Int, code: String): Boolean {
         if (code.isBlank()) return false
+
+        val execution = when (lesson) {
+            7 -> PythonRunner.run(code, listOf("Ana"))
+            else -> PythonRunner.run(code)
+        }
+
+        if (!execution.success) return false
+
         return when (lesson) {
-            0 -> code.contains("print(")
-            1 -> code.contains("=") && (code.contains("nome") || code.contains("idade"))
-            2 -> code.contains("=") && (code.contains("\"") || code.contains("'")) && code.any { it.isDigit() }
-            3 -> code.contains("if ") && code.contains(":")
-            4 -> code.contains("for ") && code.contains("range(")
-            5 -> code.contains("def ") && code.contains(":") && code.contains("return")
+            0 -> execution.output.contains("Olá, mundo!")
+            1 -> execution.output.contains("Ana") || code.contains("nome")
+            2 -> code.contains("nome") && code.contains("idade")
+            3 -> execution.output.contains("Maior de idade")
+            4 -> execution.output.lines().size >= 5
+            5 -> code.contains("def ") && execution.output.isNotBlank()
             6 -> code.contains("[") && code.contains("]")
-            7 -> code.contains("input(") && code.contains("print(") && code.contains("if ") && code.contains(":") && code.contains("=")
+            7 -> execution.output.contains("Olá, Ana!")
             else -> false
         }
     }
-
     private fun pythonHint(lesson: Int, code: String): String {
         if (code.isBlank()) return "❌ O editor está vazio.\\n\\n💡 Comece pelo exemplo da aula e altere uma parte dele."
         return when (lesson) {
