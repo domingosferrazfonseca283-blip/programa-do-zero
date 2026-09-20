@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 
 class CodeEditorActivity : Activity() {
@@ -85,6 +86,9 @@ class CodeEditorActivity : Activity() {
             text = "▶ Executar"
             textSize = 17f
             isAllCaps = false
+            gravity = android.view.Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
         }
 
         run.setOnClickListener {
@@ -96,17 +100,26 @@ class CodeEditorActivity : Activity() {
         val back = Button(this).apply {
             text = "← Voltar"
             isAllCaps = false
+            gravity = android.view.Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
             setOnClickListener { finish() }
         }
 
         screen.addView(title)
         screen.addView(info)
-        screen.addView(editor, LinearLayout.LayoutParams(-1, 0, 1f))
-        screen.addView(run, LinearLayout.LayoutParams(-1, 65))
+        screen.addView(editor, LinearLayout.LayoutParams(-1, 520))
+        screen.addView(run, LinearLayout.LayoutParams(-1, 64).apply {
+            setMargins(0, 10, 0, 8)
+        })
         screen.addView(output, LinearLayout.LayoutParams(-1, -2))
-        screen.addView(back, LinearLayout.LayoutParams(-1, 60))
+        screen.addView(back, LinearLayout.LayoutParams(-1, 64))
 
-        setContentView(screen)
+        val scroll = ScrollView(this).apply {
+            isFillViewport = true
+            addView(screen)
+        }
+        setContentView(scroll)
     }
 
     private fun executePython(language: String) {
