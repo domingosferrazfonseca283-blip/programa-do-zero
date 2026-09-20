@@ -51,7 +51,7 @@ class LessonActivity : Activity() {
         nextButton = Button(this).apply { textSize = 17f; isAllCaps = false }
 
         nextButton.setOnClickListener {
-            if (!ProgressManager.isLessonCompleted(this, language, currentLesson)) {
+            if (!ProgressManager.isLessonCompleted(this, language, lessons[currentLesson].id)) {
                 startExercise()
             } else if (currentLesson < lessons.lastIndex) {
                 currentLesson++
@@ -107,6 +107,6 @@ class LessonActivity : Activity() {
     }
 
     private fun firstIncompleteLesson(): Int =
-        (0 until lessons.size).firstOrNull { !ProgressManager.isLessonCompleted(this, language, it) } ?: lessons.lastIndex
+        (0 until lessons.size).firstOrNull { !ProgressManager.isLessonCompleted(this, language, lessons[it].id) } ?: lessons.lastIndex
 
 }
