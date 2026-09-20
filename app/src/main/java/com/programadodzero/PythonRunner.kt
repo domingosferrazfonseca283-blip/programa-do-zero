@@ -300,10 +300,33 @@ object PythonRunner {
         inputIndex: IntArray,
         functions: MutableMap<String, FunctionDef>
     ): Boolean {
+        val text = condition.trim()
+
+        val orParts = splitLogicalOperator(text, "or")
+        if (orParts.size > 1) {
+            return orParts.any {
+                evaluateCondition(it, variables, inputs, inputIndex, functions)
+            }
+        }
+
+        val andParts = splitLogicalOperator(text, "and")
+        if (andParts.size > 1) {
+            return andParts.all {
+                evaluateCondition(it, variables, inputs, inputIndex, functions)
+            }
+        }
+
+        if (text.startsWith("not ")) {
+            return !evaluateCondition(
+                text.removePrefix("not ").trim(),
+                variables, inputs, inputIndex, functions
+            )
+        }
+
         val operators = listOf("==", "!=", ">=", "<=", ">", "<")
 
         for (operator in operators) {
-            val parts = condition.split(operator, limit = 2)
+            val parts = text.split(operator, limit = 2)
             if (parts.size == 2) {
                 val left = evaluate(parts[0].trim(), variables, inputs, inputIndex, functions)
                 val right = evaluate(parts[1].trim(), variables, inputs, inputIndex, functions)
@@ -322,8 +345,49 @@ object PythonRunner {
             }
         }
 
-        val value = evaluate(condition, variables, inputs, inputIndex, functions)
-        return value != "0" && value.lowercase() != "false" && value.isNotEmpty()
+        val value = evaluate(text, variables, inputs, inputIndex, functions)
+        return isTruthy(value)
+    }
+
+    private fun isTruthy(value: String): Boolean =
+        value != "0" && value.lowercase() != "false" && value.isNotEmpty()
+
+    private fun splitLogicalOperator(text: String, operator: String): List<String> {
+        val result = mutableListOf<String>()
+        var current = StringBuilder()
+        var quote: Char? = null
+        var depth = 0
+        val token = " $operator "
+
+        var index = 0
+        while (index < text.length) {
+            val char = text[index]
+
+            if ((char == '\'' || char == '"') && (quote == null || quote == char)) {
+                quote = if (quote == null) char else null
+                current.append(char)
+                index++
+                continue
+            }
+
+            if (quote == null) {
+                if (char == '(' || char == '[') depth++
+                if (char == ')' || char == ']') depth--
+
+                if (depth == 0 && text.startsWith(token, index)) {
+                    result.add(current.toString().trim())
+                    current = StringBuilder()
+                    index += token.length
+                    continue
+                }
+            }
+
+            current.append(char)
+            index++
+        }
+
+        result.add(current.toString().trim())
+        return if (result.size > 1) result else emptyList()
     }
 
     private fun evaluate(
