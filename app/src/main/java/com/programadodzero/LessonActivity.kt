@@ -7,6 +7,7 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 
 class LessonActivity : Activity() {
@@ -24,6 +25,7 @@ class LessonActivity : Activity() {
     private lateinit var body: TextView
     private lateinit var code: TextView
     private lateinit var nextButton: Button
+    private lateinit var review: TextView
     private lateinit var lessons: List<LessonContent>
     private lateinit var language: String
     private lateinit var level: String
@@ -55,6 +57,7 @@ class LessonActivity : Activity() {
         progress = TextView(this).apply { textSize = 16f; setTextColor(Color.LTGRAY); setPadding(0,14,0,22) }
         title = TextView(this).apply { textSize = 27f; setTextColor(Color.WHITE); setTypeface(null, Typeface.BOLD) }
         body = TextView(this).apply { textSize = 18f; setTextColor(Color.LTGRAY); setPadding(0,18,0,18) }
+        review = TextView(this).apply { textSize = 17f; setTextColor(Color.WHITE); setPadding(0,18,0,18) }
         code = TextView(this).apply { textSize = 16f; setTextColor(Color.WHITE); setPadding(20,18,20,18); setBackgroundColor(Color.rgb(30,41,59)); typeface = Typeface.MONOSPACE }
         nextButton = Button(this).apply { textSize = 17f; isAllCaps = false }
 
@@ -71,7 +74,18 @@ class LessonActivity : Activity() {
         screen.addView(header)
         screen.addView(progress)
         screen.addView(title)
-        screen.addView(body, LinearLayout.LayoutParams(-1, 0, 1f))
+        val lessonContent = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(title)
+            addView(body)
+            addView(code, LinearLayout.LayoutParams(-1, -2))
+            addView(review)
+        }
+        val scroll = ScrollView(this).apply { addView(lessonContent) }
+        screen.removeView(title)
+        screen.removeView(body)
+        screen.removeView(code)
+        screen.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
         screen.addView(code, LinearLayout.LayoutParams(-1, -2))
         screen.addView(nextButton, LinearLayout.LayoutParams(-1, 65))
         screen.addView(backButton, LinearLayout.LayoutParams(-1, 60))
@@ -90,6 +104,9 @@ class LessonActivity : Activity() {
         title.text = lesson.title
         body.text = lesson.body
         code.text = "Módulo ${lesson.module} • Exemplo:\n\n${lesson.code}"
+        val objectives = lesson.objectives.joinToString("\n") { "• $it" }
+        val points = lesson.keyPoints.joinToString("\n") { "• $it" }
+        review.text = "🎯 OBJETIVOS\n$objectives\n\n📖 EXPLICAÇÃO\n${lesson.explanation.ifBlank { lesson.body }}\n\n💡 PONTOS-CHAVE\n$points\n\n🧠 REVISÃO\n${lesson.reviewQuestion}\n\nResposta: ${lesson.reviewAnswer}"
         nextButton.text = when {
             !completed -> "🧩 Fazer prática da aula"
             currentLesson < lessons.lastIndex -> "✅ Prática concluída • Próxima aula →"
