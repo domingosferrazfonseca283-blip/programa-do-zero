@@ -170,21 +170,22 @@ object ProgressManager {
 
     fun canStartLanguage(context: Context, language: String, lessonIds: List<String>): Boolean {
         val active = getActiveLanguage(context)
-        return active == null || active == language ||
-            isLanguageComplete(context, active, ContentRepository.lessonsFor(active).map { it.id })
+        if (active == null || active == language) return true
+
+        val activeLessonIds = ContentRepository.lessonsFor(active).map { it.id }
+        return isLanguageComplete(context, active, activeLessonIds)
     }
 
     fun selectLanguage(context: Context, language: String, lessonIds: List<String>): Boolean {
         val active = getActiveLanguage(context)
 
-        if (active == null) {
+        if (active == null || active == language) {
             prefs(context).edit().putString(ACTIVE_LANGUAGE, language).apply()
             return true
         }
 
-        if (active == language) return true
-
-        if (isLanguageComplete(context, active, lessonIds)) {
+        val activeLessonIds = ContentRepository.lessonsFor(active).map { it.id }
+        if (isLanguageComplete(context, active, activeLessonIds)) {
             prefs(context).edit().putString(ACTIVE_LANGUAGE, language).apply()
             return true
         }
