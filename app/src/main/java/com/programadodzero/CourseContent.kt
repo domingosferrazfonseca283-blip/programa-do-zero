@@ -10,7 +10,10 @@ data class LessonContent(
     val id: String,
     val title: String,
     val body: String,
-    val code: String
+    val code: String,
+    val level: Int = 1,
+    val module: Int = 1,
+    val order: Int = 0
 )
 
 data class ExerciseContent(
@@ -122,7 +125,11 @@ object ContentRepository {
     )
 
     fun lessonsFor(language: String): List<LessonContent> =
-        if (language == "🐍  Python") pythonLessons else genericLessons
+        if (language == "🐍  Python") pythonLessons else emptyList()
+
+    fun isLanguageAvailable(language: String): Boolean = language == "🐍  Python"
+
+    fun availableLanguages(): List<String> = listOf("🐍  Python")
 
 
     private val pythonProject = ProjectContent(
