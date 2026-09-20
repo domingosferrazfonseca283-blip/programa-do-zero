@@ -110,6 +110,12 @@ object ProgressManager {
         p.edit().putInt(XP, p.getInt(XP, 0) + amount).apply()
     }
 
+    fun getStudentName(context: Context): String? = prefs(context).getString("student_name", null)
+
+    fun setStudentName(context: Context, name: String) {
+        prefs(context).edit().putString("student_name", name.trim()).apply()
+    }
+
     fun getActiveLanguage(context: Context): String? =
         prefs(context).getString(ACTIVE_LANGUAGE, null)
 
