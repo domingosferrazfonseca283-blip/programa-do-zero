@@ -90,7 +90,12 @@ class PracticeCodingActivity : Activity() {
                     putExtra(EXTRA_LESSON, lesson + 1)
                 })
                 finish()
-            } else finish()
+            } else {
+                startActivity(android.content.Intent(this, ProjectActivity::class.java).apply {
+                    putExtra(EXTRA_LANGUAGE, language)
+                })
+                finish()
+            }
         }
 
         val back = Button(this).apply {
