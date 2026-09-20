@@ -15,6 +15,7 @@ object PythonRunner {
     private data class FunctionDef(val parameters: List<String>, val body: List<String>)
     private data class ClassDef(val methods: Map<String, FunctionDef>)
     private data class ObjectInstance(val className: String, val attributes: MutableMap<String, String>)
+    private data class VirtualFile(val name: String, var content: String = "", var mode: String = "r", var closed: Boolean = false)
 
     fun run(code: String, inputs: List<String> = emptyList()): Result {
         val variables = mutableMapOf<String, String>()
@@ -23,10 +24,11 @@ object PythonRunner {
         val functions = mutableMapOf<String, FunctionDef>()
         val classes = mutableMapOf<String, ClassDef>()
         val objects = mutableMapOf<String, ObjectInstance>()
+        val files = mutableMapOf<String, VirtualFile>()
         val lines = code.lines()
 
         return try {
-            executeBlock(lines, 0, lines.size, 0, variables, output, inputs, inputIndex, functions, classes, objects)
+            executeBlock(lines, 0, lines.size, 0, variables, output, inputs, inputIndex, functions, classes, objects, files)
             Result(
                 true,
                 if (output.isEmpty()) "Código executado sem saída." else output.joinToString("\n")
@@ -49,7 +51,8 @@ object PythonRunner {
         inputIndex: IntArray,
         functions: MutableMap<String, FunctionDef>,
         classes: MutableMap<String, ClassDef>,
-        objects: MutableMap<String, ObjectInstance>
+        objects: MutableMap<String, ObjectInstance>,
+        files: MutableMap<String, VirtualFile>
     ): Int {
         var i = start
 
@@ -147,7 +150,7 @@ object PythonRunner {
                 for (value in rangeStart until rangeEnd) {
                     variables[variable] = value.toString()
                     try {
-                        executeBlock(lines, i + 1, cursor, indent + 4, variables, output, inputs, inputIndex, functions, classes, objects)
+                        executeBlock(lines, i + 1, cursor, indent + 4, variables, output, inputs, inputIndex, functions, classes, objects, files)
                     } catch (e: BreakLoop) {
                         break
                     } catch (e: ContinueLoop) {
@@ -170,7 +173,7 @@ object PythonRunner {
                 }
                 val exceptEnd = findBlockEnd(lines, exceptIndex + 1, end, indent)
                 try {
-                    executeBlock(lines, i + 1, tryEnd, indent + 4, variables, output, inputs, inputIndex, functions, classes, objects)
+                    executeBlock(lines, i + 1, tryEnd, indent + 4, variables, output, inputs, inputIndex, functions, classes, objects, files)
                 } catch (e: InputRequired) {
                     throw e
                 } catch (e: BreakLoop) {
@@ -218,7 +221,7 @@ object PythonRunner {
             if (line.startsWith("if ") && line.endsWith(":")) {
                 val (nextIndex, executed) = executeIfChain(
                     lines, i, end, indent,
-                    variables, output, inputs, inputIndex, functions, classes, objects
+                    variables, output, inputs, inputIndex, functions, classes, objects, files
                 )
                 i = nextIndex
                 if (executed) continue
@@ -289,6 +292,25 @@ object PythonRunner {
                 continue
             }
 
+            val fileCall = Regex("([A-Za-z_][A-Za-z0-9_]*)\\.(write|read|close)\\((.*)\\)").matchEntire(line)
+            if (fileCall != null) {
+                val ref = variables[fileCall.groupValues[1]]
+                if (ref != null && files.containsKey(ref)) {
+                    val file = files[ref] ?: throw IllegalArgumentException("Arquivo inválido.")
+                    if (file.closed) throw IllegalArgumentException("O arquivo está fechado.")
+                    when (fileCall.groupValues[2]) {
+                        "write" -> {
+                            if (file.mode == "r") throw IllegalArgumentException("Arquivo aberto somente para leitura.")
+                            file.content += evaluate(fileCall.groupValues[3], variables, inputs, inputIndex, functions, objects, classes, files)
+                        }
+                        "read" -> output.add(file.content)
+                        "close" -> file.closed = true
+                    }
+                    i++
+                    continue
+                }
+            }
+
             val methodCall = Regex("([A-Za-z_][A-Za-z0-9_]*)\\.([A-Za-z_][A-Za-z0-9_]*)\\((.*)\\)").matchEntire(line)
             if (methodCall != null) {
                 val ref = variables[methodCall.groupValues[1]]
@@ -320,7 +342,7 @@ object PythonRunner {
 
             if (line.startsWith("print(") && line.endsWith(")")) {
                 val expression = line.removePrefix("print(").removeSuffix(")")
-                output.add(evaluate(expression, variables, inputs, inputIndex, functions, objects, classes))
+                output.add(evaluate(expression, variables, inputs, inputIndex, functions, objects, classes, files))
                 i++
                 continue
             }
@@ -364,7 +386,8 @@ object PythonRunner {
         inputIndex: IntArray,
         functions: MutableMap<String, FunctionDef>,
         classes: MutableMap<String, ClassDef>,
-        objects: MutableMap<String, ObjectInstance>
+        objects: MutableMap<String, ObjectInstance>,
+        files: MutableMap<String, VirtualFile>
     ): Pair<Int, Boolean> {
         var cursor = start
         var executed = false
@@ -393,7 +416,7 @@ object PythonRunner {
                 if (!executed && evaluateCondition(condition, variables, inputs, inputIndex, functions, classes, objects)) {
                     executeBlock(
                         lines, cursor + 1, blockEnd, indent + 4,
-                        variables, output, inputs, inputIndex, functions, classes, objects
+                        variables, output, inputs, inputIndex, functions, classes, objects, files
                     )
                     executed = true
                 }
@@ -441,7 +464,8 @@ object PythonRunner {
         inputIndex: IntArray,
         functions: MutableMap<String, FunctionDef>,
         classes: MutableMap<String, ClassDef>,
-        objects: MutableMap<String, ObjectInstance>
+        objects: MutableMap<String, ObjectInstance>,
+        files: MutableMap<String, VirtualFile>
     ): Boolean {
         val text = condition.trim()
 
@@ -462,7 +486,7 @@ object PythonRunner {
         if (text.startsWith("not ")) {
             return !evaluateCondition(
                 text.removePrefix("not ").trim(),
-                variables, inputs, inputIndex, functions, classes, objects
+                variables, inputs, inputIndex, functions, classes, objects, files
             )
         }
 
@@ -552,12 +576,25 @@ object PythonRunner {
                 ?: throw IllegalArgumentException("Atributo não encontrado.")
         }
 
+        val openCall = Regex("open\\((.*)\\)").matchEntire(value)
+        if (openCall != null) {
+            val args = splitArguments(openCall.groupValues[1])
+            if (args.isEmpty()) throw IllegalArgumentException("open() precisa de um nome de arquivo.")
+            val name = evaluate(args[0], variables, inputs, inputIndex, functions, objects, classes, files)
+            val mode = if (args.size > 1) evaluate(args[1], variables, inputs, inputIndex, functions, objects, classes, files) else "r"
+            if (mode !in listOf("r", "w", "a")) throw IllegalArgumentException("Modo de arquivo inválido.")
+            val ref = "@file" + files.size
+            val existing = files[name]?.content ?: ""
+            files[ref] = VirtualFile(name, if (mode == "w") "" else existing, mode)
+            return ref
+        }
+
         val classCall = Regex("([A-Za-z_][A-Za-z0-9_]*)\((.*)\)").matchEntire(value)
         if (classCall != null && classes.containsKey(classCall.groupValues[1])) {
             val ref = "@obj" + System.nanoTime()
             objects[ref] = ObjectInstance(classCall.groupValues[1], mutableMapOf())
             val init = classes[classCall.groupValues[1]]?.methods?.get("__init__")
-            if (init != null) callMethod(ref, "__init__", classCall.groupValues[2], variables, objects, classes, mutableListOf(), inputs, inputIndex, functions)
+            if (init != null) callMethod(ref, "__init__", classCall.groupValues[2], variables, objects, classes, mutableListOf(), inputs, inputIndex, functions, files)
             return ref
         }
 
@@ -794,7 +831,8 @@ object PythonRunner {
         inputs: List<String>,
         inputIndex: IntArray,
         classes: MutableMap<String, ClassDef>,
-        objects: MutableMap<String, ObjectInstance>
+        objects: MutableMap<String, ObjectInstance>,
+        files: MutableMap<String, VirtualFile>
     ): String {
         val function = functions[name]
             ?: throw IllegalArgumentException("Função não encontrada: " + name)
@@ -834,10 +872,12 @@ object PythonRunner {
         variables: MutableMap<String, String>,
         objects: MutableMap<String, ObjectInstance>,
         classes: MutableMap<String, ClassDef>,
+        files: MutableMap<String, VirtualFile>,
         output: MutableList<String>,
         inputs: List<String>,
         inputIndex: IntArray,
-        functions: MutableMap<String, FunctionDef>
+        functions: MutableMap<String, FunctionDef>,
+        files: MutableMap<String, VirtualFile>
     ) {
         val obj = objects[ref] ?: throw IllegalArgumentException("Objeto inválido.")
         val method = classes[obj.className]?.methods?.get(methodName)
@@ -850,7 +890,7 @@ object PythonRunner {
             local[parameter] = evaluate(args[index], variables, inputs, inputIndex, functions, objects, classes)
         }
         try {
-            executeBlock(method.body, 0, method.body.size, 0, local, output, inputs, inputIndex, functions, classes, objects)
+            executeBlock(method.body, 0, method.body.size, 0, local, output, inputs, inputIndex, functions, classes, objects, files)
         } catch (e: ReturnValue) {
         }
     }
