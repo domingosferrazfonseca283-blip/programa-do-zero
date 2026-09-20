@@ -16,14 +16,17 @@ class PracticeCodingActivity : Activity() {
         const val EXTRA_LESSON = "lesson"
     }
 
-    private data class Challenge(val title: String, val instruction: String, val starter: String, val success: String)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val language = intent.getStringExtra(EXTRA_LANGUAGE) ?: "🐍  Python"
         val level = intent.getStringExtra(EXTRA_LEVEL) ?: "Prática"
         val lesson = intent.getIntExtra(EXTRA_LESSON, 0)
-        val challenge = pythonChallenges()[lesson.coerceIn(0, 7)]
+        val challenges = ContentRepository.exercisesFor(language)
+        if (challenges.isEmpty()) {
+            finish()
+            return
+        }
+        val challenge = challenges[lesson.coerceIn(0, challenges.lastIndex)]
 
         val screen = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -137,14 +140,4 @@ class PracticeCodingActivity : Activity() {
         }
     }
 
-    private fun pythonChallenges(): List<Challenge> = listOf(
-        Challenge("Aula 1 — Mostre uma mensagem", "Escreva um programa que mostre Olá, mundo! usando print().", "print(\"Olá, mundo!\")", "Você acabou de escrever seu primeiro programa."),
-        Challenge("Aula 2 — Crie uma variável", "Crie uma variável chamada nome e coloque um nome dentro dela.", "nome = \"Ana\"\nprint(nome)", "Variáveis permitem guardar informações."),
-        Challenge("Aula 3 — Trabalhe com dados", "Crie uma variável de texto e outra com um número.", "nome = \"Ana\"\nidade = 20", "Agora você consegue guardar diferentes tipos de dados."),
-        Challenge("Aula 4 — Tome uma decisão", "Peça a idade com input(), transforme a resposta em número e use if/else para mostrar mensagens diferentes para menor e maior de idade.", "idade = int(input(\"Digite sua idade: \"))\n\nif idade >= 18:\n    print(\"Maior de idade\")\nelse:\n    print(\"Menor de idade\")", "Agora o programa recebe uma informação e toma uma decisão com base nela."),
-        Challenge("Aula 5 — Repita uma tarefa", "Use for e range() para mostrar uma sequência de pelo menos três números em ordem crescente.", "for numero in range(5):\n    print(numero)", "Agora você consegue repetir uma tarefa sem copiar o código várias vezes."),
-                Challenge("Aula 6 — Crie uma função", "Crie uma função que receba um nome, retorne uma saudação usando esse nome e depois mostre o resultado.", "def saudacao(nome):\n    return \"Olá, \" + nome\n\nprint(saudacao(\"Ana\"))", "Agora você criou uma função que recebe dados e devolve um resultado."),
-        Challenge("Aula 7 — Use uma lista", "Crie uma lista com pelo menos dois itens, mostre a lista e depois mostre o segundo item.", "frutas = [\"maçã\", \"banana\"]\nprint(frutas)\nprint(frutas[1])", "Agora você consegue guardar vários valores e acessar um item específico."),
-        Challenge("Aula 8 — Primeiro projeto", "Crie um pequeno programa: peça um valor com input(), guarde em uma variável, use if para tomar uma decisão e mostre um resultado com print().", "nome = input(\"Seu nome: \")\n\nif nome:\n    print(\"Olá, \" + nome + \"!\")", "Você juntou entrada, variável, condição e saída em um pequeno projeto.")
-    )
 }
