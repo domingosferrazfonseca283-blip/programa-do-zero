@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.Gravity
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 
 class MainActivity : Activity() {
@@ -139,6 +140,11 @@ class MainActivity : Activity() {
             })
         }
 
-        setContentView(tela)
+        val scroll = ScrollView(this).apply {
+            isFillViewport = true
+            addView(tela)
+        }
+
+        setContentView(scroll)
     }
 }
