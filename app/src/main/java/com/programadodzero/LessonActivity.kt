@@ -13,6 +13,8 @@ class LessonActivity : Activity() {
     companion object {
         const val EXTRA_LANGUAGE = "language"
         const val EXTRA_LEVEL = "level"
+        const val EXTRA_LEVEL_NUMBER = "level_number"
+        const val EXTRA_MODULE = "module"
         const val EXTRA_LESSON = "lesson"
     }
 
@@ -24,13 +26,17 @@ class LessonActivity : Activity() {
     private lateinit var lessons: List<LessonContent>
     private lateinit var language: String
     private lateinit var level: String
+    private var levelNumber = 1
+    private var moduleNumber = 1
     private var currentLesson = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         language = intent.getStringExtra(EXTRA_LANGUAGE) ?: "Linguagem"
         level = intent.getStringExtra(EXTRA_LEVEL) ?: "Nível"
-        lessons = ContentRepository.lessonsFor(language)
+        levelNumber = intent.getIntExtra(EXTRA_LEVEL_NUMBER, 1)
+        moduleNumber = intent.getIntExtra(EXTRA_MODULE, 1)
+        lessons = ContentRepository.lessonsForModule(language, levelNumber, moduleNumber)
         currentLesson = intent.getIntExtra(EXTRA_LESSON, firstIncompleteLesson())
 
         val screen = LinearLayout(this).apply {
@@ -76,7 +82,7 @@ class LessonActivity : Activity() {
     private fun showLesson() {
         currentLesson = currentLesson.coerceIn(0, lessons.lastIndex)
         val lesson = lessons[currentLesson]
-        val completed = ProgressManager.isLessonCompleted(this, language, currentLesson)
+        val completed = ProgressManager.isLessonCompleted(this, language, lesson.id)
         val number = currentLesson + 1
         progress.text = "Aula $number de ${lessons.size} • ${((number - 1) * 100 / lessons.size)}% estudado"
         title.text = lesson.title
@@ -94,7 +100,7 @@ class LessonActivity : Activity() {
         startActivity(Intent(this, PracticeCodingActivity::class.java).apply {
             putExtra(PracticeCodingActivity.EXTRA_LANGUAGE, language)
             putExtra(PracticeCodingActivity.EXTRA_LEVEL, level)
-            putExtra(PracticeCodingActivity.EXTRA_LESSON, currentLesson)
+            putExtra(PracticeCodingActivity.EXTRA_LESSON_ID, lessons[currentLesson].id)
         })
     }
 
