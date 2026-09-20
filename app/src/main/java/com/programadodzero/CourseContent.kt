@@ -146,9 +146,46 @@ object ContentRepository {
         "python-20" to ReviewQuestion("python-20-q1", "O que fazer antes de implementar um projeto?", listOf("Entender requisitos e dividir o problema", "Escrever tudo de uma vez", "Ignorar entradas", "Evitar testes"), 0, "Entender o problema reduz retrabalho e orienta a implementação.", 3, "Projetos profissionais")
     )
 
-    fun questionBank(language: String): List<ReviewQuestion> = if (language == "🐍  Python") pythonReviewQuestions.values.toList() else emptyList()
+    private val pythonExtraQuestions = listOf(
+        ReviewQuestion("python-01-q2", "Qual etapa transforma um problema em passos menores?", listOf("Decomposição", "Compilação", "Instalação", "Formatação"), 0, "Decomposição divide problemas em partes menores.", 1, "Pensamento computacional"),
+        ReviewQuestion("python-02-q2", "Qual instrução cria uma variável chamada idade?", listOf("idade = 20", "20 = idade", "var idade", "new idade"), 0, "Em Python, uma atribuição associa um nome a um valor.", 1, "Variáveis"),
+        ReviewQuestion("python-03-q2", "Qual função converte texto numérico para inteiro?", listOf("int()", "str()", "list()", "booltext()"), 0, "int() converte um valor compatível para inteiro.", 1, "Tipos de dados"),
+        ReviewQuestion("python-04-q2", "Qual operador verifica igualdade?", listOf("==", "=", "!=", "=>"), 0, "== compara valores; = é usado para atribuição.", 1, "Condições"),
+        ReviewQuestion("python-05-q2", "Qual palavra inicia um laço que percorre range(3)?", listOf("for", "if", "def", "class"), 0, "for é usado para repetir sobre uma sequência ou intervalo.", 1, "Repetições"),
+        ReviewQuestion("python-06-q2", "Qual palavra devolve um valor de uma função?", listOf("return", "print", "input", "yieldnow"), 0, "return encerra a execução da função e devolve um valor.", 2, "Funções"),
+        ReviewQuestion("python-07-q2", "Como adicionar um item ao final de uma lista?", listOf("lista.append(item)", "lista.addLast(item)", "lista.pushEnd(item)", "append.lista(item)"), 0, "append adiciona um item ao final da lista.", 2, "Listas"),
+        ReviewQuestion("python-08-q2", "Qual é uma boa prática ao iniciar um projeto?", listOf("Definir requisitos e critérios de sucesso", "Codificar sem entender o problema", "Ignorar entradas", "Evitar dividir tarefas"), 0, "Requisitos orientam o que o projeto precisa entregar.", 2, "Projetos"),
+        ReviewQuestion("python-09-q2", "O que identifica um valor em um dicionário?", listOf("Uma chave", "Somente um índice numérico", "Um comentário", "Um módulo"), 0, "Dicionários associam chaves a valores.", 2, "Dicionários"),
+        ReviewQuestion("python-10-q2", "Qual método remove espaços nas extremidades de uma string?", listOf("strip()", "trimAll()", "clean()", "space()"), 0, "strip() remove espaços e caracteres de quebra nas extremidades.", 2, "Strings"),
+        ReviewQuestion("python-11-q2", "O que acontece no bloco except quando a exceção correspondente ocorre?", listOf("O tratamento definido é executado", "O programa sempre reinicia", "A exceção é ignorada sem ação", "Todas as variáveis são apagadas"), 0, "except permite tratar uma exceção de forma controlada.", 2, "Erros"),
+        ReviewQuestion("python-12-q2", "Qual modo de arquivo permite acrescentar conteúdo ao final?", listOf("a", "r", "w", "read"), 0, "O modo a abre o arquivo para acrescentar conteúdo.", 2, "Arquivos"),
+        ReviewQuestion("python-13-q2", "O que um método de uma classe normalmente representa?", listOf("Um comportamento associado ao objeto", "Um arquivo externo", "Uma variável global obrigatória", "Um comentário"), 0, "Métodos representam comportamentos definidos pela classe.", 3, "Orientação a objetos"),
+        ReviewQuestion("python-14-q2", "Por que separar responsabilidades em funções ou classes?", listOf("Para reduzir acoplamento e facilitar manutenção", "Para impedir reutilização", "Para eliminar entradas", "Para tornar todo código global"), 0, "Separar responsabilidades torna o sistema mais organizado e testável.", 3, "Organização de sistemas"),
+        ReviewQuestion("python-15-q2", "Qual estrutura é adequada para somar valores de uma sequência?", listOf("Um acumulador atualizado em um laço", "Somente uma condição if", "Um comentário", "Uma classe vazia"), 0, "Um acumulador mantém o resultado parcial enquanto os valores são processados.", 3, "Algoritmos"),
+        ReviewQuestion("python-16-q2", "Qual é a ideia central da busca sequencial?", listOf("Parar quando encontrar o elemento procurado", "Ordenar a lista antes de cada comparação", "Verificar somente o primeiro item", "Ignorar os elementos diferentes"), 0, "A busca pode encerrar quando o item procurado é encontrado.", 3, "Algoritmos"),
+        ReviewQuestion("python-17-q2", "O que um teste automatizado ajuda a verificar?", listOf("Se um comportamento esperado continua funcionando", "A cor do editor", "A velocidade da internet", "O tamanho do APK"), 0, "Testes automatizados verificam comportamentos esperados de forma repetível.", 3, "Qualidade e testes"),
+        ReviewQuestion("python-18-q2", "O que significa separar responsabilidades?", listOf("Cada parte do sistema ter uma função bem definida", "Colocar toda lógica em uma função gigante", "Evitar módulos", "Duplicar regras"), 0, "Responsabilidades bem definidas facilitam evolução e manutenção.", 3, "Arquitetura"),
+        ReviewQuestion("python-19-q2", "Uma solução O(n) geralmente faz o quê em relação ao tamanho da entrada?", listOf("O trabalho cresce aproximadamente de forma linear", "O trabalho fica sempre constante", "O trabalho desaparece", "A memória nunca é usada"), 0, "Em O(n), o custo tende a crescer proporcionalmente ao tamanho da entrada.", 3, "Eficiência"),
+        ReviewQuestion("python-20-q2", "Qual prática reduz riscos em um projeto profissional?", listOf("Implementar em partes e testar cada etapa", "Mudar requisitos sem registrar", "Evitar validações", "Entregar sem testar"), 0, "Implementação incremental e testes reduzem riscos e facilitam correções.", 3, "Projetos profissionais")
+    )
 
-    fun finalExamFor(language: String): List<ReviewQuestion> { if (language != "🐍  Python") return emptyList(); val all = pythonReviewQuestions.values.toList(); val seed = java.time.LocalDate.now().toEpochDay().toInt(); return all.sortedBy { it.id.hashCode() xor seed }.take(10) }
+    fun questionBank(language: String): List<ReviewQuestion> =
+        if (language == "🐍  Python") pythonReviewQuestions.values.toList() + pythonExtraQuestions else emptyList()
+
+    fun finalExamFor(language: String): List<ReviewQuestion> {
+        if (language != "🐍  Python") return emptyList()
+
+        val all = questionBank(language)
+        val seed = java.time.LocalDate.now().toEpochDay().toInt()
+
+        fun pick(difficulty: Int, amount: Int): List<ReviewQuestion> =
+            all.filter { it.difficulty == difficulty }
+                .sortedBy { it.id.hashCode() xor seed }
+                .take(amount)
+
+        return (pick(1, 4) + pick(2, 3) + pick(3, 3))
+            .sortedBy { it.id.hashCode() xor seed }
+    }
 
     fun reviewFor(language: String, lessonId: String): ReviewQuestion? =
         if (language == "🐍  Python") pythonReviewQuestions[lessonId] else null
