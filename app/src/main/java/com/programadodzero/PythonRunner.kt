@@ -354,7 +354,7 @@ object PythonRunner {
                 val obj = objects[ref]
                     ?: throw IllegalArgumentException("Variável não é um objeto.")
                 obj.attributes[attributeAssignment.groupValues[2]] =
-                    evaluate(attributeAssignment.groupValues[3], variables, inputs, inputIndex, functions, objects, classes)
+                    evaluate(attributeAssignment.groupValues[3], variables, inputs, inputIndex, functions, objects, classes, files)
                 i++
                 continue
             }
@@ -362,7 +362,7 @@ object PythonRunner {
             if (line.matches(Regex("[A-Za-z_][A-Za-z0-9_]*\\s*=\\s*.+"))) {
                 val parts = line.split("=", limit = 2)
                 variables[parts[0].trim()] =
-                    evaluate(parts[1].trim(), variables, inputs, inputIndex, functions, objects, classes)
+                    evaluate(parts[1].trim(), variables, inputs, inputIndex, functions, objects, classes, files)
                 i++
                 continue
             }
@@ -472,7 +472,7 @@ object PythonRunner {
         val orParts = splitLogicalOperator(text, "or")
         if (orParts.size > 1) {
             return orParts.any {
-                evaluateCondition(it, variables, inputs, inputIndex, functions, classes, objects)
+                evaluateCondition(it, variables, inputs, inputIndex, functions, classes, objects, files)
             }
         }
 
@@ -495,7 +495,7 @@ object PythonRunner {
         for (operator in operators) {
             val parts = text.split(operator, limit = 2)
             if (parts.size == 2) {
-                val left = evaluate(parts[0].trim(), variables, inputs, inputIndex, functions, objects, classes)
+                val left = evaluate(parts[0].trim(), variables, inputs, inputIndex, functions, objects, classes, files)
                 val right = evaluate(parts[1].trim(), variables, inputs, inputIndex, functions, objects, classes)
                 val leftNumber = left.toIntOrNull()
                 val rightNumber = right.toIntOrNull()
@@ -512,7 +512,7 @@ object PythonRunner {
             }
         }
 
-        val value = evaluate(text, variables, inputs, inputIndex, functions, objects, classes)
+        val value = evaluate(text, variables, inputs, inputIndex, functions, objects, classes, files)
         return isTruthy(value)
     }
 
@@ -564,7 +564,8 @@ object PythonRunner {
         inputIndex: IntArray,
         functions: MutableMap<String, FunctionDef>,
         objects: MutableMap<String, ObjectInstance> = mutableMapOf(),
-        classes: MutableMap<String, ClassDef> = mutableMapOf()
+        classes: MutableMap<String, ClassDef> = mutableMapOf(),
+        files: MutableMap<String, VirtualFile> = mutableMapOf()
     ): String {
         val value = expression.trim()
 
@@ -709,7 +710,7 @@ object PythonRunner {
         variables[value]?.let { return it }
         if (value.matches(Regex("-?\\d+"))) return value
 
-        val arithmetic = evaluateArithmetic(value, variables, inputs, inputIndex, functions, objects, classes)
+        val arithmetic = evaluateArithmetic(value, variables, inputs, inputIndex, functions, objects, classes, files)
         if (arithmetic != null) return arithmetic
 
         throw IllegalArgumentException("Não entendi a expressão: " + value)
@@ -723,12 +724,13 @@ object PythonRunner {
         inputIndex: IntArray,
         functions: MutableMap<String, FunctionDef>,
         objects: MutableMap<String, ObjectInstance>,
-        classes: MutableMap<String, ClassDef>
+        classes: MutableMap<String, ClassDef>,
+        files: MutableMap<String, VirtualFile>
     ): String? {
         val plusMinus = splitOperator(expression, setOf('+', '-'))
         if (plusMinus.size > 1) {
             var result = evaluateArithmetic(
-                plusMinus[0].second, variables, inputs, inputIndex, functions, objects, classes
+                plusMinus[0].second, variables, inputs, inputIndex, functions, objects, classes, files
             ) ?: evaluate(plusMinus[0].second, variables, inputs, inputIndex, functions, objects, classes)
 
             for (index in 1 until plusMinus.size) {
@@ -872,7 +874,6 @@ object PythonRunner {
         variables: MutableMap<String, String>,
         objects: MutableMap<String, ObjectInstance>,
         classes: MutableMap<String, ClassDef>,
-        files: MutableMap<String, VirtualFile>,
         output: MutableList<String>,
         inputs: List<String>,
         inputIndex: IntArray,
