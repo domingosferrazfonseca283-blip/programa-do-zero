@@ -5,10 +5,34 @@ data class LibraryBook(val id: String, val language: String, val title: String, 
 
 object LibraryRepository {
     private fun book(id: String, language: String, title: String, description: String, topics: List<String>): LibraryBook {
+        val pythonLessonIds = listOf(
+            "python-01", "python-02", "python-03", "python-04",
+            "python-05", "python-06", "python-07", "python-09",
+            "python-10", "python-11", "python-12", "python-13",
+            "python-14", "python-19", "python-18", "python-20"
+        )
         val chapters = topics.mapIndexed { index, topic ->
-            LibraryChapter(id + "-ch-" + (index + 1), "Capítulo " + (index + 1) + " — " + topic, chapterText(language, topic), if (language == "🐍  Python" && index < 4) "python-" + (index + 1).toString().padStart(2, "0") else null)
+            LibraryChapter(
+                id + "-ch-" + (index + 1),
+                "Capítulo " + (index + 1) + " — " + topic,
+                chapterText(language, topic),
+                if (language == "🐍  Python" && index < pythonLessonIds.size) pythonLessonIds[index] else null
+            )
         }
         return LibraryBook(id, language, title, description, chapters, "Conteúdo original do Programa do Zero", "Conteúdo original")
+    }
+
+    private fun openResource(id: String, language: String, title: String, description: String, source: String, license: String): LibraryBook {
+        val content = "$title\\n\\n$description\\n\\nFonte: $source\\nLicença: $license\\n\\nEste recurso é catalogado pela Biblioteca Offline. O conteúdo completo só deve ser incorporado ao aplicativo quando a licença e a forma de redistribuição permitirem. Use esta ficha para identificar a obra e seus termos de uso."
+        return LibraryBook(
+            id,
+            language,
+            title,
+            description,
+            listOf(LibraryChapter(id + "-info", "Sobre este recurso aberto", content)),
+            source,
+            license
+        )
     }
 
     private fun chapterText(language: String, topic: String): String {
@@ -37,7 +61,32 @@ object LibraryRepository {
         return "$topic\n\nEste capítulo apresenta o conceito de forma progressiva. Entenda o problema que a técnica resolve, observe exemplos pequenos e pratique antes de avançar.\n\nPrática: escreva um exemplo simples, altere uma parte e compare os resultados."
     }
 
-    val openResources: List<LibraryBook> = listOf(LibraryBook("oer-python-foundations", "🐍  Python", "Programming Foundations — TU Delft", "Livro aberto de fundamentos de programação em Python, com exercícios e progressão prática.", emptyList(), "Nikolina Šoštarić / TU Delft OPEN Books, 2nd edition (2025)", "CC BY 4.0"), LibraryBook("oer-exploring-cs", "Python", "Exploring Computer Science", "Livro introdutório aberto de ciência da computação com Python.", emptyList(), "Ian Finlayson", "CC BY-NC-SA 4.0"), LibraryBook("oer-think-python", "Python", "Think Python 2e", "Livro aberto sobre pensamento computacional e Python.", emptyList(), "Allen Downey", "CC BY-NC-SA 3.0"))
+    val openResources: List<LibraryBook> = listOf(
+        openResource(
+            "oer-python-foundations",
+            "🐍  Python",
+            "Programming Foundations — TU Delft",
+            "Livro aberto de fundamentos de programação em Python, com exercícios e progressão prática.",
+            "Nikolina Šoštarić / TU Delft OPEN Books, 2nd edition (2025)",
+            "CC BY 4.0"
+        ),
+        openResource(
+            "oer-exploring-cs",
+            "Python",
+            "Exploring Computer Science",
+            "Livro introdutório aberto de ciência da computação com Python.",
+            "Ian Finlayson",
+            "CC BY-NC-SA 4.0"
+        ),
+        openResource(
+            "oer-think-python",
+            "Python",
+            "Think Python 2e",
+            "Livro aberto sobre pensamento computacional e Python.",
+            "Allen Downey",
+            "CC BY-NC-SA 3.0"
+        )
+    )
 
     val books: List<LibraryBook> = listOf(
         book("python-fundamentos", "🐍  Python", "Python do Zero ao Código", "Livro introdutório original para acompanhar a trilha de Python.", listOf("Pensamento computacional e sintaxe", "Variáveis e tipos de dados", "Entrada, saída e conversões", "Condições e tomada de decisão", "Repetições e laços", "Funções e parâmetros", "Listas e operações", "Dicionários e dados estruturados", "Strings e processamento de texto", "Erros e tratamento de exceções", "Arquivos e persistência", "Classes e objetos", "Organização de sistemas", "Algoritmos e complexidade", "Testes e qualidade", "Projeto profissional")),
