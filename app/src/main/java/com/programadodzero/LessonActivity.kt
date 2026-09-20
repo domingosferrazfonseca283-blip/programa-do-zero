@@ -114,25 +114,28 @@ class LessonActivity : Activity() {
     }
 
     private fun createLessons(language: String): List<Lesson> {
-        val examples = mapOf(
-            "🐍  Python" to "nome = \"Ana\"\nprint(nome)",
-            "🌐  JavaScript" to "const nome = \"Ana\";\nconsole.log(nome);",
-            "🔷  TypeScript" to "const nome: string = \"Ana\";\nconsole.log(nome);",
-            "☕  Java" to "String nome = \"Ana\";\nSystem.out.println(nome);",
-            "⚙️  C" to "char nome[] = \"Ana\";\nprintf(\"%s\\n\", nome);",
-            "🚀  C++" to "string nome = \"Ana\";\ncout << nome << endl;",
-            "🦀  Rust" to "let nome = \"Ana\";\nprintln!(\"{}\", nome);",
-            "🐹  Go" to "nome := \"Ana\"\nfmt.Println(nome)"
+        val lessonsByLanguage = mapOf(
+            "🐍  Python" to listOf(
+                Lesson("Aula 1 — O que é programação?", "Programar é dar instruções claras para o computador. Vamos começar pensando como um programador: dividir um problema grande em passos pequenos.", "print(\"Olá, mundo!\")"),
+                Lesson("Aula 2 — Variáveis", "Variáveis guardam informações que podemos usar depois. Pense nelas como caixas com nomes.", "nome = \"Ana\"\nidade = 20\nprint(nome)"),
+                Lesson("Aula 3 — Tipos de dados", "Texto, números inteiros, números decimais e valores booleanos representam tipos diferentes de informação.", "nome = \"Ana\"\nidade = 20\naltura = 1.65\naluno = True"),
+                Lesson("Aula 4 — Condições", "Programas precisam tomar decisões. Em Python, usamos if para executar algo somente quando uma condição é verdadeira.", "idade = 20\n\nif idade >= 18:\n    print(\"Maior de idade\")"),
+                Lesson("Aula 5 — Repetições", "Quando precisamos repetir uma tarefa, usamos laços. O for permite percorrer uma sequência passo a passo.", "for numero in range(5):\n    print(numero)"),
+                Lesson("Aula 6 — Funções", "Funções agrupam instruções em uma unidade reutilizável. Elas ajudam a organizar programas maiores.", "def saudacao(nome):\n    return \"Olá, \" + nome\n\nprint(saudacao(\"Ana\"))"),
+                Lesson("Aula 7 — Listas", "Listas permitem guardar vários valores em uma única estrutura e percorrê-los no programa.", "frutas = [\"maçã\", \"banana\", \"uva\"]\nfor fruta in frutas:\n    print(fruta)"),
+                Lesson("Aula 8 — Primeiro projeto", "Agora vamos juntar variáveis, entrada, condições e funções para criar um pequeno programa útil.", "nome = input(\"Seu nome: \")\nprint(\"Olá, \" + nome + \"!\")")
+            )
         )
-        val example = examples[language] ?: "nome = \"Ana\""
 
-        return listOf(
-            Lesson("Aula 1 — O que é programação?", "Programar é escrever instruções para que um computador realize tarefas. Nesta trilha você vai aprender conceitos e praticar até criar projetos.", example),
-            Lesson("Aula 2 — Variáveis", "Uma variável guarda um valor que o programa pode usar. Aqui começamos com um nome armazenado em uma variável.", example),
-            Lesson("Aula 3 — Dados e tipos", "Programas trabalham com diferentes tipos de dados, como texto, números e valores booleanos. Entender os tipos ajuda a escrever código correto.", "texto = \"Olá\"\nnumero = 10\nativo = true"),
-            Lesson("Aula 4 — Decisões", "Uma condição permite que o programa escolha o que fazer de acordo com uma situação. O conceito de if aparece em praticamente toda linguagem.", "if (idade >= 18) {\n    // executar uma ação\n}"),
-            Lesson("Aula 5 — Repetições", "Laços de repetição permitem executar uma tarefa várias vezes sem duplicar o mesmo código.", "for (item in itens) {\n    // processar item\n}")
+        val generic = listOf(
+            Lesson("Aula 1 — O que é programação?", "Programar é escrever instruções para que um computador realize tarefas. Vamos aprender passo a passo.", "print(\"Olá, mundo!\")"),
+            Lesson("Aula 2 — Variáveis", "Uma variável guarda um valor que o programa pode usar.", "nome = \"Ana\""),
+            Lesson("Aula 3 — Dados e tipos", "Programas trabalham com diferentes tipos de dados, como texto, números e valores booleanos.", "texto = \"Olá\"\nnumero = 10\nativo = true"),
+            Lesson("Aula 4 — Decisões", "Condições permitem que o programa escolha o que fazer.", "if (idade >= 18) {\n    // executar uma ação\n}"),
+            Lesson("Aula 5 — Repetições", "Laços permitem repetir tarefas sem duplicar código.", "for (item in itens) {\n    // processar item\n}")
         )
+
+        return lessonsByLanguage[language] ?: generic
     }
 
     private fun showLesson(lessons: List<Lesson>) {
