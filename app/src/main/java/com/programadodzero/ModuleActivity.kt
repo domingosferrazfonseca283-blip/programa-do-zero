@@ -47,9 +47,7 @@ class ModuleActivity : Activity() {
         for (module in modules) {
             val lessons = ContentRepository.lessonsForModule(language, level, module.order)
             val button = Button(this).apply {
-                text = "Módulo " + module.order + " — " + module.title + "
-" + module.description + "
-" + lessons.size + " aula(s)"
+                text = "Módulo " + module.order + " — " + module.title + "\n" + module.description + "\n" + lessons.size + " aula(s)"
                 textSize = 16f
                 isAllCaps = false
                 setOnClickListener {
