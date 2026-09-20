@@ -88,4 +88,30 @@ class PythonRunnerTest {
         assertTrue(result.success)
         assertEquals("maior", result.output)
     }
+    @Test
+    fun operacoesMatematicasRespeitamOrdemBasica() {
+        val result = PythonRunner.run(
+            """
+            a = 10 - 3
+            b = 4 * 2
+            c = 20 / 5
+            d = 2 + 3 * 4
+            print(a)
+            print(b)
+            print(c)
+            print(d)
+            """.trimIndent()
+        )
+        assertTrue(result.success)
+        assertEquals("7\n8\n4\n14", result.output)
+    }
+
+    @Test
+    fun divisaoPorZeroMostraErro() {
+        val result = PythonRunner.run("print(10 / 0)")
+        assertFalse(result.success)
+        assertTrue(result.output.contains("dividir por zero"))
+    }
+
 }
+
