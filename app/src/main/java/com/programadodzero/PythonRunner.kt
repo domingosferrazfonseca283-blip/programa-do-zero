@@ -648,7 +648,7 @@ object PythonRunner {
 
         if (value.startsWith("int(") && value.endsWith(")")) {
             val inner = value.removePrefix("int(").removeSuffix(")")
-            return evaluate(inner, variables, inputs, inputIndex, functions).toIntOrNull()?.toString()
+            return evaluate(inner, variables, inputs, inputIndex, functions, objects, classes, files).toIntOrNull()?.toString()
                 ?: throw IllegalArgumentException("int() precisa receber um número.")
         }
 
@@ -807,7 +807,7 @@ object PythonRunner {
                 val (operator, term) = multiplyDivide[index]
                 val right = evaluateArithmetic(
                     term, variables, inputs, inputIndex, functions, objects, classes, files
-                ) ?: evaluate(term, variables, inputs, inputIndex, functions)
+                ) ?: evaluate(term, variables, inputs, inputIndex, functions, objects, classes, files)
                 val leftNumber = result.toIntOrNull() ?: return null
                 val rightNumber = right.toIntOrNull() ?: return null
 
