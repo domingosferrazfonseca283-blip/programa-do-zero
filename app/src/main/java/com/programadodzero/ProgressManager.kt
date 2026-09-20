@@ -5,6 +5,7 @@ import android.content.Context
 object ProgressManager {
     private const val PREFS = "learning_progress"
     private const val XP = "xp"
+    private const val ACTIVE_LANGUAGE = "active_language"
     private const val COMPLETED_LESSONS = "completed_lessons"
     private const val COMPLETED_EXERCISES = "completed_exercises"
 
@@ -16,6 +17,41 @@ object ProgressManager {
     fun addXp(context: Context, amount: Int) {
         val p = prefs(context)
         p.edit().putInt(XP, p.getInt(XP, 0) + amount).apply()
+    }
+
+    fun getActiveLanguage(context: Context): String? =
+        prefs(context).getString(ACTIVE_LANGUAGE, null)
+
+    fun hasActiveLanguage(context: Context): Boolean =
+        !getActiveLanguage(context).isNullOrBlank()
+
+    fun isLanguageComplete(context: Context, language: String, total: Int): Boolean {
+        return completedCount(context, language, total) == total &&
+            completedExerciseCount(context, language, total) == total
+    }
+
+    fun canStartLanguage(context: Context, language: String, total: Int): Boolean {
+        val active = getActiveLanguage(context)
+        return active == null || active == language ||
+            isLanguageComplete(context, active, total)
+    }
+
+    fun selectLanguage(context: Context, language: String, total: Int): Boolean {
+        val active = getActiveLanguage(context)
+
+        if (active == null) {
+            prefs(context).edit().putString(ACTIVE_LANGUAGE, language).apply()
+            return true
+        }
+
+        if (active == language) return true
+
+        if (isLanguageComplete(context, active, total)) {
+            prefs(context).edit().putString(ACTIVE_LANGUAGE, language).apply()
+            return true
+        }
+
+        return false
     }
 
     private fun key(language: String, item: Int) = "$language:$item"
