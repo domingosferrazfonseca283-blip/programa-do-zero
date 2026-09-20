@@ -58,7 +58,12 @@ object ChallengeValidator {
     
 
 
-    private fun validateExecution(code: String, expected: String): Boolean {\n        val result = PythonRunner.run(code)\n        return result.success && result.output.trim() == expected\n    }\n\n    private fun validateFileChallenge(code: String): Boolean {
+    private fun validateExecution(code: String, expected: String): Boolean {
+        val result = PythonRunner.run(code)
+        return result.success && result.output.trim() == expected
+    }
+
+    private fun validateFileChallenge(code: String): Boolean {
         if (!code.contains("open(") || !code.contains(".write(") || !code.contains(".read()")) return false
 
         val result = PythonRunner.run(code)
