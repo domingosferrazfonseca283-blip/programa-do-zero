@@ -12,6 +12,8 @@ object ProgressManager {
     private const val COMPLETED_REVIEWS = "completed_reviews"
     private const val LAST_STUDY_DAY = "last_study_day"
     private const val STUDY_STREAK = "study_streak"
+    private const val DAILY_MISSION_DAY = "daily_mission_day"
+    private const val DAILY_MISSION_XP = "daily_mission_xp"
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -31,6 +33,29 @@ object ProgressManager {
         val streak = if (last == yesterday) getStudyStreak(context) + 1 else 1
         p.edit().putString(LAST_STUDY_DAY, today).putInt(STUDY_STREAK, streak).apply()
         return streak
+    }
+
+    data class DailyMission(val title: String, val target: Int, val progress: Int, val rewardXp: Int, val completed: Boolean)
+
+    fun dailyMission(context: Context, language: String): DailyMission {
+        val day = java.time.LocalDate.now().toString()
+        val p = prefs(context)
+        if (p.getString(DAILY_MISSION_DAY, null) != day) {
+            p.edit().putString(DAILY_MISSION_DAY, day).putInt(DAILY_MISSION_XP, 0).apply()
+        }
+        val lessons = ContentRepository.lessonsFor(language).map { it.id }
+        val progress = completedCount(context, language, lessons)
+        val target = 1
+        return DailyMission("Complete 1 aula hoje", target, minOf(progress, target), 30, progress >= target)
+    }
+
+    fun claimDailyMission(context: Context, language: String): Boolean {
+        val mission = dailyMission(context, language)
+        val p = prefs(context)
+        if (!mission.completed || p.getInt(DAILY_MISSION_XP, 0) == 1) return false
+        p.edit().putInt(DAILY_MISSION_XP, 1).apply()
+        addXp(context, mission.rewardXp)
+        return true
     }
 
     fun achievements(context: Context, language: String): List<String> {
