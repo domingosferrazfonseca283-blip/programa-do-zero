@@ -15,6 +15,8 @@ class LessonActivity : Activity() {
         const val EXTRA_LEVEL = "level"
         const val EXTRA_LEVEL_NUMBER = "level_number"
         const val EXTRA_MODULE = "module"
+        const val EXTRA_LESSON_ID = "lesson_id"
+        const val EXTRA_LEVEL_NUMBER = "level_number"
         const val EXTRA_LESSON = "lesson"
     }
 
@@ -37,7 +39,8 @@ class LessonActivity : Activity() {
         levelNumber = intent.getIntExtra(EXTRA_LEVEL_NUMBER, 1)
         moduleNumber = intent.getIntExtra(EXTRA_MODULE, 1)
         lessons = ContentRepository.lessonsForModule(language, levelNumber, moduleNumber)
-        currentLesson = intent.getIntExtra(EXTRA_LESSON, firstIncompleteLesson())
+        val requestedLessonId = intent.getStringExtra(EXTRA_LESSON_ID)
+        currentLesson = if (requestedLessonId != null) lessons.indexOfFirst { it.id == requestedLessonId }.coerceAtLeast(0) else intent.getIntExtra(EXTRA_LESSON, firstIncompleteLesson())
 
         val screen = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -101,6 +104,8 @@ class LessonActivity : Activity() {
             putExtra(PracticeCodingActivity.EXTRA_LANGUAGE, language)
             putExtra(PracticeCodingActivity.EXTRA_LEVEL, level)
             putExtra(PracticeCodingActivity.EXTRA_LESSON_ID, lessons[currentLesson].id)
+            putExtra(PracticeCodingActivity.EXTRA_LEVEL_NUMBER, levelNumber)
+            putExtra(PracticeCodingActivity.EXTRA_MODULE, moduleNumber)
         })
     }
 
