@@ -16,8 +16,8 @@ object PythonRunner {
         val variables = mutableMapOf<String, String>()
         val output = mutableListOf<String>()
         val inputIndex = intArrayOf(0)
-        val lines = code.lines()
         val functions = mutableMapOf<String, FunctionDef>()
+        val lines = code.lines()
 
         return try {
             executeBlock(lines, 0, lines.size, 0, variables, output, inputs, inputIndex, functions)
@@ -44,8 +44,10 @@ object PythonRunner {
         functions: MutableMap<String, FunctionDef>
     ): Int {
         var i = start
+
         while (i < end) {
             val raw = lines[i]
+
             if (raw.trim().isBlank() || raw.trim().startsWith("#")) {
                 i++
                 continue
@@ -59,15 +61,15 @@ object PythonRunner {
 
             val line = raw.trim()
 
-            if (line.startsWith("def ") && line.endsWith(":")) {\n                val match = Regex("def\\s+([A-Za-z_][A-Za-z0-9_]*)\\(([^)]*)\\):").matchEntire(line)\n                    ?: throw IllegalArgumentException("Linha " + (i + 1) + ": use def nome(parametro):")\n                val name = match.groupValues[1]\n                val parameters = match.groupValues[2].split(",").map { it.trim() }.filter { it.isNotBlank() }\n                var cursor = i + 1\n                while (cursor < end) {\n                    if (lines[cursor].trim().isBlank() || lines[cursor].trim().startsWith("#")) { cursor++; continue }\n                    if (indentation(lines[cursor]) <= indent) break\n                    cursor++\n                }\n                functions[name] = FunctionDef(parameters, lines.subList(i + 1, cursor).map { it.drop(minOf(it.length, indent + 4)) })\n                i = cursor\n                continue\n            }\n            if (line.startsWith("for ") && line.endsWith(":")) {
-                val match = Regex("for\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+in\\s+range\\((\\d+)(?:\\s*,\\s*(\\d+))?\\):").matchEntire(line)
-                    ?: throw IllegalArgumentException("Linha " + (i + 1) + ": use for variavel in range(inicio, fim):")
+            if (line.startsWith("def ") && line.endsWith(":")) {
+                val match = Regex("def\\s+([A-Za-z_][A-Za-z0-9_]*)\\(([^)]*)\\):").matchEntire(line)
+                    ?: throw IllegalArgumentException("Linha " + (i + 1) + ": use def nome(parametro):")
 
-                val variable = match.groupValues[1]
-                val first = match.groupValues[2].toInt()
-                val second = match.groupValues[3].takeIf { it.isNotBlank() }?.toInt() ?: first
-                val rangeStart = if (match.groupValues[3].isBlank()) 0 else first
-                val rangeEnd = second
+                val name = match.groupValues[1]
+                val parameters = match.groupValues[2]
+                    .split(",")
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
 
                 var cursor = i + 1
                 while (cursor < end) {
@@ -79,9 +81,41 @@ object PythonRunner {
                     cursor++
                 }
 
+                if (cursor == i + 1) {
+                    throw IllegalArgumentException("Linha " + (i + 1) + ": a função precisa ter um bloco indentado.")
+                }
+
+                val body = lines.subList(i + 1, cursor).map {
+                    it.drop(minOf(it.length, indent + 4))
+                }
+                functions[name] = FunctionDef(parameters, body)
+                i = cursor
+                continue
+            }
+
+            if (line.startsWith("for ") && line.endsWith(":")) {
+                val match = Regex(
+                    "for\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+in\\s+range\\((\\d+)(?:\\s*,\\s*(\\d+))?\\):"
+                ).matchEntire(line)
+                    ?: throw IllegalArgumentException(
+                        "Linha " + (i + 1) + ": use for variavel in range(inicio, fim):"
+                    )
+
+                val variable = match.groupValues[1]
+                val first = match.groupValues[2].toInt()
+                val second = match.groupValues[3].takeIf { it.isNotBlank() }?.toInt()
+
+                val rangeStart = if (second == null) 0 else first
+                val rangeEnd = second ?: first
+
+                val cursor = findBlockEnd(lines, i + 1, end, indent)
+
                 for (value in rangeStart until rangeEnd) {
                     variables[variable] = value.toString()
-                    executeBlock(lines, i + 1, cursor, indent + 4, variables, output, inputs, inputIndex, functions)
+                    executeBlock(
+                        lines, i + 1, cursor, indent + 4,
+                        variables, output, inputs, inputIndex, functions
+                    )
                 }
 
                 i = cursor
@@ -89,80 +123,12 @@ object PythonRunner {
             }
 
             if (line.startsWith("if ") && line.endsWith(":")) {
-                val branches = mutableListOf<Pair<String?, Pair<Int, Int>>>()
-                var branchStart = i
-                var branchCondition: String? = line.removePrefix("if ").removeSuffix(":").trim()
-                var cursor = i + 1
-
-                while (cursor < end) {
-                    if (lines[cursor].trim().isBlank() || lines[cursor].trim().startsWith("#")) {
-                        cursor++
-                        continue
-                    }
-                    val ci = indentation(lines[cursor])
-                    if (ci <= indent) break
-                    cursor++
-                }
-
-                branches.add(branchCondition to (i + 1 to cursor))
-                var scan = cursor
-                var elseRange: Pair<Int, Int>? = null
-
-                while (scan < end) {
-                    if (lines[scan].trim().isBlank() || lines[scan].trim().startsWith("#")) {
-                        scan++
-                        continue
-                    }
-                    val si = indentation(lines[scan])
-                    val st = lines[scan].trim()
-                    if (si != indent) break
-
-                    if (st.startsWith("elif ") && st.endsWith(":")) {
-                        val cond = st.removePrefix("elif ").removeSuffix(":").trim()
-                        val bs = scan + 1
-                        var be = bs
-                        while (be < end) {
-                            if (lines[be].trim().isBlank() || lines[be].trim().startsWith("#")) {
-                                be++
-                                continue
-                            }
-                            if (indentation(lines[be]) <= indent) break
-                            be++
-                        }
-                        branches.add(cond to (bs to be))
-                        scan = be
-                    } else if (st == "else:") {
-                        val bs = scan + 1
-                        var be = bs
-                        while (be < end) {
-                            if (lines[be].trim().isBlank() || lines[be].trim().startsWith("#")) {
-                                be++
-                                continue
-                            }
-                            if (indentation(lines[be]) <= indent) break
-                            be++
-                        }
-                        elseRange = bs to be
-                        scan = be
-                        break
-                    } else {
-                        break
-                    }
-                }
-
-                var executed = false
-                for ((condition, range) in branches) {
-                    if (evaluateCondition(condition!!, variables)) {
-                        executeBlock(lines, range.first, range.second, indent + 4, variables, output, inputs, inputIndex, functions)
-                        executed = true
-                        break
-                    }
-                }
-                if (!executed && elseRange != null) {
-                    executeBlock(lines, elseRange.first, elseRange.second, indent + 4, variables, output, inputs, inputIndex, functions)
-                }
-
-                i = scan
+                val (nextIndex, executed) = executeIfChain(
+                    lines, i, end, indent,
+                    variables, output, inputs, inputIndex, functions
+                )
+                i = nextIndex
+                if (executed) continue
                 continue
             }
 
@@ -170,16 +136,40 @@ object PythonRunner {
                 return i
             }
 
-            val callMatch = Regex("([A-Za-z_][A-Za-z0-9_]*)\\((.*)\\)").matchEntire(line)\n            if (callMatch != null && functions.containsKey(callMatch.groupValues[1])) {\n                callFunction(callMatch.groupValues[1], callMatch.groupValues[2], functions, variables, output, inputs, inputIndex)\n                i++\n                continue\n            }\n\n            if (line.startsWith("return ")) {\n                throw ReturnValue(evaluate(line.removePrefix("return ").trim(), variables, inputs, inputIndex, functions))\n            }\n\n            if (line.startsWith("print(") && line.endsWith(")")) {
+            val callMatch = Regex("([A-Za-z_][A-Za-z0-9_]*)\\((.*)\\)").matchEntire(line)
+            if (callMatch != null && functions.containsKey(callMatch.groupValues[1])) {
+                callFunction(
+                    callMatch.groupValues[1],
+                    callMatch.groupValues[2],
+                    functions,
+                    variables,
+                    output,
+                    inputs,
+                    inputIndex
+                )
+                i++
+                continue
+            }
+
+            if (line.startsWith("return ")) {
+                val value = evaluate(
+                    line.removePrefix("return ").trim(),
+                    variables, inputs, inputIndex, functions
+                )
+                throw ReturnValue(value)
+            }
+
+            if (line.startsWith("print(") && line.endsWith(")")) {
                 val expression = line.removePrefix("print(").removeSuffix(")")
-                output.add(evaluate(expression, variables, inputs, inputIndex))
+                output.add(evaluate(expression, variables, inputs, inputIndex, functions))
                 i++
                 continue
             }
 
             if (line.matches(Regex("[A-Za-z_][A-Za-z0-9_]*\\s*=\\s*.+"))) {
                 val parts = line.split("=", limit = 2)
-                variables[parts[0].trim()] = evaluate(parts[1].trim(), variables, inputs, inputIndex)
+                variables[parts[0].trim()] =
+                    evaluate(parts[1].trim(), variables, inputs, inputIndex, functions)
                 i++
                 continue
             }
@@ -188,16 +178,103 @@ object PythonRunner {
                 "Linha " + (i + 1) + ": ainda não consigo executar '" + line + "'."
             )
         }
+
         return i
     }
 
-    private fun evaluateCondition(condition: String, variables: Map<String, String>): Boolean {
+    private fun executeIfChain(
+        lines: List<String>,
+        start: Int,
+        end: Int,
+        indent: Int,
+        variables: MutableMap<String, String>,
+        output: MutableList<String>,
+        inputs: List<String>,
+        inputIndex: IntArray,
+        functions: MutableMap<String, FunctionDef>
+    ): Pair<Int, Boolean> {
+        var cursor = start
+        var executed = false
+        var next = start
+
+        while (cursor < end) {
+            val text = lines[cursor].trim()
+            if (text.isBlank() || text.startsWith("#")) {
+                cursor++
+                continue
+            }
+
+            val currentIndent = indentation(lines[cursor])
+            if (currentIndent != indent) break
+
+            val condition = when {
+                text.startsWith("if ") && text.endsWith(":") ->
+                    text.removePrefix("if ").removeSuffix(":").trim()
+                text.startsWith("elif ") && text.endsWith(":") ->
+                    text.removePrefix("elif ").removeSuffix(":").trim()
+                else -> null
+            }
+
+            if (condition != null) {
+                val blockEnd = findBlockEnd(lines, cursor + 1, end, indent)
+                if (!executed && evaluateCondition(condition, variables, inputs, inputIndex, functions)) {
+                    executeBlock(
+                        lines, cursor + 1, blockEnd, indent + 4,
+                        variables, output, inputs, inputIndex, functions
+                    )
+                    executed = true
+                }
+                cursor = blockEnd
+                next = cursor
+                continue
+            }
+
+            if (text == "else:") {
+                val blockEnd = findBlockEnd(lines, cursor + 1, end, indent)
+                if (!executed) {
+                    executeBlock(
+                        lines, cursor + 1, blockEnd, indent + 4,
+                        variables, output, inputs, inputIndex, functions
+                    )
+                    executed = true
+                }
+                cursor = blockEnd
+                next = cursor
+            }
+            break
+        }
+
+        return next to executed
+    }
+
+    private fun findBlockEnd(lines: List<String>, start: Int, end: Int, parentIndent: Int): Int {
+        var cursor = start
+        while (cursor < end) {
+            val trimmed = lines[cursor].trim()
+            if (trimmed.isBlank() || trimmed.startsWith("#")) {
+                cursor++
+                continue
+            }
+            if (indentation(lines[cursor]) <= parentIndent) break
+            cursor++
+        }
+        return cursor
+    }
+
+    private fun evaluateCondition(
+        condition: String,
+        variables: Map<String, String>,
+        inputs: List<String>,
+        inputIndex: IntArray,
+        functions: MutableMap<String, FunctionDef>
+    ): Boolean {
         val operators = listOf("==", "!=", ">=", "<=", ">", "<")
+
         for (operator in operators) {
             val parts = condition.split(operator, limit = 2)
             if (parts.size == 2) {
-                val left = evaluate(parts[0].trim(), variables, emptyList(), intArrayOf(), mutableMapOf())
-                val right = evaluate(parts[1].trim(), variables, emptyList(), intArrayOf(), mutableMapOf())
+                val left = evaluate(parts[0].trim(), variables, inputs, inputIndex, functions)
+                val right = evaluate(parts[1].trim(), variables, inputs, inputIndex, functions)
                 val leftNumber = left.toIntOrNull()
                 val rightNumber = right.toIntOrNull()
 
@@ -212,7 +289,8 @@ object PythonRunner {
                 }
             }
         }
-        val value = evaluate(condition, variables, emptyList(), intArrayOf(), mutableMapOf())
+
+        val value = evaluate(condition, variables, inputs, inputIndex, functions)
         return value != "0" && value.lowercase() != "false" && value.isNotEmpty()
     }
 
@@ -220,25 +298,33 @@ object PythonRunner {
         expression: String,
         variables: Map<String, String>,
         inputs: List<String>,
-        inputIndex: IntArray
+        inputIndex: IntArray,
+        functions: MutableMap<String, FunctionDef>
     ): String {
         val value = expression.trim()
 
         if (value.startsWith("int(") && value.endsWith(")")) {
-            return evaluate(value.removePrefix("int(").removeSuffix(")"), variables, inputs, inputIndex, functions).toIntOrNull()?.toString()
+            val inner = value.removePrefix("int(").removeSuffix(")")
+            return evaluate(inner, variables, inputs, inputIndex, functions).toIntOrNull()?.toString()
                 ?: throw IllegalArgumentException("int() precisa receber um número.")
         }
 
         if (value.startsWith("input(") && value.endsWith(")")) {
             val promptExpression = value.removePrefix("input(").removeSuffix(")").trim()
-            val prompt = if (promptExpression.isBlank()) "" else evaluate(promptExpression, variables, inputs, inputIndex, functions)
+            val prompt = if (promptExpression.isBlank()) {
+                ""
+            } else {
+                evaluate(promptExpression, variables, inputs, inputIndex, functions)
+            }
+
             if (inputIndex[0] >= inputs.size) throw InputRequired(prompt)
             return inputs[inputIndex[0]++]
         }
 
-        if (value.startsWith("\"") && value.endsWith("\"") && value.length >= 2) {
+        if (value.startsWith(""") && value.endsWith(""") && value.length >= 2) {
             return value.substring(1, value.length - 1)
         }
+
         if (value.startsWith("'") && value.endsWith("'") && value.length >= 2) {
             return value.substring(1, value.length - 1)
         }
@@ -246,7 +332,9 @@ object PythonRunner {
         if (value.startsWith("[") && value.endsWith("]")) {
             val inner = value.substring(1, value.length - 1).trim()
             if (inner.isBlank()) return "[]"
-            val items = splitArguments(inner).map { evaluate(it, variables, inputs, inputIndex, functions) }
+            val items = splitArguments(inner).map {
+                evaluate(it, variables, inputs, inputIndex, functions)
+            }
             return "[" + items.joinToString(",") + "]"
         }
 
@@ -261,33 +349,119 @@ object PythonRunner {
             return items[index]
         }
 
+        val functionCall = Regex("([A-Za-z_][A-Za-z0-9_]*)\\((.*)\\)").matchEntire(value)
+        if (functionCall != null && functions.containsKey(functionCall.groupValues[1])) {
+            return callFunction(
+                functionCall.groupValues[1],
+                functionCall.groupValues[2],
+                functions,
+                variables.toMutableMap(),
+                mutableListOf(),
+                inputs,
+                inputIndex
+            )
+        }
+
         variables[value]?.let { return it }
         if (value.matches(Regex("-?\\d+"))) return value
 
-        val pieces = value.split("+").map { it.trim() }
+        val pieces = splitPlus(value)
         if (pieces.size > 1) {
-            return pieces.joinToString("") { evaluate(it, variables, inputs, inputIndex) }
+            return pieces.joinToString("") {
+                evaluate(it, variables, inputs, inputIndex, functions)
+            }
         }
 
         throw IllegalArgumentException("Não entendi a expressão: " + value)
     }
 
-    private fun callFunction(name: String, argumentsText: String, functions: MutableMap<String, FunctionDef>, variables: MutableMap<String, String>, output: MutableList<String>, inputs: List<String>, inputIndex: IntArray): String {\n        val function = functions[name] ?: throw IllegalArgumentException("Função não encontrada: " + name)\n        val arguments = if (argumentsText.isBlank()) emptyList() else splitArguments(argumentsText)\n        if (arguments.size != function.parameters.size) throw IllegalArgumentException("Quantidade de argumentos inválida para " + name)\n        val local = variables.toMutableMap()\n        function.parameters.forEachIndexed { index, parameter -> local[parameter] = evaluate(arguments[index], variables, inputs, inputIndex, functions) }\n        return try {\n            executeBlock(function.body, 0, function.body.size, 0, local, output, inputs, inputIndex, functions)\n            ""\n        } catch (e: ReturnValue) { e.value }\n    }\n    private fun splitArguments(text: String): List<String> {
+    private fun callFunction(
+        name: String,
+        argumentsText: String,
+        functions: MutableMap<String, FunctionDef>,
+        variables: MutableMap<String, String>,
+        output: MutableList<String>,
+        inputs: List<String>,
+        inputIndex: IntArray
+    ): String {
+        val function = functions[name]
+            ?: throw IllegalArgumentException("Função não encontrada: " + name)
+
+        val arguments = if (argumentsText.isBlank()) {
+            emptyList()
+        } else {
+            splitArguments(argumentsText)
+        }
+
+        if (arguments.size != function.parameters.size) {
+            throw IllegalArgumentException("Quantidade de argumentos inválida para " + name)
+        }
+
+        val local = variables.toMutableMap()
+        function.parameters.forEachIndexed { index, parameter ->
+            local[parameter] = evaluate(
+                arguments[index], variables, inputs, inputIndex, functions
+            )
+        }
+
+        return try {
+            executeBlock(
+                function.body, 0, function.body.size, 0,
+                local, output, inputs, inputIndex, functions
+            )
+            ""
+        } catch (e: ReturnValue) {
+            e.value
+        }
+    }
+
+    private fun splitArguments(text: String): List<String> {
         val result = mutableListOf<String>()
         var current = StringBuilder()
         var quote: Char? = null
+        var depth = 0
+
         for (char in text) {
-            if ((char == '\\'' || char == '"') && (quote == null || quote == char)) {
+            if ((char == '\'' || char == '"') && (quote == null || quote == char)) {
                 quote = if (quote == null) char else null
             }
-            if (char == ',' && quote == null) {
+
+            if (quote == null) {
+                if (char == '(' || char == '[') depth++
+                if (char == ')' || char == ']') depth--
+            }
+
+            if (char == ',' && quote == null && depth == 0) {
                 result.add(current.toString().trim())
                 current = StringBuilder()
             } else {
                 current.append(char)
             }
         }
+
         if (current.isNotBlank()) result.add(current.toString().trim())
+        return result
+    }
+
+    private fun splitPlus(text: String): List<String> {
+        val result = mutableListOf<String>()
+        var current = StringBuilder()
+        var quote: Char? = null
+
+        for (char in text) {
+            if ((char == '\'' || char == '"') && (quote == null || quote == char)) {
+                quote = if (quote == null) char else null
+            }
+
+            if (char == '+' && quote == null) {
+                result.add(current.toString().trim())
+                current = StringBuilder()
+            } else {
+                current.append(char)
+            }
+        }
+
+        result.add(current.toString().trim())
         return result
     }
 
