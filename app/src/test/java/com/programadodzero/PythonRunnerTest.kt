@@ -154,4 +154,54 @@ class PythonRunnerTest {
     }
 
 }
+class ChallengeValidatorTest {
 
+    @Test
+    fun aceitaSolucaoDaAula1() {
+        assertTrue(ChallengeValidator.validate(0, """print("Olá, mundo!")"""))
+    }
+
+    @Test
+    fun rejeitaAula1SemMensagemEsperada() {
+        assertFalse(ChallengeValidator.validate(0, """print("Oi!")"""))
+    }
+
+    @Test
+    fun aceitaVariavelComNomeDiferente() {
+        assertTrue(ChallengeValidator.validate(1, """pessoa = "Ana"\nprint(pessoa)"""))
+    }
+
+    @Test
+    fun aceitaTextoENumero() {
+        assertTrue(ChallengeValidator.validate(2, """nome = "Ana"\nidade = 20"""))
+    }
+
+    @Test
+    fun rejeitaAula3SemCondicaoDeMaioridade() {
+        assertFalse(ChallengeValidator.validate(3, """idade = 20\nprint("adulto")"""))
+    }
+
+    @Test
+    fun exigeSequenciaDeZeroAQuatro() {
+        assertTrue(ChallengeValidator.validate(4, """for numero in range(5):\n    print(numero)"""))
+        assertFalse(ChallengeValidator.validate(4, """for numero in range(4):\n    print(numero)"""))
+    }
+
+    @Test
+    fun exigeFuncaoQueRealmenteProduzaSaudacao() {
+        assertTrue(ChallengeValidator.validate(5, """def cumprimentar(nome):\n    return "Olá, " + nome\nprint(cumprimentar("Ana"))"""))
+        assertFalse(ChallengeValidator.validate(5, """def cumprimentar(nome):\n    return "Olá"\nprint("Ana")"""))
+    }
+
+    @Test
+    fun exigeListaComPeloMenosDoisItens() {
+        assertTrue(ChallengeValidator.validate(6, """itens = ["a", "b"]\nprint(itens)"""))
+        assertFalse(ChallengeValidator.validate(6, """itens = ["a"]\nprint(itens)"""))
+    }
+
+    @Test
+    fun exigeEntradaCondicaoESaidaNoProjeto() {
+        assertTrue(ChallengeValidator.validate(7, """nome = input("Nome: ")\nif nome:\n    print("Olá, " + nome)"""))
+        assertFalse(ChallengeValidator.validate(7, """nome = input("Nome: ")\nprint(nome)"""))
+    }
+}
