@@ -8,28 +8,19 @@ object ChallengeValidator {
 
     fun validate(lesson: Int, code: String): Boolean {
         if (code.isBlank()) return false
+        if (lesson == 3) return validateAgeChallenge(code)
+        if (lesson == 7) return validateProjectChallenge(code)
 
-        if (lesson == 7) {
-            return validateProjectChallenge(code)
-        }
-
-        val execution = when (lesson) {
-            3 -> null
-            else -> PythonRunner.run(code)
-        }
-
+        val execution = PythonRunner.run(code)
         if (!execution.success) return false
 
         return when (lesson) {
             0 -> execution.output.trim() == "Olá, mundo!"
             1 -> hasAssignment(code) && execution.output.isNotBlank()
             2 -> hasTextAndNumberAssignment(code)
-            3 -> validateAgeChallenge(code)
-
             4 -> validateLoopChallenge(code)
             5 -> validateFunctionChallenge(code)
             6 -> validateListChallenge(code, execution.output)
-            7 -> false
             else -> false
         }
     }
@@ -169,4 +160,4 @@ object ChallengeValidator {
         if (withValue.output.isBlank() || withoutValue.output.isBlank()) return false
 
         return withValue.output.trim() != withoutValue.output.trim()
-    }}
+}
