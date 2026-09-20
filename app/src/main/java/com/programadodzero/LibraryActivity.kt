@@ -43,7 +43,7 @@ class LibraryActivity : Activity() {
             setTextColor(Color.WHITE)
             setHintTextColor(Color.GRAY)
         }
-        root.addView(search, LinearLayout.LayoutParams(-1, 60).apply { setMargins(0, 0, 0, 14) })
+        root.addView(search, LinearLayout.LayoutParams(-1, -2).apply { setMargins(0, 0, 0, 14) })
 
         val scroll = android.widget.ScrollView(this)
         listContainer = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
@@ -51,6 +51,9 @@ class LibraryActivity : Activity() {
         root.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
 
         root.addView(Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
             text = "← Voltar"
             isAllCaps = false
             setOnClickListener { finish() }
@@ -81,6 +84,9 @@ class LibraryActivity : Activity() {
         }
         for (book in books) {
             listContainer.addView(Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
                 text = book.language + "\n📖 " + book.title + "\n" +
                     book.chapters.size + " capítulos  •  " + book.license +
                     "\nFonte: " + book.source
