@@ -144,6 +144,8 @@ object ContentRepository {
         "python-20" to ReviewQuestion("python-20-q1", "O que fazer antes de implementar um projeto?", listOf("Entender requisitos e dividir o problema", "Escrever tudo de uma vez", "Ignorar entradas", "Evitar testes"), 0, "Entender o problema reduz retrabalho e orienta a implementação.")
     )
 
+    fun finalExamFor(language: String): List<ReviewQuestion> = if (language == "🐍  Python") pythonReviewQuestions.values.toList().take(10) else emptyList()
+
     fun reviewFor(language: String, lessonId: String): ReviewQuestion? =
         if (language == "🐍  Python") pythonReviewQuestions[lessonId] else null
 
