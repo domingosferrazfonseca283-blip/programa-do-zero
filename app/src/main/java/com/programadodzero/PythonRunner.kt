@@ -1,42 +1,227 @@
 package com.programadodzero
 
 object PythonRunner {
-    data class Result(val success: Boolean, val output: String)
+    data class Result(
+        val success: Boolean,
+        val output: String,
+        val needsInput: Boolean = false,
+        val inputPrompt: String = ""
+    )
 
-    fun run(code: String): Result {
+    private class InputRequired(val prompt: String) : Exception()
+
+    fun run(code: String, inputs: List<String> = emptyList()): Result {
         val variables = mutableMapOf<String, String>()
         val output = mutableListOf<String>()
+        val inputIndex = intArrayOf(0)
+        val lines = code.lines()
 
-        try {
-            code.lines().forEachIndexed { lineIndex, raw ->
-                val line = raw.trim()
-                if (line.isBlank() || line.startsWith("#")) return@forEachIndexed
-                when {
-                    line.startsWith("print(") && line.endsWith(")") -> {
-                        val expression = line.removePrefix("print(").removeSuffix(")")
-                        output.add(evaluate(expression, variables))
-                    }
-                    line.matches(Regex("[A-Za-z_][A-Za-z0-9_]*\\s*=\\s*.+")) -> {
-                        val parts = line.split("=", limit = 2)
-                        variables[parts[0].trim()] = evaluate(parts[1].trim(), variables)
-                    }
-                    else -> throw IllegalArgumentException("Linha " + (lineIndex + 1) + ": ainda não consigo executar '" + line + "'.")
-                }
-            }
-            return Result(true, if (output.isEmpty()) "Código executado sem saída." else output.joinToString("\n"))
+        return try {
+            executeBlock(lines, 0, lines.size, 0, variables, output, inputs, inputIndex)
+            Result(
+                true,
+                if (output.isEmpty()) "Código executado sem saída." else output.joinToString("\n")
+            )
+        } catch (e: InputRequired) {
+            Result(false, "", true, e.prompt)
         } catch (e: Exception) {
-            return Result(false, e.message ?: "Erro desconhecido.")
+            Result(false, e.message ?: "Erro desconhecido.")
         }
     }
 
-    private fun evaluate(expression: String, variables: Map<String, String>): String {
+    private fun executeBlock(
+        lines: List<String>,
+        start: Int,
+        end: Int,
+        indent: Int,
+        variables: MutableMap<String, String>,
+        output: MutableList<String>,
+        inputs: List<String>,
+        inputIndex: IntArray
+    ): Int {
+        var i = start
+        while (i < end) {
+            val raw = lines[i]
+            if (raw.trim().isBlank() || raw.trim().startsWith("#")) {
+                i++
+                continue
+            }
+
+            val currentIndent = indentation(raw)
+            if (currentIndent < indent) return i
+            if (currentIndent > indent) {
+                throw IllegalArgumentException("Linha " + (i + 1) + ": indentação inesperada.")
+            }
+
+            val line = raw.trim()
+
+            if (line.startsWith("if ") && line.endsWith(":")) {
+                val branches = mutableListOf<Pair<String?, Pair<Int, Int>>>()
+                var branchStart = i
+                var branchCondition: String? = line.removePrefix("if ").removeSuffix(":").trim()
+                var cursor = i + 1
+
+                while (cursor < end) {
+                    if (lines[cursor].trim().isBlank() || lines[cursor].trim().startsWith("#")) {
+                        cursor++
+                        continue
+                    }
+                    val ci = indentation(lines[cursor])
+                    if (ci <= indent) break
+                    cursor++
+                }
+
+                branches.add(branchCondition to (i + 1 to cursor))
+                var scan = cursor
+                var elseRange: Pair<Int, Int>? = null
+
+                while (scan < end) {
+                    if (lines[scan].trim().isBlank() || lines[scan].trim().startsWith("#")) {
+                        scan++
+                        continue
+                    }
+                    val si = indentation(lines[scan])
+                    val st = lines[scan].trim()
+                    if (si != indent) break
+
+                    if (st.startsWith("elif ") && st.endsWith(":")) {
+                        val cond = st.removePrefix("elif ").removeSuffix(":").trim()
+                        val bs = scan + 1
+                        var be = bs
+                        while (be < end) {
+                            if (lines[be].trim().isBlank() || lines[be].trim().startsWith("#")) {
+                                be++
+                                continue
+                            }
+                            if (indentation(lines[be]) <= indent) break
+                            be++
+                        }
+                        branches.add(cond to (bs to be))
+                        scan = be
+                    } else if (st == "else:") {
+                        val bs = scan + 1
+                        var be = bs
+                        while (be < end) {
+                            if (lines[be].trim().isBlank() || lines[be].trim().startsWith("#")) {
+                                be++
+                                continue
+                            }
+                            if (indentation(lines[be]) <= indent) break
+                            be++
+                        }
+                        elseRange = bs to be
+                        scan = be
+                        break
+                    } else {
+                        break
+                    }
+                }
+
+                var executed = false
+                for ((condition, range) in branches) {
+                    if (evaluateCondition(condition!!, variables)) {
+                        executeBlock(lines, range.first, range.second, indent + 4, variables, output, inputs, inputIndex)
+                        executed = true
+                        break
+                    }
+                }
+                if (!executed && elseRange != null) {
+                    executeBlock(lines, elseRange.first, elseRange.second, indent + 4, variables, output, inputs, inputIndex)
+                }
+
+                i = scan
+                continue
+            }
+
+            if (line.startsWith("elif ") || line == "else:") {
+                return i
+            }
+
+            if (line.startsWith("print(") && line.endsWith(")")) {
+                val expression = line.removePrefix("print(").removeSuffix(")")
+                output.add(evaluate(expression, variables, inputs, inputIndex))
+                i++
+                continue
+            }
+
+            if (line.matches(Regex("[A-Za-z_][A-Za-z0-9_]*\\s*=\\s*.+"))) {
+                val parts = line.split("=", limit = 2)
+                variables[parts[0].trim()] = evaluate(parts[1].trim(), variables, inputs, inputIndex)
+                i++
+                continue
+            }
+
+            throw IllegalArgumentException(
+                "Linha " + (i + 1) + ": ainda não consigo executar '" + line + "'."
+            )
+        }
+        return i
+    }
+
+    private fun evaluateCondition(condition: String, variables: Map<String, String>): Boolean {
+        val operators = listOf("==", "!=", ">=", "<=", ">", "<")
+        for (operator in operators) {
+            val parts = condition.split(operator, limit = 2)
+            if (parts.size == 2) {
+                val left = evaluate(parts[0].trim(), variables, emptyList(), intArrayOf())
+                val right = evaluate(parts[1].trim(), variables, emptyList(), intArrayOf())
+                val leftNumber = left.toIntOrNull()
+                val rightNumber = right.toIntOrNull()
+
+                return when (operator) {
+                    "==" -> left == right
+                    "!=" -> left != right
+                    ">" -> if (leftNumber != null && rightNumber != null) leftNumber > rightNumber else left > right
+                    "<" -> if (leftNumber != null && rightNumber != null) leftNumber < rightNumber else left < right
+                    ">=" -> if (leftNumber != null && rightNumber != null) leftNumber >= rightNumber else left >= right
+                    "<=" -> if (leftNumber != null && rightNumber != null) leftNumber <= rightNumber else left <= right
+                    else -> false
+                }
+            }
+        }
+        val value = evaluate(condition, variables, emptyList(), intArrayOf())
+        return value != "0" && value.lowercase() != "false" && value.isNotEmpty()
+    }
+
+    private fun evaluate(
+        expression: String,
+        variables: Map<String, String>,
+        inputs: List<String>,
+        inputIndex: IntArray
+    ): String {
         val value = expression.trim()
-        if (value.startsWith("\"") && value.endsWith("\"") && value.length >= 2) return value.substring(1, value.length - 1)
-        if (value.startsWith("'") && value.endsWith("'") && value.length >= 2) return value.substring(1, value.length - 1)
+
+        if (value.startsWith("int(") && value.endsWith(")")) {
+            return evaluate(value.removePrefix("int(").removeSuffix(")"), variables, inputs, inputIndex).toIntOrNull()?.toString()
+                ?: throw IllegalArgumentException("int() precisa receber um número.")
+        }
+
+        if (value.startsWith("input(") && value.endsWith(")")) {
+            val promptExpression = value.removePrefix("input(").removeSuffix(")").trim()
+            val prompt = if (promptExpression.isBlank()) "" else evaluate(promptExpression, variables, inputs, inputIndex)
+            if (inputIndex[0] >= inputs.size) throw InputRequired(prompt)
+            return inputs[inputIndex[0]++]
+        }
+
+        if (value.startsWith("\"") && value.endsWith("\"") && value.length >= 2) {
+            return value.substring(1, value.length - 1)
+        }
+        if (value.startsWith("'") && value.endsWith("'") && value.length >= 2) {
+            return value.substring(1, value.length - 1)
+        }
+
         variables[value]?.let { return it }
         if (value.matches(Regex("-?\\d+"))) return value
+
         val pieces = value.split("+").map { it.trim() }
-        if (pieces.size > 1) return pieces.joinToString("") { evaluate(it, variables) }
+        if (pieces.size > 1) {
+            return pieces.joinToString("") { evaluate(it, variables, inputs, inputIndex) }
+        }
+
         throw IllegalArgumentException("Não entendi a expressão: " + value)
+    }
+
+    private fun indentation(line: String): Int {
+        return line.takeWhile { it == ' ' }.length
     }
 }
