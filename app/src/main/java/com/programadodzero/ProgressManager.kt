@@ -34,7 +34,7 @@ object ProgressManager {
     fun canStartLanguage(context: Context, language: String, lessonIds: List<String>): Boolean {
         val active = getActiveLanguage(context)
         return active == null || active == language ||
-            isLanguageComplete(context, active, lessonIds)
+            isLanguageComplete(context, active, ContentRepository.lessonsFor(active).map { it.id })
     }
 
     fun selectLanguage(context: Context, language: String, lessonIds: List<String>): Boolean {
