@@ -73,10 +73,12 @@ class ProfileActivity : Activity() {
 
         val topicSuggestions = ContentRepository.questionBank(language)
             .groupBy { it.topic }
-            .map { (topic, questions) ->
-                topic to questions.sumOf { ProgressManager.examTopicScore(this, language, it.topic) }
+            .map { (topic, _) ->
+                val attempts = ProgressManager.examTopicAttempts(this, language, topic)
+                val accuracy = ProgressManager.examTopicScore(this, language, topic)
+                Triple(topic, accuracy, attempts)
             }
-            .filter { it.second < 0 }
+            .filter { it.third > 0 && it.second < 70 }
             .sortedBy { it.second }
             .take(3)
 
@@ -88,7 +90,7 @@ class ProfileActivity : Activity() {
                 setPadding(0, 24, 0, 8)
             })
 
-            topicSuggestions.forEach { (topic, _) ->
+            topicSuggestions.forEach { (topic, accuracy, attempts) ->
                 val question = ContentRepository.questionBank(language).firstOrNull { it.topic == topic }
                 val lessonId = question?.id?.substringBefore("-q")
                 val lesson = lessonId?.let { id ->
