@@ -122,6 +122,29 @@ object PythonRunner {
                 continue
             }
 
+            if (line.startsWith("while ") && line.endsWith(":")) {
+                val condition = line.removePrefix("while ").removeSuffix(":").trim()
+                val cursor = findBlockEnd(lines, i + 1, end, indent)
+                var iterations = 0
+
+                while (evaluateCondition(condition, variables, inputs, inputIndex, functions)) {
+                    if (iterations++ >= 1000) {
+                        throw IllegalArgumentException(
+                            "Linha " + (i + 1) + ": o while executou muitas vezes. " +
+                                "Verifique se a condição termina."
+                        )
+                    }
+
+                    executeBlock(
+                        lines, i + 1, cursor, indent + 4,
+                        variables, output, inputs, inputIndex, functions
+                    )
+                }
+
+                i = cursor
+                continue
+            }
+
             if (line.startsWith("if ") && line.endsWith(":")) {
                 val (nextIndex, executed) = executeIfChain(
                     lines, i, end, indent,
@@ -367,9 +390,16 @@ object PythonRunner {
 
         val pieces = splitPlus(value)
         if (pieces.size > 1) {
-            return pieces.joinToString("") {
+            val evaluatedPieces = pieces.map {
                 evaluate(it, variables, inputs, inputIndex, functions)
             }
+
+            val numbers = evaluatedPieces.map { it.toIntOrNull() }
+            if (numbers.all { it != null }) {
+                return numbers.filterNotNull().sum().toString()
+            }
+
+            return evaluatedPieces.joinToString("")
         }
 
         throw IllegalArgumentException("Não entendi a expressão: " + value)
