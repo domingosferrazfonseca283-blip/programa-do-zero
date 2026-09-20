@@ -369,6 +369,20 @@ class ChallengeValidatorTest {
     }
 
     @Test
+    fun aulaSeteRejeitaSegundoItemQueNaoPertenceALista() {
+        assertFalse(
+            ChallengeValidator.validate(
+                6,
+                """
+                nomes = ["Ana", "Bruno"]
+                print(nomes)
+                print("Carlos")
+                """.trimIndent()
+            )
+        )
+    }
+
+    @Test
     fun aulaSeteRejeitaListaComApenasUmItem() {
         assertFalse(
             ChallengeValidator.validate(
