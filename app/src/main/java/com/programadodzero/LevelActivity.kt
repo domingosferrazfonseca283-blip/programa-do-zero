@@ -21,6 +21,7 @@ class LevelActivity : Activity() {
 
         val linguagem = intent.getStringExtra(EXTRA_LANGUAGE) ?: "Linguagem"
         val active = ProgressManager.getActiveLanguage(this)
+        val available = ContentRepository.isLanguageAvailable(linguagem)
 
         val tela = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -38,10 +39,10 @@ class LevelActivity : Activity() {
         }
 
         val subtitulo = TextView(this).apply {
-            text = if (active != null && active != linguagem) {
-                "🔒 Você está estudando $active.\nConclua essa trilha para desbloquear outra linguagem."
-            } else {
-                "Escolha seu ponto de partida. Você poderá aprender outra linguagem depois de concluir esta trilha."
+            text = when {
+                !available -> "🚧 Esta trilha ainda está em construção.\nO conteúdo completo disponível hoje é Python.\nAs outras linguagens serão adicionadas por módulos, sem conteúdo genérico enganoso."
+                active != null && active != linguagem -> "🔒 Você está estudando $active.\nConclua essa trilha para desbloquear outra linguagem."
+                else -> "Escolha seu ponto de partida. Você poderá aprender outra linguagem depois de concluir esta trilha."
             }
             textSize = 17f
             setTextColor(Color.LTGRAY)
@@ -64,7 +65,7 @@ class LevelActivity : Activity() {
                 text = nivel
                 textSize = 17f
                 isAllCaps = false
-                isEnabled = ProgressManager.canStartLanguage(
+                isEnabled = available && ProgressManager.canStartLanguage(
                     this@LevelActivity, linguagem, TOTAL_LESSONS
                 )
             }
