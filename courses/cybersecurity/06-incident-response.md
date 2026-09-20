@@ -10,4 +10,4 @@ Forense básica em laboratório: timeline, hashes, metadados, logs, processos e 
 
 Relatório: resumo factual, linha temporal, evidências, impacto conhecido, ações, lacunas e recomendações.
 
-Exercício: usar logs fictícios e escrever um relatório sem inventar fatos ausentes dos dados.
+Exercício: usar logs fictícios e escrever relatório sem inventar fatos ausentes.
