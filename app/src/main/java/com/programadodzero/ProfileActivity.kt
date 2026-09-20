@@ -8,6 +8,9 @@ import android.view.Gravity
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.app.AlertDialog
+import android.content.Intent
+import android.widget.EditText
 
 class ProfileActivity : Activity() {
     
@@ -68,6 +71,38 @@ class ProfileActivity : Activity() {
             setPadding(0, 10, 0, 30)
         }
 
+        if (complete) {
+            val certificate = Button(this).apply {
+                text = "📜 Gerar meu certificado profissional em PDF"
+                isAllCaps = false
+                setOnClickListener {
+                    val existing = ProgressManager.getStudentName(this@ProfileActivity)
+                    if (existing.isNullOrBlank()) {
+                        val input = EditText(this@ProfileActivity).apply {
+                            hint = "Nome completo do aluno"
+                            setSingleLine(true)
+                        }
+                        AlertDialog.Builder(this@ProfileActivity)
+                            .setTitle("Nome no certificado")
+                            .setMessage("Digite o nome exatamente como deve aparecer no PDF.")
+                            .setView(input)
+                            .setPositiveButton("Gerar") { _, _ ->
+                                val name = input.text.toString().trim()
+                                if (name.isNotBlank()) {
+                                    ProgressManager.setStudentName(this@ProfileActivity, name)
+                                    openCertificate(language, name)
+                                }
+                            }
+                            .setNegativeButton("Cancelar", null)
+                            .show()
+                    } else {
+                        openCertificate(language, existing)
+                    }
+                }
+            }
+            screen.addView(certificate, LinearLayout.LayoutParams(-1, 60))
+        }
+
         val back = Button(this).apply {
             text = "← Voltar"
             isAllCaps = false
@@ -107,5 +142,12 @@ class ProfileActivity : Activity() {
         screen.addView(message, LinearLayout.LayoutParams(-1, 0, 1f))
         screen.addView(back, LinearLayout.LayoutParams(-1, 60))
         setContentView(screen)
+    }
+
+    private fun openCertificate(language: String, student: String) {
+        startActivity(Intent(this, CertificateActivity::class.java).apply {
+            putExtra(CertificateActivity.EXTRA_LANGUAGE, language)
+            putExtra(CertificateActivity.EXTRA_STUDENT, student)
+        })
     }
 }
