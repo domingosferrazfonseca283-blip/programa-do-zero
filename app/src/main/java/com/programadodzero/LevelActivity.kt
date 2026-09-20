@@ -1,7 +1,6 @@
 package com.programadodzero
 
 import android.app.Activity
-import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
@@ -9,17 +8,19 @@ import android.view.Gravity
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 
 class LevelActivity : Activity() {
-
     companion object {
         const val EXTRA_LANGUAGE = "language"
+        private const val TOTAL_LESSONS = 8
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val linguagem = intent.getStringExtra(EXTRA_LANGUAGE) ?: "Linguagem"
+        val active = ProgressManager.getActiveLanguage(this)
 
         val tela = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -37,7 +38,11 @@ class LevelActivity : Activity() {
         }
 
         val subtitulo = TextView(this).apply {
-            text = "Escolha seu ponto de partida."
+            text = if (active != null && active != linguagem) {
+                "🔒 Você está estudando $active.\nConclua essa trilha para desbloquear outra linguagem."
+            } else {
+                "Escolha seu ponto de partida. Você poderá aprender outra linguagem depois de concluir esta trilha."
+            }
             textSize = 17f
             setTextColor(Color.LTGRAY)
             gravity = Gravity.CENTER
@@ -59,19 +64,28 @@ class LevelActivity : Activity() {
                 text = nivel
                 textSize = 17f
                 isAllCaps = false
+                isEnabled = ProgressManager.canStartLanguage(
+                    this@LevelActivity, linguagem, TOTAL_LESSONS
+                )
             }
 
-            val parametros = LinearLayout.LayoutParams(-1, 70).apply {
+            tela.addView(botao, LinearLayout.LayoutParams(-1, 70).apply {
                 setMargins(0, 8, 0, 8)
-            }
-
-            tela.addView(botao, parametros)
+            })
 
             botao.setOnClickListener {
-                val intent = Intent(this, LessonActivity::class.java)
-                intent.putExtra(LessonActivity.EXTRA_LANGUAGE, linguagem)
-                intent.putExtra(LessonActivity.EXTRA_LEVEL, nivel)
-                startActivity(intent)
+                if (ProgressManager.selectLanguage(this, linguagem, TOTAL_LESSONS)) {
+                    startActivity(android.content.Intent(this, LessonActivity::class.java).apply {
+                        putExtra(LessonActivity.EXTRA_LANGUAGE, linguagem)
+                        putExtra(LessonActivity.EXTRA_LEVEL, nivel)
+                    })
+                } else {
+                    Toast.makeText(
+                        this,
+                        "Conclua $active antes de começar outra linguagem.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         }
 
