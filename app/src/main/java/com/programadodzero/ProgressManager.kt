@@ -14,6 +14,7 @@ object ProgressManager {
     private const val STUDY_STREAK = "study_streak"
     private const val DAILY_MISSION_DAY = "daily_mission_day"
     private const val DAILY_MISSION_XP = "daily_mission_xp"
+    private const val FINAL_EXAM_SCORE_PREFIX = "final_exam_score:"
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -109,6 +110,10 @@ object ProgressManager {
         val p = prefs(context)
         p.edit().putInt(XP, p.getInt(XP, 0) + amount).apply()
     }
+
+    fun finalExamScore(context: Context, language: String): Int? = prefs(context).getInt(FINAL_EXAM_SCORE_PREFIX + language, -1).let { if (it >= 0) it else null }
+
+    fun passFinalExam(context: Context, language: String, score: Int, total: Int): Boolean { if (total <= 0 || score * 100 / total < 70) return false; val key = FINAL_EXAM_SCORE_PREFIX + language; val previous = prefs(context).getInt(key, -1); if (previous < score) { prefs(context).edit().putInt(key, score).apply(); addXp(context, 100) }; return true }
 
     fun getStudentName(context: Context): String? = prefs(context).getString("student_name", null)
 
