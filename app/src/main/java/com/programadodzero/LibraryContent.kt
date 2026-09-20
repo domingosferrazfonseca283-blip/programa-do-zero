@@ -41,6 +41,10 @@ object LibraryRepository {
         book("cpp-fundamentos", "🚀  C++", "C++ do Zero", "Introdução moderna à linguagem C++.", listOf("Sintaxe e tipos", "Funções e estruturas", "Classes e orientação a objetos", "STL e projetos")),
         book("rust-fundamentos", "🦀  Rust", "Rust do Zero", "Introdução à linguagem Rust e seu modelo de segurança.", listOf("Sintaxe, variáveis e mutabilidade", "Ownership e borrowing", "Structs, enums e traits", "Projetos e organização")),
         book("go-fundamentos", "🐹  Go", "Go do Zero", "Fundamentos de Go com foco em programas simples e claros.", listOf("Sintaxe e tipos", "Funções e estruturas", "Interfaces e concorrência", "Projetos e ferramentas"))
+        ,book("algoritmos-fundamentos", "🧠  Algoritmos", "Algoritmos e Estruturas de Dados", "Livro didático original sobre resolução de problemas, complexidade e estruturas de dados.", listOf("Pensamento algorítmico", "Busca e ordenação", "Pilhas, filas e listas", "Árvores, grafos e complexidade"))
+        ,book("git-fundamentos", "🌿  Git", "Git do Zero", "Livro didático original para aprender controle de versão e colaboração.", listOf("Repositórios e commits", "Branches e merges", "Histórico e recuperação", "Fluxos de colaboração"))
+        ,book("banco-dados", "🗄️  Banco de dados", "Bancos de Dados do Zero", "Livro didático original sobre modelagem e armazenamento de dados.", listOf("Dados, tabelas e relacionamentos", "SQL e consultas", "Chaves e normalização", "Transações e projetos"))
+        ,book("ciberseguranca", "🛡️  Cibersegurança", "Cibersegurança do Zero", "Introdução defensiva a segurança, privacidade e boas práticas.", listOf("Princípios de segurança", "Autenticação e senhas", "Redes e ameaças", "Defesa, logs e resposta a incidentes"))
     )
 
     fun search(query: String): List<LibraryBook> {
