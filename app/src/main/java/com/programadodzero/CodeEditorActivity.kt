@@ -51,13 +51,18 @@ class CodeEditorActivity : Activity() {
         editor = EditText(this).apply {
             setText(
                 "numero_secreto = 7\n" +
-                    "palpite = int(input(\"Digite seu palpite: \"))\n\n" +
-                    "if palpite == numero_secreto:\n" +
-                    "    print(\"Acertou!\")\n" +
-                    "elif palpite > numero_secreto:\n" +
-                    "    print(\"Muito alto!\")\n" +
-                    "else:\n" +
-                    "    print(\"Muito baixo!\")"
+                    "tentativas = 0\n\n" +
+                    "while tentativas < 5:\n" +
+                    "    palpite = int(input(\"Digite seu palpite: \"))\n" +
+                    "    tentativas = tentativas + 1\n\n" +
+                    "    if palpite == numero_secreto:\n" +
+                    "        print(\"Acertou!\")\n" +
+                    "        break\n" +
+                    "    elif palpite > numero_secreto:\n" +
+                    "        print(\"Muito alto!\")\n" +
+                    "    else:\n" +
+                    "        print(\"Muito baixo!\")\n\n" +
+                    "print(\"Tentativas: \" + tentativas)"
             )
             textSize = 17f
             setTextColor(Color.WHITE)
