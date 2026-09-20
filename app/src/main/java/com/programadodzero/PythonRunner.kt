@@ -465,65 +465,43 @@ object PythonRunner {
         var current = StringBuilder()
         var quote: Char? = null
         var depth = 0
-        var foundOperator = false
-
-        for (char in text) {
-            if ((char == ''' || char == '"') && (quote == null || quote == char)) {
-                quote = if (quote == null) char else null
-            }
-
-            if (quote == null) {
-                if (char == '(' || char == '[') depth++
-                if (char == ')' || char == ']') depth--
-            }
-
-            val isOperator = quote == null && depth == 0 && char in operators
-            val isUnaryMinus = char == '-' && current.toString().trim().isEmpty()
-
-            if (isOperator && !isUnaryMinus) {
-                result.add('+' to current.toString().trim())
-                current = StringBuilder()
-                result[result.lastIndex] = result.last().first.let { previous ->
-                    previous to result.last().second
-                }
-                result[result.lastIndex] = char to ""
-                foundOperator = true
-            } else {
-                current.append(char)
-            }
-        }
-
-        if (!foundOperator) return emptyList()
-
-        val rebuilt = mutableListOf<Pair<Char, String>>()
-        var first = true
-        var term = StringBuilder()
         var pending: Char? = null
-        for (char in text) {
-            if ((char == ''' || char == '"') && (quote == null || quote == char)) {
-                quote = if (quote == null) char else null
+
+        fun addTerm() {
+            val term = current.toString().trim()
+            if (term.isNotEmpty()) {
+                result.add((pending ?: '+') to term)
+                current = StringBuilder()
+                pending = null
             }
-            val isOperator = quote == null && depth == 0 && char in operators && !(char == '-' && term.isBlank())
+        }
+
+        for (char in text) {
+            if ((char == '\'' || char == '"') && (quote == null || quote == char)) {
+                quote = if (quote == null) char else null
+                current.append(char)
+                continue
+            }
+
             if (quote == null) {
                 if (char == '(' || char == '[') depth++
                 if (char == ')' || char == ']') depth--
-            }
-            if (isOperator) {
-                if (first) {
-                    rebuilt.add('+' to term.toString().trim())
-                    first = false
-                } else {
-                    rebuilt.add(pending!! to term.toString().trim())
+
+                val unaryMinus = char == '-' && current.toString().trim().isEmpty() &&
+                    (result.isEmpty() || pending != null)
+
+                if (depth == 0 && char in operators && !unaryMinus) {
+                    addTerm()
+                    pending = char
+                    continue
                 }
-                pending = char
-                term = StringBuilder()
-            } else {
-                term.append(char)
             }
+
+            current.append(char)
         }
-        if (first) return emptyList()
-        rebuilt.add(pending!! to term.toString().trim())
-        return rebuilt
+
+        addTerm()
+        return if (result.size > 1) result else emptyList()
     }
 
     private fun callFunction(
