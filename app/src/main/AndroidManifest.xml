@@ -12,6 +12,11 @@
             android:exported="false" />
 
         <activity
+            android:name=".ProfileActivity"
+            android:screenOrientation="portrait"
+            android:exported="false" />
+
+        <activity
             android:name=".LessonActivity"
             android:screenOrientation="portrait"
             android:exported="false" />
