@@ -71,6 +71,10 @@ class ProfileActivity : Activity() {
             setPadding(0, 10, 0, 30)
         }
 
+        val examScore = ProgressManager.finalExamScore(this, language)
+        val examButton = Button(this).apply { text = if (examScore == null) "🎓 Fazer avaliação final" else "🎓 Avaliação final: " + examScore + "/10"; isAllCaps = false; setOnClickListener { startActivity(Intent(this@ProfileActivity, FinalExamActivity::class.java).apply { putExtra("language", language) }) } }
+        screen.addView(examButton, LinearLayout.LayoutParams(-1, 60))
+
         if (complete) {
             val certificate = Button(this).apply {
                 text = "📜 Gerar meu certificado profissional em PDF"
