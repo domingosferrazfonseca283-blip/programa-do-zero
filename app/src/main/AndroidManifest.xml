@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <application
+        <activity\n            android:name=".PracticeCodingActivity"\n            android:screenOrientation="portrait"\n            android:exported="false" />\n\n    <application
         android:theme="@style/AppTheme"
         android:label="Programação do Zero"
         android:allowBackup="true"
