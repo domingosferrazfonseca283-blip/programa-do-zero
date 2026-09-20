@@ -154,7 +154,7 @@ object ChallengeValidator {
         if (items.size < 2) return false
 
         val secondItemExpression = Regex(
-            """\\b$variableName\\s*\\[\\s*1\\s*]"""
+            """\b$variableName\s*\[\s*1\s*]"""
         )
 
         if (!secondItemExpression.containsMatchIn(code)) return false
