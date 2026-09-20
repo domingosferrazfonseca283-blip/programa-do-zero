@@ -52,7 +52,7 @@ class ExerciseActivity : Activity() {
             setPadding(0, 26, 0, 22)
         }
 
-        val feedback = TextView(this).apply {
+        val alreadyCompleted = ProgressManager.isExerciseCompleted(this, language, index)\n\n        val feedback = TextView(this).apply {
             textSize = 17f
             setTextColor(Color.LTGRAY)
             setPadding(0, 20, 0, 12)
@@ -104,7 +104,7 @@ class ExerciseActivity : Activity() {
         screen.addView(feedback)
 
         val next = Button(this).apply {
-            text = if (index < exercises.lastIndex) "Próxima prática →" else "Voltar às aulas práticas"
+            isEnabled = alreadyCompleted\n            text = if (index < exercises.lastIndex) "Próxima prática →" else "Voltar às aulas práticas"
             isAllCaps = false
             setOnClickListener {
                 if (index < exercises.lastIndex) {
