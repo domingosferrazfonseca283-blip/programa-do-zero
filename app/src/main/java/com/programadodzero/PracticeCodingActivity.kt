@@ -73,7 +73,7 @@ class PracticeCodingActivity : Activity() {
             if (result) {
                 val firstTime = ProgressManager.completeExercise(this, language, lesson)
                 ProgressManager.completeLesson(this, language, lesson)
-                feedback.text = if (firstTime) "✅ Muito bem! ${challenge.success}\n\n+50 XP" else "✅ Código correto! ${challenge.success}"
+                feedback.text = if (firstTime) "✅ Muito bem! ${challenge.success}\n\n+25 XP" else "✅ Código correto! ${challenge.success}"
                 check.isEnabled = false
                 next.isEnabled = true
             } else {
