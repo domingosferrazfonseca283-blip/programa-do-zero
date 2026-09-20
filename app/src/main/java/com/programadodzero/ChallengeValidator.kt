@@ -133,34 +133,50 @@ object ChallengeValidator {
             code.contains("return")
 
     private fun validateListChallenge(code: String, output: String): Boolean {
-        val listVariable = code.lines()
+        val listMatch = code.lines()
             .map { it.trim() }
             .mapNotNull { line ->
                 Regex("^([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*\\[(.*)]$").find(line)
-                    ?.let { match ->
-                        val items = match.groupValues[2]
-                        match.groupValues[1] to items
-                    }
             }
-            .firstOrNull { it.second.split(",").count { item -> item.trim().isNotEmpty() } >= 2 }
+            .firstOrNull { match ->
+                match.groupValues[2]
+                    .split(",")
+                    .count { it.trim().isNotEmpty() } >= 2
+            }
             ?: return false
 
-        val variableName = listVariable.first
-        val usesSecondItem = code.lines().any { line ->
-            line.trim().contains("$variableName[1]")
-        }
-        if (!usesSecondItem) return false
+        val variableName = listMatch.groupValues[1]
+        val items = listMatch.groupValues[2]
+            .split(",")
+            .map { it.trim().trim('"', '\'') }
+            .filter { it.isNotEmpty() }
 
-        val lines = output.lines().map { it.trim() }.filter { it.isNotEmpty() }
+        if (items.size < 2) return false
+
+        val secondItemExpression = Regex(
+            """\\b$variableName\\s*\\[\\s*1\\s*]"""
+        )
+
+        if (!secondItemExpression.containsMatchIn(code)) return false
+
+        val lines = output.lines()
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+
         if (lines.size < 2) return false
 
         val printedList = lines.first()
-        val secondItem = lines.last()
-        return printedList.startsWith("[") &&
+        val printedSecondItem = lines.last()
+
+        val listLooksCorrect = printedList.startsWith("[") &&
             printedList.endsWith("]") &&
-            printedList.contains(",") &&
-            secondItem.isNotBlank()
+            printedList.contains(",")
+
+        if (!listLooksCorrect) return false
+
+        return printedSecondItem == items[1]
     }
+
 
     private fun validateProjectChallenge(code: String): Boolean {
         val inputVariable = code.lines()
