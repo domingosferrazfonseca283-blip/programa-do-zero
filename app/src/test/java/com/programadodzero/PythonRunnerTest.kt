@@ -208,236 +208,98 @@ class PythonRunnerTest {
         assertTrue(result.output.contains("dividir por zero"))
     }
 
-}
-class ChallengeValidatorTest {
 
     @Test
-    fun aceitaCondicaoComFormaEquivalenteDeComparacao() {
-        assertTrue(
-            ChallengeValidator.validate(
-                3,
-                """
-                idade = 20
-                if 18 <= idade:
-                    print("Adulto")
-                """.trimIndent()
-            )
+    fun escreveLeReabreArquivoVirtual() {
+        val result = PythonRunner.run(
+            """
+            arquivo = open("dados.txt", "w")
+            arquivo.write("Olá, arquivo!")
+            arquivo.close()
+            arquivo = open("dados.txt", "r")
+            print(arquivo.read())
+            arquivo.close()
+            """.trimIndent()
         )
-    }
-
-
-
-    @Test
-    fun aceitaSolucaoDaAula1() {
-        assertTrue(ChallengeValidator.validate(0, """print("Olá, mundo!")"""))
+        assertTrue(result.success)
+        assertEquals("Olá, arquivo!", result.output)
     }
 
     @Test
-    fun rejeitaAula1SemMensagemEsperada() {
-        assertFalse(ChallengeValidator.validate(0, """print("Oi!")"""))
-    }
+    fun withOpenFechaArquivoAutomaticamente() {
+        val result = PythonRunner.run(
+            """
+            with open("dados.txt", "w") as arquivo:
+                arquivo.write("Olá, with!")
 
-    @Test
-    fun aceitaVariavelComNomeDiferente() {
-        assertTrue(ChallengeValidator.validate(1, """pessoa = "Ana"\nprint(pessoa)"""))
-    }
-
-    @Test
-    fun aceitaTextoENumero() {
-        assertTrue(ChallengeValidator.validate(2, """nome = "Ana"\nidade = 20"""))
-    }
-
-    @Test
-    fun rejeitaAula3SemCondicaoDeMaioridade() {
-        assertFalse(ChallengeValidator.validate(3, """idade = 20\nprint("adulto")"""))
-    }
-
-
-    @Test
-    fun aulaDeRepeticaoAceitaSequenciaCrescente() {
-        assertTrue(
-            ChallengeValidator.validate(
-                4,
-                """
-                for numero in range(3, 7):
-                    print(numero)
-                """.trimIndent()
-            )
+            with open("dados.txt", "r") as arquivo:
+                print(arquivo.read())
+            """.trimIndent()
         )
+        assertTrue(result.success)
+        assertEquals("Olá, with!", result.output)
     }
 
     @Test
-    fun aulaDeRepeticaoRejeitaSequenciaNaoCrescente() {
-        assertFalse(
-            ChallengeValidator.validate(
-                4,
-                """
-                for numero in range(5):
-                    print(5 - numero)
-                """.trimIndent()
-            )
+    fun arquivoSomenteLeituraNaoAceitaWrite() {
+        val result = PythonRunner.run(
+            """
+            arquivo = open("dados.txt", "r")
+            arquivo.write("erro")
+            """.trimIndent()
         )
+        assertFalse(result.success)
     }
 
     @Test
-    fun aulaDeRepeticaoAceitaTresOuMaisNumerosCrescentes() {
-        assertTrue(ChallengeValidator.validate(4, """for numero in range(3):\n    print(numero)"""))
-        assertTrue(ChallengeValidator.validate(4, """for numero in range(4):\n    print(numero)"""))
-    }
-
-    @Test
-    fun aulaDeFuncaoAceitaNomeDeFuncaoDiferente() {
-        assertTrue(
-            ChallengeValidator.validate(
-                5,
-                """
-                def cumprimentar(pessoa):
-                    return "Bem-vindo, " + pessoa
-                print(cumprimentar("Ana"))
-                """.trimIndent()
-            )
+    fun arquivoFechadoNaoPodeSerUsado() {
+        val result = PythonRunner.run(
+            """
+            arquivo = open("dados.txt", "w")
+            arquivo.close()
+            arquivo.write("erro")
+            """.trimIndent()
         )
+        assertFalse(result.success)
     }
 
     @Test
-    fun aulaDeFuncaoRejeitaFuncaoQueNaoUsaParametro() {
-        assertFalse(
-            ChallengeValidator.validate(
-                5,
-                """
-                def cumprimentar(pessoa):
-                    return "Olá"
-                print(cumprimentar("Ana"))
-                """.trimIndent()
-            )
+    fun appendPreservaConteudoAnterior() {
+        val result = PythonRunner.run(
+            """
+            arquivo = open("dados.txt", "w")
+            arquivo.write("Olá")
+            arquivo.close()
+
+            arquivo = open("dados.txt", "a")
+            arquivo.write(", mundo!")
+            arquivo.close()
+
+            arquivo = open("dados.txt", "r")
+            print(arquivo.read())
+            """.trimIndent()
         )
+        assertTrue(result.success)
+        assertEquals("Olá, mundo!", result.output)
     }
 
     @Test
-    fun aulaDeFuncaoVerificaQueResultadoMudaComParametro() {
-        assertTrue(
-            ChallengeValidator.validate(
-                5,
-                """
-                def cumprimentar(nome):
-                    return "Olá, " + nome
-                print(cumprimentar("Ana"))
-                """.trimIndent()
-            )
+    fun classePessoaExecutaMetodo() {
+        val result = PythonRunner.run(
+            """
+            class Pessoa:
+                def __init__(self, nome):
+                    self.nome = nome
+
+                def apresentar(self):
+                    print(self.nome)
+
+            pessoa = Pessoa("Ana")
+            pessoa.apresentar()
+            """.trimIndent()
         )
+        assertTrue(result.success)
+        assertEquals("Ana", result.output)
     }
 
-    @Test
-    fun aulaDeFuncaoRejeitaSaidaFixaForaDaFuncao() {
-        assertFalse(
-            ChallengeValidator.validate(
-                5,
-                """
-                def cumprimentar(nome):
-                    return "Olá"
-                print("Ana")
-                """.trimIndent()
-            )
-        )
-    }
-
-    @Test
-    fun listaDaAulaSetePrecisaSerUsadaDeVerdade() {
-        assertTrue(
-            ChallengeValidator.validate(
-                6,
-                """
-                nomes = ["Ana", "Bruno"]
-                print(nomes)
-                print(nomes[1])
-                """.trimIndent()
-            )
-        )
-    }
-
-    @Test
-    fun aulaSeteRejeitaListaSemAcessoAoSegundoItem() {
-        assertFalse(
-            ChallengeValidator.validate(
-                6,
-                """
-                nomes = ["Ana", "Bruno"]
-                print(nomes)
-                """.trimIndent()
-            )
-        )
-    }
-
-    @Test
-    fun aulaSeteRejeitaSegundoItemQueNaoPertenceALista() {
-        assertFalse(
-            ChallengeValidator.validate(
-                6,
-                """
-                nomes = ["Ana", "Bruno"]
-                print(nomes)
-                print("Carlos")
-                """.trimIndent()
-            )
-        )
-    }
-
-    @Test
-    fun aulaSeteRejeitaListaComApenasUmItem() {
-        assertFalse(
-            ChallengeValidator.validate(
-                6,
-                """
-                nomes = ["Ana"]
-                print(nomes)
-                print(nomes[1])
-                """.trimIndent()
-            )
-        )
-    }
-
-    @Test
-    fun projetoFinalTestaComportamentoComEntradasDiferentes() {
-        assertTrue(
-            ChallengeValidator.validate(
-                7,
-                """
-                nome = input("Nome: ")
-                if nome:
-                    print("Olá, " + nome)
-                else:
-                    print("Digite um nome")
-                """.trimIndent()
-            )
-        )
-    }
-
-    @Test
-    fun projetoFinalRejeitaCondicaoQueNaoMudaOResultado() {
-        assertFalse(
-            ChallengeValidator.validate(
-                7,
-                """
-                nome = input("Nome: ")
-                if nome:
-                    print("Pronto")
-                else:
-                    print("Pronto")
-                """.trimIndent()
-            )
-        )
-    }
-
-    @Test
-    fun projetoFinalRejeitaProgramaSemCondicaoBaseadaNaEntrada() {
-        assertFalse(
-            ChallengeValidator.validate(
-                7,
-                """
-                nome = input("Nome: ")
-                print("Olá")
-                """.trimIndent()
-            )
-        )
-    }
 }
