@@ -20,6 +20,7 @@ class LibraryReaderActivity : Activity() {
     private lateinit var progress: TextView
     private lateinit var favoriteButton: Button
     private lateinit var courseButton: Button
+    private lateinit var relatedLessonButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,6 +73,9 @@ class LibraryReaderActivity : Activity() {
         root.addView(courseButton, LinearLayout.LayoutParams(-1, 52).apply {
             setMargins(0, 6, 0, 10)
         })
+
+        relatedLessonButton = Button(this).apply { text = "🎓 Ir para a aula relacionada"; isAllCaps = false; setOnClickListener { val id = book.chapters[chapterIndex].relatedLessonId ?: return@setOnClickListener; val lesson = ContentRepository.lessonsFor(book.language).firstOrNull { it.id == id } ?: return@setOnClickListener; startActivity(Intent(this@LibraryReaderActivity, LessonActivity::class.java).apply { putExtra(LessonActivity.EXTRA_LANGUAGE, book.language); putExtra(LessonActivity.EXTRA_LEVEL_NUMBER, lesson.level); putExtra(LessonActivity.EXTRA_MODULE, lesson.module); putExtra(LessonActivity.EXTRA_LESSON_ID, lesson.id) }) } }
+        root.addView(relatedLessonButton, LinearLayout.LayoutParams(-1, 52).apply { setMargins(0, 6, 0, 6) })
 
         chapterTitle = TextView(this).apply {
             textSize = 22f
@@ -130,6 +134,7 @@ class LibraryReaderActivity : Activity() {
         progress.text = book.language + "  •  Capítulo " + (chapterIndex + 1) + "/" + book.chapters.size
         chapterTitle.text = chapter.title
         chapterText.text = chapter.content
+        relatedLessonButton.visibility = if (chapter.relatedLessonId != null) android.view.View.VISIBLE else android.view.View.GONE
         updateFavorite()
     }
 
