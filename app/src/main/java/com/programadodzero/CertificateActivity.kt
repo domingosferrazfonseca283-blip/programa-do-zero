@@ -9,6 +9,7 @@ import android.content.Intent
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.net.Uri
 import java.io.File
 import java.io.FileOutputStream
 import java.security.MessageDigest
@@ -117,12 +118,14 @@ class CertificateActivity : Activity() {
         text("concluiu a trilha completa de", 421f, 292f, 18f)
         text(language, 421f, 335f, 28f, true)
         text("incluindo aulas, exercícios práticos e avaliação da trilha.", 421f, 370f, 15f)
+        text("Carga horária: formação prática offline", 421f, 392f, 12f, false, Color.DKGRAY)
         val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
         text("Emitido em $date • Código \${verificationCode(language, student)}", 421f, 410f, 12f, false, Color.DKGRAY)
 
         val seal = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 5f; color = Color.rgb(15, 118, 110) }
         canvas.drawCircle(150f, 455f, 58f, seal)
         canvas.drawCircle(150f, 455f, 47f, seal)
+        drawQrLikeCode(canvas, verificationCode(language, student), 675f, 445f)
         text("CERTIFICADO", 150f, 451f, 11f, true, Color.rgb(15, 118, 110))
         text("CONCLUÍDO", 150f, 468f, 11f, true, Color.rgb(15, 118, 110))
 
@@ -137,6 +140,15 @@ class CertificateActivity : Activity() {
         FileOutputStream(file).use { document.writeTo(it) }
         document.close()
         return file
+    }
+
+    private fun drawQrLikeCode(canvas: Canvas, code: String, left: Float, top: Float) {
+        val paint = Paint().apply { color = Color.rgb(20, 30, 40); style = Paint.Style.FILL }
+        val size = 8
+        val matrix = Array(size) { BooleanArray(size) }
+        val seed = MessageDigest.getInstance("SHA-256").digest(code.toByteArray())
+        for (y in 0 until size) for (x in 0 until size) matrix[y][x] = ((seed[(y * size + x) % seed.size].toInt() xor x xor y) and 1) == 1
+        for (y in 0 until size) for (x in 0 until size) if (matrix[y][x]) canvas.drawRect(left + x * 8f, top + y * 8f, left + x * 8f + 7f, top + y * 8f + 7f, paint)
     }
 
     private fun openPdf(file: File) {
