@@ -62,6 +62,9 @@ class LibraryReaderActivity : Activity() {
         })
 
         favoriteButton = Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
             isAllCaps = false
             setOnClickListener {
                 val key = "favorite_" + bookId
@@ -73,6 +76,9 @@ class LibraryReaderActivity : Activity() {
         root.addView(favoriteButton, LinearLayout.LayoutParams(-1, 52))
 
         courseButton = Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
             text = "🎓 Ir para a aula da linguagem"
             isAllCaps = false
             setOnClickListener {
@@ -112,11 +118,17 @@ class LibraryReaderActivity : Activity() {
 
         val navigation = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
         val previous = Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
             text = "← Anterior"
             isAllCaps = false
             setOnClickListener { if (chapterIndex > 0) { chapterIndex--; saveAndRender() } }
         }
         val next = Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
             text = "Próximo →"
             isAllCaps = false
             setOnClickListener { if (chapterIndex < book.chapters.lastIndex) { chapterIndex++; saveAndRender() } }
@@ -125,6 +137,9 @@ class LibraryReaderActivity : Activity() {
         navigation.addView(next, LinearLayout.LayoutParams(0, 56, 1f))
         root.addView(navigation)
         root.addView(Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
             text = "← Biblioteca"
             isAllCaps = false
             setOnClickListener { finish() }
@@ -153,6 +168,9 @@ class LibraryReaderActivity : Activity() {
             setPadding(0, 24, 0, 24)
         })
         root.addView(Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
             text = "← Biblioteca"
             isAllCaps = false
             setOnClickListener { finish() }
