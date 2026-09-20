@@ -1,14 +1,14 @@
 package com.programadodzero
 
 data class LibraryChapter(val id: String, val title: String, val content: String, val relatedLessonId: String? = null)
-data class LibraryBook(val id: String, val language: String, val title: String, val description: String, val chapters: List<LibraryChapter>)
+data class LibraryBook(val id: String, val language: String, val title: String, val description: String, val chapters: List<LibraryChapter>, val source: String = "Conteúdo original do Programa do Zero", val license: String = "Conteúdo original")
 
 object LibraryRepository {
     private fun book(id: String, language: String, title: String, description: String, topics: List<String>): LibraryBook {
         val chapters = topics.mapIndexed { index, topic ->
             LibraryChapter(id + "-ch-" + (index + 1), "Capítulo " + (index + 1) + " — " + topic, chapterText(language, topic), if (language == "🐍  Python" && index < 4) "python-" + (index + 1).toString().padStart(2, "0") else null)
         }
-        return LibraryBook(id, language, title, description, chapters)
+        return LibraryBook(id, language, title, description, chapters, "Conteúdo original do Programa do Zero", "Conteúdo original")
     }
 
     private fun chapterText(language: String, topic: String): String {
