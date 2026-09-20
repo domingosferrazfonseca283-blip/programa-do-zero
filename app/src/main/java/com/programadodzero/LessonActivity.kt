@@ -100,4 +100,5 @@ class LessonActivity : Activity() {
 
     private fun firstIncompleteLesson(): Int =
         (0 until lessons.size).firstOrNull { !ProgressManager.isLessonCompleted(this, language, it) } ?: lessons.lastIndex
-\n}
+
+}
