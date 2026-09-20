@@ -60,7 +60,7 @@ class MainActivity : Activity() {
                 })
             }
         }
-        tela.addView(perfil, LinearLayout.LayoutParams(-1, 60).apply {
+        val editor = Button(this).apply {\n            text = "⌨️ Praticar código"\n            textSize = 16f\n            isAllCaps = false\n            setOnClickListener {\n                startActivity(Intent(this@MainActivity, CodeEditorActivity::class.java).apply {\n                    putExtra("language", "🐍  Python")\n                })\n            }\n        }\n        tela.addView(editor, LinearLayout.LayoutParams(-1, 60).apply {\n            setMargins(0, 0, 0, 10)\n        })\n\n        tela.addView(perfil, LinearLayout.LayoutParams(-1, 60).apply {
             setMargins(0, 0, 0, 14)
         })
 
