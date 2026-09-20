@@ -73,7 +73,7 @@ class PracticeCodingActivity : Activity() {
             if (result) {
                 val firstTime = ProgressManager.completeExercise(this, language, lesson)
                 ProgressManager.completeLesson(this, language, lesson)
-                feedback.text = if (firstTime) "✅ Muito bem! ${challenge.success}\n\n+25 XP" else "✅ Código correto! ${challenge.success}"
+                feedback.text = if (firstTime) "✅ Muito bem! ${challenge.success}\n\n+50 XP" else "✅ Código correto! ${challenge.success}"
                 check.isEnabled = false
                 next.isEnabled = true
             } else {
@@ -118,7 +118,7 @@ class PracticeCodingActivity : Activity() {
             4 -> code.contains("for ") && code.contains("range(")
             5 -> code.contains("def ") && code.contains(":") && code.contains("return")
             6 -> code.contains("[") && code.contains("]")
-            7 -> code.contains("input(") && code.contains("print(")
+            7 -> code.contains("input(") && code.contains("print(") && code.contains("if ") && code.contains(":") && code.contains("=")
             else -> false
         }
     }
@@ -131,6 +131,6 @@ class PracticeCodingActivity : Activity() {
         Challenge("Aula 5 — Repita uma tarefa", "Use for e range() para mostrar números de 0 a 4.", "for numero in range(5):\n    print(numero)", "Laços permitem repetir tarefas sem copiar o código."),
         Challenge("Aula 6 — Crie uma função", "Crie uma função que receba um nome e retorne uma saudação.", "def saudacao(nome):\n    return \"Olá, \" + nome", "Funções ajudam a organizar e reutilizar código."),
         Challenge("Aula 7 — Use uma lista", "Crie uma lista com pelo menos dois itens.", "frutas = [\"maçã\", \"banana\"]\nprint(frutas)", "Listas permitem trabalhar com vários valores juntos."),
-        Challenge("Aula 8 — Pequeno projeto", "Peça o nome do usuário com input() e mostre uma saudação com print().", "nome = input(\"Seu nome: \")\nprint(\"Olá, \" + nome + \"!\")", "Você juntou vários conceitos para criar um pequeno programa.")
+        Challenge("Aula 8 — Primeiro projeto", "Crie um pequeno programa: peça um valor com input(), guarde em uma variável, use if para tomar uma decisão e mostre um resultado com print().", "nome = input(\"Seu nome: \")\n\nif nome:\n    print(\"Olá, \" + nome + \"!\")", "Você juntou entrada, variável, condição e saída em um pequeno projeto.")
     )
 }
