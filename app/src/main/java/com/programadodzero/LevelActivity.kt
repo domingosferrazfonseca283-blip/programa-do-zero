@@ -70,16 +70,31 @@ class LevelActivity : Activity() {
             val nivel = nivelNomes[nivelNumero] ?: "Nível $nivelNumero"
             val levelModules = ContentRepository.modulesForLevel(linguagem, nivelNumero)
             val levelLessons = ContentRepository.lessonsForLevel(linguagem, nivelNumero)
+            val previousLessons = ContentRepository.lessonsFor(linguagem)
+                .filter { it.level < nivelNumero }
+            val previousComplete = previousLessons.all {
+                ProgressManager.isLessonCompleted(this, linguagem, it.id)
+            }
+            val enabled = available &&
+                ProgressManager.canStartLanguage(this, linguagem, lessonIds) &&
+                previousComplete
+            val completed = levelLessons.count {
+                ProgressManager.isLessonCompleted(this, linguagem, it.id)
+            }
+            val status = when {
+                completed == levelLessons.size && levelLessons.isNotEmpty() -> "✅ Concluído"
+                enabled -> "▶️ Disponível"
+                else -> "🔒 Conclua o nível anterior"
+            }
             val botao = Button(this).apply {
-            gravity = Gravity.CENTER
-            includeFontPadding = false
-            setPadding(16, 10, 16, 10)
-                text = nivel + "\n" + levelModules.size + " módulos • " + levelLessons.size + " aulas"
-                textSize = 17f
+                gravity = Gravity.CENTER
+                includeFontPadding = false
+                setPadding(16, 8, 16, 8)
+                text = nivel + "\n" + completed + "/" + levelLessons.size + " aulas • " + status
+                textSize = 16f
                 isAllCaps = false
-                isEnabled = available && ProgressManager.canStartLanguage(
-                    this@LevelActivity, linguagem, lessonIds
-                )
+                isEnabled = enabled
+                alpha = if (enabled) 1f else 0.5f
             }
 
             tela.addView(botao, LinearLayout.LayoutParams(-1, 70).apply {
