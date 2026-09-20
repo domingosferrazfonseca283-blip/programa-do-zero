@@ -55,6 +55,35 @@ object PythonRunner {
 
             val line = raw.trim()
 
+            if (line.startsWith("for ") && line.endsWith(":")) {
+                val match = Regex("for\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+in\\s+range\\((\\d+)(?:\\s*,\\s*(\\d+))?\\):").matchEntire(line)
+                    ?: throw IllegalArgumentException("Linha " + (i + 1) + ": use for variavel in range(inicio, fim):")
+
+                val variable = match.groupValues[1]
+                val first = match.groupValues[2].toInt()
+                val second = match.groupValues[3].takeIf { it.isNotBlank() }?.toInt() ?: first
+                val rangeStart = if (match.groupValues[3].isBlank()) 0 else first
+                val rangeEnd = second
+
+                var cursor = i + 1
+                while (cursor < end) {
+                    if (lines[cursor].trim().isBlank() || lines[cursor].trim().startsWith("#")) {
+                        cursor++
+                        continue
+                    }
+                    if (indentation(lines[cursor]) <= indent) break
+                    cursor++
+                }
+
+                for (value in rangeStart until rangeEnd) {
+                    variables[variable] = value.toString()
+                    executeBlock(lines, i + 1, cursor, indent + 4, variables, output, inputs, inputIndex)
+                }
+
+                i = cursor
+                continue
+            }
+
             if (line.startsWith("if ") && line.endsWith(":")) {
                 val branches = mutableListOf<Pair<String?, Pair<Int, Int>>>()
                 var branchStart = i
@@ -210,6 +239,24 @@ object PythonRunner {
             return value.substring(1, value.length - 1)
         }
 
+        if (value.startsWith("[") && value.endsWith("]")) {
+            val inner = value.substring(1, value.length - 1).trim()
+            if (inner.isBlank()) return "[]"
+            val items = splitArguments(inner).map { evaluate(it, variables, inputs, inputIndex) }
+            return "[" + items.joinToString(",") + "]"
+        }
+
+        val indexMatch = Regex("([A-Za-z_][A-Za-z0-9_]*)\\[(\\d+)\\]").matchEntire(value)
+        if (indexMatch != null) {
+            val listValue = variables[indexMatch.groupValues[1]]
+                ?: throw IllegalArgumentException("Lista não encontrada: " + indexMatch.groupValues[1])
+            val items = listValue.removePrefix("[").removeSuffix("]")
+                .split(",").map { it.trim() }
+            val index = indexMatch.groupValues[2].toInt()
+            if (index !in items.indices) throw IllegalArgumentException("Índice fora da lista.")
+            return items[index]
+        }
+
         variables[value]?.let { return it }
         if (value.matches(Regex("-?\\d+"))) return value
 
@@ -219,6 +266,25 @@ object PythonRunner {
         }
 
         throw IllegalArgumentException("Não entendi a expressão: " + value)
+    }
+
+    private fun splitArguments(text: String): List<String> {
+        val result = mutableListOf<String>()
+        var current = StringBuilder()
+        var quote: Char? = null
+        for (char in text) {
+            if ((char == '\\'' || char == '"') && (quote == null || quote == char)) {
+                quote = if (quote == null) char else null
+            }
+            if (char == ',' && quote == null) {
+                result.add(current.toString().trim())
+                current = StringBuilder()
+            } else {
+                current.append(char)
+            }
+        }
+        if (current.isNotBlank()) result.add(current.toString().trim())
+        return result
     }
 
     private fun indentation(line: String): Int {
