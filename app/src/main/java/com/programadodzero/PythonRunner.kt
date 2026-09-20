@@ -408,6 +408,43 @@ object PythonRunner {
         if (value == "True") return "true"
         if (value == "False") return "false"
 
+        val stringMethod = Regex("""([A-Za-z_][A-Za-z0-9_]*)\.(upper|lower|strip)\(\)""").matchEntire(value)
+        if (stringMethod != null) {
+            val base = variables[stringMethod.groupValues[1]]
+                ?: throw IllegalArgumentException("Variável não encontrada: " + stringMethod.groupValues[1])
+            return when (stringMethod.groupValues[2]) {
+                "upper" -> base.uppercase()
+                "lower" -> base.lowercase()
+                "strip" -> base.trim()
+                else -> base
+            }
+        }
+
+        val lenMatch = Regex("""len\(([A-Za-z_][A-Za-z0-9_]*)\)""").matchEntire(value)
+        if (lenMatch != null) {
+            val base = variables[lenMatch.groupValues[1]]
+                ?: throw IllegalArgumentException("Variável não encontrada: " + lenMatch.groupValues[1])
+            return base.removePrefix("[").removeSuffix("]").split(",")
+                .count { it.trim().isNotEmpty() }.toString()
+        }
+
+        val dictionaryMatch = Regex("""([A-Za-z_][A-Za-z0-9_]*)\[["']([^"']+)["']\]""").matchEntire(value)
+        if (dictionaryMatch != null) {
+            val raw = variables[dictionaryMatch.groupValues[1]]
+                ?: throw IllegalArgumentException("Dicionário não encontrado: " + dictionaryMatch.groupValues[1])
+            val key = dictionaryMatch.groupValues[2]
+            val entry = Regex("""["']$key["']\s*:\s*["']([^"']*)["']""").find(raw)
+            if (entry != null) return entry.groupValues[1]
+            val numeric = Regex("""["']$key["']\s*:\s*(-?\d+)""").find(raw)
+            if (numeric != null) return numeric.groupValues[1]
+            throw IllegalArgumentException("Chave não encontrada: " + key)
+        }
+
+        if (value.startsWith("{") && value.endsWith("}")) {
+            val inner = value.substring(1, value.length - 1).trim()
+            return if (inner.isBlank()) "{}" else "{" + inner + "}"
+        }
+
         if (value.startsWith("input(") && value.endsWith(")")) {
             val promptExpression = value.removePrefix("input(").removeSuffix(")").trim()
             val prompt = if (promptExpression.isBlank()) {
@@ -420,7 +457,7 @@ object PythonRunner {
             return inputs[inputIndex[0]++]
         }
 
-        if (value.startsWith(""") && value.endsWith(""") && value.length >= 2) {
+        if (value.startsWith("\"") && value.endsWith("\"") && value.length >= 2) {
             return value.substring(1, value.length - 1)
         }
 
