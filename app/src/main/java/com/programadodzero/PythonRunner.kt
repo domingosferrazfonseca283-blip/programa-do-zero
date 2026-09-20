@@ -11,6 +11,7 @@ object PythonRunner {
     private class InputRequired(val prompt: String) : Exception()
     private class ReturnValue(val value: String) : Exception()
     private class BreakLoop : Exception()
+    private class ContinueLoop : Exception()
     private data class FunctionDef(val parameters: List<String>, val body: List<String>)
 
     fun run(code: String, inputs: List<String> = emptyList()): Result {
@@ -113,13 +114,43 @@ object PythonRunner {
 
                 for (value in rangeStart until rangeEnd) {
                     variables[variable] = value.toString()
-                    executeBlock(
-                        lines, i + 1, cursor, indent + 4,
-                        variables, output, inputs, inputIndex, functions
-                    )
+                    try {
+                        executeBlock(lines, i + 1, cursor, indent + 4, variables, output, inputs, inputIndex, functions)
+                    } catch (e: BreakLoop) {
+                        break
+                    } catch (e: ContinueLoop) {
+                        continue
+                    }
                 }
 
                 i = cursor
+                continue
+            }
+
+            if (line == "try:") {
+                val tryEnd = findBlockEnd(lines, i + 1, end, indent)
+                var exceptIndex = tryEnd
+                while (exceptIndex < end && lines[exceptIndex].trim().isBlank()) exceptIndex++
+                if (exceptIndex >= end || indentation(lines[exceptIndex]) != indent ||
+                    !lines[exceptIndex].trim().startsWith("except") ||
+                    !lines[exceptIndex].trim().endsWith(":")) {
+                    throw IllegalArgumentException("Linha " + (i + 1) + ": try precisa de um bloco except.")
+                }
+                val exceptEnd = findBlockEnd(lines, exceptIndex + 1, end, indent)
+                try {
+                    executeBlock(lines, i + 1, tryEnd, indent + 4, variables, output, inputs, inputIndex, functions)
+                } catch (e: InputRequired) {
+                    throw e
+                } catch (e: BreakLoop) {
+                    throw e
+                } catch (e: ContinueLoop) {
+                    throw e
+                } catch (e: ReturnValue) {
+                    throw e
+                } catch (e: IllegalArgumentException) {
+                    executeBlock(lines, exceptIndex + 1, exceptEnd, indent + 4, variables, output, inputs, inputIndex, functions)
+                }
+                i = exceptEnd
                 continue
             }
 
@@ -143,6 +174,8 @@ object PythonRunner {
                         )
                     } catch (e: BreakLoop) {
                         break
+                    } catch (e: ContinueLoop) {
+                        continue
                     }
                 }
 
@@ -181,6 +214,45 @@ object PythonRunner {
 
             if (line == "break") {
                 throw BreakLoop()
+            }
+
+            if (line == "continue") {
+                throw ContinueLoop()
+            }
+
+            val listMethod = Regex("([A-Za-z_][A-Za-z0-9_]*)\\.(append|pop|remove)\\((.*)\\)").matchEntire(line)
+            if (listMethod != null) {
+                val name = listMethod.groupValues[1]
+                val method = listMethod.groupValues[2]
+                val argument = listMethod.groupValues[3].trim()
+                val rawList = variables[name] ?: throw IllegalArgumentException("Lista não encontrada: " + name)
+                if (!rawList.startsWith("[") || !rawList.endsWith("]")) {
+                    throw IllegalArgumentException(name + " não é uma lista.")
+                }
+                val inner = rawList.removePrefix("[").removeSuffix("]").trim()
+                val list = if (inner.isBlank()) mutableListOf() else splitArguments(inner).map {
+                    evaluate(it, variables, inputs, inputIndex, functions)
+                }.toMutableList()
+                when (method) {
+                    "append" -> {
+                        if (argument.isBlank()) throw IllegalArgumentException("append() precisa receber um valor.")
+                        list.add(evaluate(argument, variables, inputs, inputIndex, functions))
+                    }
+                    "remove" -> {
+                        val target = evaluate(argument, variables, inputs, inputIndex, functions)
+                        if (!list.remove(target)) throw IllegalArgumentException("Valor não encontrado na lista.")
+                    }
+                    "pop" -> {
+                        val index = if (argument.isBlank()) list.lastIndex else
+                            evaluate(argument, variables, inputs, inputIndex, functions).toIntOrNull()
+                                ?: throw IllegalArgumentException("pop() precisa de um índice inteiro.")
+                        if (index !in list.indices) throw IllegalArgumentException("Índice fora da lista.")
+                        list.removeAt(index)
+                    }
+                }
+                variables[name] = "[" + list.joinToString(",") + "]"
+                i++
+                continue
             }
 
             if (line.startsWith("return ")) {
@@ -424,8 +496,15 @@ object PythonRunner {
         if (lenMatch != null) {
             val base = variables[lenMatch.groupValues[1]]
                 ?: throw IllegalArgumentException("Variável não encontrada: " + lenMatch.groupValues[1])
-            return base.removePrefix("[").removeSuffix("]").split(",")
-                .count { it.trim().isNotEmpty() }.toString()
+            if (base.startsWith("[") && base.endsWith("]")) {
+                val inner = base.removePrefix("[").removeSuffix("]").trim()
+                return if (inner.isBlank()) "0" else splitArguments(inner).size.toString()
+            }
+            if (base.startsWith("{") && base.endsWith("}")) {
+                val inner = base.removePrefix("{").removeSuffix("}").trim()
+                return if (inner.isBlank()) "0" else splitArguments(inner).size.toString()
+            }
+            return base.length.toString()
         }
 
         val dictionaryMatch = Regex("""([A-Za-z_][A-Za-z0-9_]*)\[["']([^"']+)["']\]""").matchEntire(value)
