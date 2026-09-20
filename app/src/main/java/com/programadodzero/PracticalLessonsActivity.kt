@@ -7,6 +7,7 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 
 class PracticalLessonsActivity : Activity() {
@@ -80,11 +81,10 @@ class PracticalLessonsActivity : Activity() {
             setMargins(0, 14, 0, 0)
         })
 
-        setContentView(screen)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        recreate()
+        val scroll = ScrollView(this).apply {
+            isFillViewport = true
+            addView(screen)
+        }
+        setContentView(scroll)
     }
 }
