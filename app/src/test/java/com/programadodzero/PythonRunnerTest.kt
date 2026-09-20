@@ -192,6 +192,22 @@ class PythonRunnerTest {
 class ChallengeValidatorTest {
 
     @Test
+    fun aceitaCondicaoComFormaEquivalenteDeComparacao() {
+        assertTrue(
+            ChallengeValidator.validate(
+                3,
+                """
+                idade = 20
+                if 18 <= idade:
+                    print("Adulto")
+                """.trimIndent()
+            )
+        )
+    }
+
+
+
+    @Test
     fun aceitaSolucaoDaAula1() {
         assertTrue(ChallengeValidator.validate(0, """print("Olá, mundo!")"""))
     }
