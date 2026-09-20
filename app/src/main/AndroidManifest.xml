@@ -7,6 +7,11 @@
         android:supportsRtl="true">
 
         <activity
+            android:name=".ExerciseActivity"
+            android:screenOrientation="portrait"
+            android:exported="false" />
+
+        <activity
             android:name=".LessonActivity"
             android:screenOrientation="portrait"
             android:exported="false" />
