@@ -17,6 +17,9 @@ class ProfileActivity : Activity() {
 
         val language = intent.getStringExtra("language") ?: ProgressManager.getActiveLanguage(this) ?: "🐍  Python"
         val xp = ProgressManager.getXp(this)
+        val level = ProgressManager.getLevel(this)
+        val levelXp = ProgressManager.xpIntoLevel(this)
+        val reviews = ProgressManager.completedReviewCount(this, language)
         val lessonIds = ContentRepository.lessonsFor(language).map { it.id }
         val total = lessonIds.size
         val lessons = ProgressManager.completedCount(this, language, lessonIds)
@@ -48,7 +51,7 @@ class ProfileActivity : Activity() {
         }
 
         val stats = TextView(this).apply {
-            text = "⭐ XP: $xp\n📚 Aulas concluídas: $lessons/$total\n🧩 Exercícios concluídos: $exercises/$total\n📈 Progresso: $percent%"
+            text = "⭐ XP: $xp\n🔥 Nível do programador: $level\n📊 XP do nível: $levelXp/100\n📝 Revisões acertadas: $reviews\n📚 Aulas concluídas: $lessons/$total\n🧩 Exercícios concluídos: $exercises/$total\n📈 Progresso: $percent%"
             textSize = 20f
             setTextColor(Color.WHITE)
             setPadding(0, 20, 0, 30)
