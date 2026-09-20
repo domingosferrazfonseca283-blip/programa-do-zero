@@ -223,7 +223,7 @@ object PythonRunner {
                 } catch (e: ReturnValue) {
                     throw e
                 } catch (e: IllegalArgumentException) {
-                    executeBlock(lines, exceptIndex + 1, exceptEnd, indent + 4, variables, output, inputs, inputIndex, functions, classes, objects)
+                    executeBlock(lines, exceptIndex + 1, exceptEnd, indent + 4, variables, output, inputs, inputIndex, functions, classes, objects, files)
                 }
                 i = exceptEnd
                 continue
@@ -234,7 +234,7 @@ object PythonRunner {
                 val cursor = findBlockEnd(lines, i + 1, end, indent)
                 var iterations = 0
 
-                while (evaluateCondition(condition, variables, inputs, inputIndex, functions, classes, objects)) {
+                while (evaluateCondition(condition, variables, inputs, inputIndex, functions, classes, objects, files)) {
                     if (iterations++ >= 1000) {
                         throw IllegalArgumentException(
                             "Linha " + (i + 1) + ": o while executou muitas vezes. " +
@@ -454,7 +454,7 @@ object PythonRunner {
 
             if (condition != null) {
                 val blockEnd = findBlockEnd(lines, cursor + 1, end, indent)
-                if (!executed && evaluateCondition(condition, variables, inputs, inputIndex, functions, classes, objects)) {
+                if (!executed && evaluateCondition(condition, variables, inputs, inputIndex, functions, classes, objects, files)) {
                     executeBlock(
                         lines, cursor + 1, blockEnd, indent + 4,
                         variables, output, inputs, inputIndex, functions, classes, objects, files
@@ -537,7 +537,7 @@ object PythonRunner {
             val parts = text.split(operator, limit = 2)
             if (parts.size == 2) {
                 val left = evaluate(parts[0].trim(), variables, inputs, inputIndex, functions, objects, classes, files)
-                val right = evaluate(parts[1].trim(), variables, inputs, inputIndex, functions, objects, classes)
+                val right = evaluate(parts[1].trim(), variables, inputs, inputIndex, functions, objects, classes, files)
                 val leftNumber = left.toIntOrNull()
                 val rightNumber = right.toIntOrNull()
 
@@ -936,7 +936,7 @@ object PythonRunner {
         val local = variables.toMutableMap()
         local["self"] = ref
         method.parameters.forEachIndexed { index, parameter ->
-            local[parameter] = evaluate(args[index], variables, inputs, inputIndex, functions, objects, classes)
+            local[parameter] = evaluate(args[index], variables, inputs, inputIndex, functions, objects, classes, files)
         }
         try {
             executeBlock(method.body, 0, method.body.size, 0, local, output, inputs, inputIndex, functions, classes, objects, files)
