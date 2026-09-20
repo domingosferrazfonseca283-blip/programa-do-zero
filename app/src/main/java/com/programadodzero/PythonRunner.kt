@@ -205,7 +205,7 @@ object PythonRunner {
                     try {
                         executeBlock(
                             lines, i + 1, cursor, indent + 4,
-                            variables, output, inputs, inputIndex, functions, classes, objects
+                            variables, output, inputs, inputIndex, functions, classes, objects, files
                         )
                     } catch (e: BreakLoop) {
                         break
@@ -431,7 +431,7 @@ object PythonRunner {
                 if (!executed) {
                     executeBlock(
                         lines, cursor + 1, blockEnd, indent + 4,
-                        variables, output, inputs, inputIndex, functions
+                        variables, output, inputs, inputIndex, functions, classes, objects, files
                     )
                     executed = true
                 }
@@ -480,7 +480,7 @@ object PythonRunner {
         val andParts = splitLogicalOperator(text, "and")
         if (andParts.size > 1) {
             return andParts.all {
-                evaluateCondition(it, variables, inputs, inputIndex, functions, classes, objects)
+                evaluateCondition(it, variables, inputs, inputIndex, functions, classes, objects, files)
             }
         }
 
