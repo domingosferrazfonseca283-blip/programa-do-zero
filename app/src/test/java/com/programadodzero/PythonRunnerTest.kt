@@ -252,6 +252,33 @@ class ChallengeValidatorTest {
         assertFalse(ChallengeValidator.validate(3, """idade = 20\nprint("adulto")"""))
     }
 
+
+    @Test
+    fun aulaDeRepeticaoAceitaSequenciaCrescente() {
+        assertTrue(
+            ChallengeValidator.validate(
+                4,
+                """
+                for numero in range(3, 7):
+                    print(numero)
+                """.trimIndent()
+            )
+        )
+    }
+
+    @Test
+    fun aulaDeRepeticaoRejeitaSequenciaNaoCrescente() {
+        assertFalse(
+            ChallengeValidator.validate(
+                4,
+                """
+                for numero in range(5):
+                    print(5 - numero)
+                """.trimIndent()
+            )
+        )
+    }
+
     @Test
     fun exigeSequenciaDeZeroAQuatro() {
         assertTrue(ChallengeValidator.validate(4, """for numero in range(5):\n    print(numero)"""))
