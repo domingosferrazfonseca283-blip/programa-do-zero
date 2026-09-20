@@ -26,7 +26,7 @@ class FinalExamActivity : Activity() {
         submit.setOnClickListener {
             ProgressManager.recordFinalExamAttempt(this, language)
             var score = 0
-            questions.forEachIndexed { i, q -> val checked = choices[i].checkedRadioButtonId; if (checked != -1 && choices[i].findViewById<RadioButton>(checked).tag == q.answerIndex) score++ }
+            questions.forEachIndexed { i, q -> val checked = choices[i].checkedRadioButtonId; if (checked != -1 && choices[i].findViewById<RadioButton>(checked).tag == q.answerIndex) { score++; ProgressManager.recordExamTopicScore(this, language, q.topic, true) } else { ProgressManager.recordExamTopicScore(this, language, q.topic, false) } }
             val percent = score * 100 / questions.size
             val passed = ProgressManager.passFinalExam(this, language, score, questions.size)
             result.text = if (passed) "🎉 APROVADO! $score/${questions.size} ($percent%)\n+100 XP\nTentativas: ${ProgressManager.finalExamAttempts(this, language)}\n\nO certificado profissional está liberado no seu perfil." else "📚 $score/${questions.size} ($percent%)\nTentativas: ${ProgressManager.finalExamAttempts(this, language)}\n\nVocê precisa de pelo menos 70%. Revise as aulas e tente novamente."
