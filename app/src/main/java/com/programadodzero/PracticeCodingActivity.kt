@@ -73,7 +73,7 @@ class PracticeCodingActivity : Activity() {
 
         check.setOnClickListener {
             val codeText = editor.text.toString().trim()
-            val result = validatePython(lesson, codeText)
+            val result = validatePython(challenge.id, codeText)
             if (result) {
                 val firstTime = ProgressManager.completeExercise(this, language, lesson)
                 ProgressManager.completeLesson(this, language, lesson)
@@ -81,7 +81,7 @@ class PracticeCodingActivity : Activity() {
                 check.isEnabled = false
                 next.isEnabled = true
             } else {
-                feedback.text = pythonHint(lesson, codeText)
+                feedback.text = pythonHint(challenge.id, codeText)
             }
         }
 
@@ -117,25 +117,25 @@ class PracticeCodingActivity : Activity() {
         setContentView(screen)
     }
 
-    private fun validatePython(lesson: Int, code: String): Boolean =
-        ChallengeValidator.validate(lesson, code)
+    private fun validatePython(exerciseId: String, code: String): Boolean =
+        ChallengeValidator.validate(exerciseId, code)
 
-    private fun pythonHint(lesson: Int, code: String): String {
+    private fun pythonHint(exerciseId: String, code: String): String {
         if (code.isBlank()) return "❌ O editor está vazio.\\n\\n💡 Comece pelo exemplo da aula e altere uma parte dele."
-        return when (lesson) {
-            0 -> if (!code.contains("print(")) "❌ Você ainda não usou print().\\n\\n💡 Use print(...) para mostrar uma mensagem." else "❌ Revise a escrita do print().\\n\\n💡 Compare seu código com o exemplo da aula."
-            1 -> if (!code.contains("=")) "❌ Falta criar uma variável.\\n\\n💡 Em Python, usamos = para guardar um valor." else "❌ A variável precisa ter um nome como nome ou idade.\\n\\n💡 Tente: nome = \"Ana\""
-            2 -> if (!code.any { it.isDigit() }) "❌ Falta um número.\\n\\n💡 Crie uma variável como idade = 20." else "❌ Você precisa trabalhar com texto e número.\\n\\n💡 Use aspas para texto e um número sem aspas."
-            3 -> if (!code.contains("if ")) "❌ Falta uma condição com if.\\n\\n💡 Comece com: if idade >= 18:" else "❌ Parece que a condição está incompleta.\\n\\n💡 Em Python, a linha do if termina com :."
-            4 -> if (!code.contains("range(")) "❌ Falta range().\\n\\n💡 Use for numero in range(5): para repetir 5 vezes." else "❌ Revise o laço for.\\n\\n💡 Ele precisa ter for, range() e :."
-            5 -> if (!code.contains("def ")) "❌ Falta criar a função com def.\\n\\n💡 Comece com def saudacao(nome):" else if (!code.contains("return")) "❌ A função precisa retornar um resultado.\\n\\n💡 Use return dentro da função." else "❌ Revise a estrutura da função.\\n\\n💡 A linha def precisa terminar com :."
-            6 -> when {
+        return when (exerciseId) {
+            "python-01" -> if (!code.contains("print(")) "❌ Você ainda não usou print().\\n\\n💡 Use print(...) para mostrar uma mensagem." else "❌ Revise a escrita do print().\\n\\n💡 Compare seu código com o exemplo da aula."
+            "python-02" -> if (!code.contains("=")) "❌ Falta criar uma variável.\\n\\n💡 Em Python, usamos = para guardar um valor." else "❌ A variável precisa ter um nome como nome ou idade.\\n\\n💡 Tente: nome = \"Ana\""
+            "python-03" -> if (!code.any { it.isDigit() }) "❌ Falta um número.\\n\\n💡 Crie uma variável como idade = 20." else "❌ Você precisa trabalhar com texto e número.\\n\\n💡 Use aspas para texto e um número sem aspas."
+            "python-04" -> if (!code.contains("if ")) "❌ Falta uma condição com if.\\n\\n💡 Comece com: if idade >= 18:" else "❌ Parece que a condição está incompleta.\\n\\n💡 Em Python, a linha do if termina com :."
+            "python-05" -> if (!code.contains("range(")) "❌ Falta range().\\n\\n💡 Use for numero in range(5): para repetir 5 vezes." else "❌ Revise o laço for.\\n\\n💡 Ele precisa ter for, range() e :."
+            "python-06" -> if (!code.contains("def ")) "❌ Falta criar a função com def.\\n\\n💡 Comece com def saudacao(nome):" else if (!code.contains("return")) "❌ A função precisa retornar um resultado.\\n\\n💡 Use return dentro da função." else "❌ Revise a estrutura da função.\\n\\n💡 A linha def precisa terminar com :."
+            "python-07" -> when {
                 !code.contains("[") || !code.contains("]") -> "❌ Falta criar uma lista.\\n\\n💡 Use colchetes [ ] para colocar vários itens juntos."
                 !code.contains(",") -> "❌ A lista precisa ter pelo menos dois itens.\\n\\n💡 Separe os itens com vírgula."
                 !code.contains("[1]") -> "❌ Agora mostre o segundo item da lista.\\n\\n💡 Se a lista se chama frutas, use frutas[1]."
                 else -> "❌ A lista precisa ser criada e o segundo item precisa ser mostrado."
             }
-            7 -> if (!code.contains("input(")) "❌ Falta input().\\n\\n💡 Use input() para pedir uma informação ao usuário." else if (!code.contains("if ")) "❌ Falta a decisão do projeto.\\n\\n💡 Use if para verificar a informação recebida." else if (!code.contains("print(")) "❌ Falta mostrar o resultado.\\n\\n💡 Use print() para apresentar uma mensagem." else "❌ Revise a estrutura do projeto.\\n\\n💡 Você precisa juntar input(), variável, if e print()."
+            "python-08" -> if (!code.contains("input(")) "❌ Falta input().\\n\\n💡 Use input() para pedir uma informação ao usuário." else if (!code.contains("if ")) "❌ Falta a decisão do projeto.\\n\\n💡 Use if para verificar a informação recebida." else if (!code.contains("print(")) "❌ Falta mostrar o resultado.\\n\\n💡 Use print() para apresentar uma mensagem." else "❌ Revise a estrutura do projeto.\\n\\n💡 Você precisa juntar input(), variável, if e print()."
             else -> "❌ Revise o objetivo da aula e tente novamente.\\n\\n💡 Use o exemplo como ponto de partida."
         }
     }
