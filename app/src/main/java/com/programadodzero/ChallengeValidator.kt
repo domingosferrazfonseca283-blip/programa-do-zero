@@ -118,7 +118,7 @@ object ChallengeValidator {
         if (!ana.success || ana.output.isBlank()) return false
 
         val carlosCode = code
-            .replace(""Ana"", ""Carlos"")
+            .replace("\"Ana\"", "\"Carlos\"")
             .replace("'Ana'", "'Carlos'")
 
         val carlos = PythonRunner.run(carlosCode)
