@@ -149,7 +149,12 @@ object ContentRepository {
         CourseModule("python-l2-m1", "Funções", 2, 1, "Crie blocos reutilizáveis e organize seus programas."),
         CourseModule("python-l2-m2", "Listas", 2, 2, "Trabalhe com coleções de valores."),
         CourseModule("python-l2-m3", "Projetos iniciais", 2, 3, "Combine conceitos para construir programas."),
-        CourseModule("python-l3-m1", "Programação orientada a objetos", 3, 1, "Prepare-se para modelar sistemas maiores.")
+        CourseModule("python-l2-m4", "Dicionários", 2, 4, "Modele dados com chave e valor."),
+        CourseModule("python-l2-m5", "Strings", 2, 5, "Manipule texto de forma programática."),
+        CourseModule("python-l2-m6", "Tratamento de erros", 2, 6, "Aprenda a lidar com entradas e falhas."),
+        CourseModule("python-l2-m7", "Arquivos e dados", 2, 7, "Conheça persistência e armazenamento de dados."),
+        CourseModule("python-l3-m1", "Programação orientada a objetos", 3, 1, "Prepare-se para modelar sistemas maiores."),
+        CourseModule("python-l3-m2", "Organização de sistemas", 3, 2, "Comece a pensar em responsabilidades e arquitetura.")
     )
 
     fun modulesFor(language: String): List<CourseModule> =
@@ -180,6 +185,42 @@ object ContentRepository {
         )
     )
 
+        LessonContent(
+            id = "python-09", level = 2, module = 4, order = 1,
+            title = "Aula 9 — Dicionários",
+            body = "Dicionários relacionam chaves a valores e são fundamentais para representar dados estruturados.",
+            code = "aluno = {\"nome\": \"Ana\", \"idade\": 20}\nprint(aluno[\"nome\"])"
+        ),
+        LessonContent(
+            id = "python-10", level = 2, module = 5, order = 1,
+            title = "Aula 10 — Strings",
+            body = "Strings possuem operações úteis para tratar e transformar texto.",
+            code = "nome = \"Ana\"\nprint(nome.upper())\nprint(len(nome))"
+        ),
+        LessonContent(
+            id = "python-11", level = 2, module = 6, order = 1,
+            title = "Aula 11 — Tratamento de erros",
+            body = "Programas reais precisam lidar com situações inesperadas sem simplesmente quebrar.",
+            code = "try:\n    numero = int(input(\"Número: \"))\nexcept:\n    print(\"Entrada inválida\")"
+        ),
+        LessonContent(
+            id = "python-12", level = 2, module = 7, order = 1,
+            title = "Aula 12 — Arquivos e dados",
+            body = "Aprenda o conceito de persistência: programas podem trabalhar com dados que permanecem fora da memória.",
+            code = "# Em Python real: with open(\"dados.txt\", \"w\") as arquivo:\n#     arquivo.write(\"Olá\")"
+        ),
+        LessonContent(
+            id = "python-13", level = 3, module = 1, order = 1,
+            title = "Aula 13 — Classes e objetos",
+            body = "Programação orientada a objetos permite modelar entidades com dados e comportamentos.",
+            code = "class Pessoa:\n    def __init__(self, nome):\n        self.nome = nome\n\npessoa = Pessoa(\"Ana\")\nprint(pessoa.nome)"
+        ),
+        LessonContent(
+            id = "python-14", level = 3, module = 2, order = 1,
+            title = "Aula 14 — Composição e organização",
+            body = "Sistemas maiores precisam separar responsabilidades e combinar objetos de forma organizada.",
+            code = "class Conta:\n    def __init__(self, saldo):\n        self.saldo = saldo\n\nconta = Conta(100)\nprint(conta.saldo)"
+        ),
     private val pythonExercises = listOf(
         ExerciseContent("python-01", "Aula 1 — Mostre uma mensagem", "Escreva um programa que mostre Olá, mundo! usando print().", "print(\"Olá, mundo!\")", "Você acabou de escrever seu primeiro programa."),
         ExerciseContent("python-02", "Aula 2 — Crie uma variável", "Crie uma variável chamada nome e coloque um nome dentro dela.", "nome = \"Ana\"\nprint(nome)", "Variáveis permitem guardar informações."),
@@ -191,8 +232,17 @@ object ContentRepository {
         ExerciseContent("python-08", "Aula 8 — Primeiro projeto", "Crie um pequeno programa: peça um valor com input(), guarde em uma variável, use if para tomar uma decisão e mostre um resultado com print().", "nome = input(\"Seu nome: \")\n\nif nome:\n    print(\"Olá, \" + nome + \"!\")", "Você juntou entrada, variável, condição e saída em um pequeno projeto.")
     )
 
+    private val additionalPythonExercises = listOf(
+        ExerciseContent("python-09", "Aula 9 — Dicionário", "Crie um dicionário com nome e idade e mostre o valor associado à chave nome.", "aluno = {\"nome\": \"Ana\", \"idade\": 20}\nprint(aluno[\"nome\"])", "Você começou a trabalhar com dados estruturados."),
+        ExerciseContent("python-10", "Aula 10 — Transforme texto", "Crie uma variável nome e mostre o texto em letras maiúsculas.", "nome = \"Ana\"\nprint(nome.upper())", "Métodos de string permitem transformar texto."),
+        ExerciseContent("python-11", "Aula 11 — Proteja a entrada", "Use try/except para tratar uma conversão de número que pode falhar.", "try:\n    numero = int(input(\"Número: \"))\nexcept:\n    print(\"Entrada inválida\")", "Programas robustos tratam situações inesperadas."),
+        ExerciseContent("python-12", "Aula 12 — Planeje persistência", "Explique no código, usando comentários, onde você escreveria dados em um arquivo.", "# with open(\"dados.txt\", \"w\") as arquivo:\n#     arquivo.write(\"Olá\")", "Persistência permite manter dados além da execução atual."),
+        ExerciseContent("python-13", "Aula 13 — Crie uma classe", "Crie uma classe Pessoa com atributo nome, instancie um objeto e mostre o nome.", "class Pessoa:\n    def __init__(self, nome):\n        self.nome = nome\n\npessoa = Pessoa(\"Ana\")\nprint(pessoa.nome)", "Objetos combinam estado e comportamento."),
+        ExerciseContent("python-14", "Aula 14 — Modele uma conta", "Crie uma classe Conta com atributo saldo, instancie-a e mostre o saldo.", "class Conta:\n    def __init__(self, saldo):\n        self.saldo = saldo\n\nconta = Conta(100)\nprint(conta.saldo)", "Agora você está começando a modelar entidades de um sistema.")
+    )
+
     fun exercisesFor(language: String): List<ExerciseContent> =
-        if (language == "🐍  Python") pythonExercises else emptyList()
+        if (language == "🐍  Python") pythonExercises + additionalPythonExercises else emptyList()
 
     fun projectFor(language: String, projectId: Int = 1): ProjectContent? =
         if (language == "🐍  Python" && projectId == 1) pythonProject else null
