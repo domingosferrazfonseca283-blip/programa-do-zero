@@ -10,17 +10,19 @@ import android.widget.LinearLayout
 import android.widget.TextView
 
 class ProfileActivity : Activity() {
-    companion object { private const val TOTAL = 8 }
+    
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val language = intent.getStringExtra("language") ?: ProgressManager.getActiveLanguage(this) ?: "🐍  Python"
         val xp = ProgressManager.getXp(this)
-        val lessons = ProgressManager.completedCount(this, language, TOTAL)
-        val exercises = ProgressManager.completedExerciseCount(this, language, TOTAL)
-        val percent = (lessons + exercises) * 100 / (TOTAL * 2)
-        val complete = ProgressManager.isLanguageComplete(this, language, TOTAL)
+        val lessonIds = ContentRepository.lessonsFor(language).map { it.id }
+        val total = lessonIds.size
+        val lessons = ProgressManager.completedCount(this, language, lessonIds)
+        val exercises = ProgressManager.completedExerciseCount(this, language, lessonIds)
+        val percent = if (total == 0) 0 else (lessons + exercises) * 100 / (total * 2)
+        val complete = total > 0 && ProgressManager.isLanguageComplete(this, language, lessonIds)
 
         val screen = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -46,7 +48,7 @@ class ProfileActivity : Activity() {
         }
 
         val stats = TextView(this).apply {
-            text = "⭐ XP: $xp\n📚 Aulas concluídas: $lessons/$TOTAL\n🧩 Exercícios concluídos: $exercises/$TOTAL\n📈 Progresso: $percent%"
+            text = "⭐ XP: $xp\n📚 Aulas concluídas: $lessons/$total\n🧩 Exercícios concluídos: $exercises/$total\n📈 Progresso: $percent%"
             textSize = 20f
             setTextColor(Color.WHITE)
             setPadding(0, 20, 0, 30)
