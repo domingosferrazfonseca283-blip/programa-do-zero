@@ -51,7 +51,7 @@ class PracticalLessonsActivity : Activity() {
         screen.addView(subtitle)
 
         lessonTitles.forEachIndexed { index, lessonTitle ->
-            val completed = ProgressManager.isExerciseCompleted(this, language, index)
+            val completed = ProgressManager.isExerciseCompleted(this, language, "python-0" + (index + 1))
 
             val button = Button(this).apply {
                 text = if (completed) "✅ $lessonTitle  •  concluída" else "🧩 $lessonTitle"
