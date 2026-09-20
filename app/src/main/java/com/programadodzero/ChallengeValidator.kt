@@ -89,13 +89,44 @@ object ChallengeValidator {
         }
 
     private fun validateFunctionChallenge(code: String): Boolean {
+        val function = Regex(
+            """^\\s*def\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*\\(\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*\\):\\s*$""",
+            RegexOption.MULTILINE
+        ).find(code) ?: return false
+
+        val functionName = function.groupValues[1]
+        val parameter = function.groupValues[2]
+
         if (!hasFunction(code)) return false
 
-        val result = PythonRunner.run(code)
-        if (!result.success) return false
+        val functionBody = code.substring(function.range.last + 1)
+            .lineSequence()
+            .takeWhile { it.isBlank() || it.startsWith(" ") }
+            .joinToString("\n")
 
-        val output = result.output.trim()
-        return output.contains("Ana") && output.length > 3
+        if (!functionBody.contains("return")) return false
+        if (!Regex("""\\breturn\\s+.*\\b$parameter\\b""").containsMatchIn(functionBody)) {
+            return false
+        }
+
+        val callPattern = Regex(
+            """\\b$functionName\\s*\\(\\s*["']Ana["']\\s*\\)"""
+        )
+        if (!callPattern.containsMatchIn(code)) return false
+
+        val ana = PythonRunner.run(code)
+        if (!ana.success || ana.output.isBlank()) return false
+
+        val carlosCode = code
+            .replace(""""""Ana""""", """"Carlos"""")
+            .replace("'''Ana'''", "'''Carlos'''")
+            .replace("'Ana'", "'Carlos'")
+
+        val carlos = PythonRunner.run(carlosCode)
+        if (!carlos.success || carlos.output.isBlank()) return false
+
+        return ana.output.trim() != carlos.output.trim() &&
+            carlos.output.contains("Carlos")
     }
 
     private fun hasFunction(code: String): Boolean =
