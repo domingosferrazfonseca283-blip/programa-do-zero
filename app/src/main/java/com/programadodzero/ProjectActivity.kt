@@ -9,144 +9,136 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 
-class PracticeCodingActivity : Activity() {
-    companion object {
-        const val EXTRA_LANGUAGE = "language"
-        const val EXTRA_LEVEL = "level"
-        const val EXTRA_LESSON = "lesson"
-    }
+class ProjectActivity : Activity() {
+    private var step = 0
+    private lateinit var editor: EditText
+    private lateinit var feedback: TextView
+    private lateinit var next: Button
 
-    private data class Challenge(val title: String, val instruction: String, val starter: String, val success: String)
+    private val steps = listOf(
+        "1/5 — Crie o número secreto" to "Crie uma variável chamada numero_secreto com um número.",
+        "2/5 — Peça o palpite" to "Use input() para pedir um palpite e guarde a resposta em uma variável.",
+        "3/5 — Compare os números" to "Use if para verificar se o palpite é igual ao número secreto.",
+        "4/5 — Dê uma dica" to "Use elif ou else para informar se o palpite é maior ou menor.",
+        "5/5 — Conte tentativas" to "Crie tentativas e aumente esse contador quando o jogador tentar."
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val language = intent.getStringExtra(EXTRA_LANGUAGE) ?: "🐍  Python"
-        val level = intent.getStringExtra(EXTRA_LEVEL) ?: "Prática"
-        val lesson = intent.getIntExtra(EXTRA_LESSON, 0)
-        val challenge = pythonChallenges()[lesson.coerceIn(0, 7)]
+        buildScreen()
+        showStep()
+    }
 
+    private fun buildScreen() {
         val screen = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(24, 30, 24, 24)
+            setPadding(24, 28, 24, 24)
             setBackgroundColor(Color.rgb(15, 23, 42))
         }
-        val header = TextView(this).apply {
-            text = "⌨️ Prática de código ${lesson + 1}/8 • $language"
-            textSize = 20f
+
+        val title = TextView(this).apply {
+            text = "🎮 Projeto 1 — Jogo de Adivinhação"
+            textSize = 22f
             setTextColor(Color.WHITE)
             setTypeface(null, Typeface.BOLD)
         }
-        val instruction = TextView(this).apply {
-            text = "${challenge.title}\n\n${challenge.instruction}"
-            textSize = 18f
+
+        val help = TextView(this).apply {
+            text = "Construa o jogo por etapas. Você pode corrigir o código e tentar novamente."
+            textSize = 16f
             setTextColor(Color.LTGRAY)
-            setPadding(0, 16, 0, 16)
+            setPadding(0, 12, 0, 12)
         }
-        val editor = EditText(this).apply {
-            setText(challenge.starter)
-            textSize = 17f
+
+        editor = EditText(this).apply {
+            setText("numero_secreto = 7")
+            textSize = 16f
             setTextColor(Color.WHITE)
             setBackgroundColor(Color.rgb(30, 41, 59))
             typeface = Typeface.MONOSPACE
             gravity = android.view.Gravity.TOP or android.view.Gravity.START
-            setPadding(16, 16, 16, 16)
-            minLines = 7
-        }
-        val feedback = TextView(this).apply {
-            textSize = 16f
-            setTextColor(Color.LTGRAY)
-            setPadding(0, 14, 0, 10)
-        }
-        val check = Button(this).apply {
-            text = "▶ Verificar código"
-            textSize = 17f
-            isAllCaps = false
-        }
-        val next = Button(this).apply {
-            text = if (lesson < 7) "Próxima aula →" else "🏆 Concluir linguagem"
-            isAllCaps = false
-            isEnabled = false
+            setPadding(14, 14, 14, 14)
+            minLines = 10
         }
 
-        check.setOnClickListener {
-            val codeText = editor.text.toString().trim()
-            val result = validatePython(lesson, codeText)
-            if (result) {
-                val firstTime = ProgressManager.completeExercise(this, language, lesson)
-                ProgressManager.completeLesson(this, language, lesson)
-                feedback.text = if (firstTime) "✅ Muito bem! ${challenge.success}\n\n+50 XP" else "✅ Código correto! ${challenge.success}"
-                check.isEnabled = false
-                next.isEnabled = true
-            } else {
-                feedback.text = pythonHint(lesson, codeText)
+        feedback = TextView(this).apply {
+            textSize = 16f
+            setTextColor(Color.LTGRAY)
+            setPadding(0, 12, 0, 8)
+        }
+
+        val check = Button(this).apply {
+            text = "▶ Verificar etapa"
+            isAllCaps = false
+            setOnClickListener { verifyStep() }
+        }
+
+        next = Button(this).apply {
+            text = "Próxima etapa →"
+            isAllCaps = false
+            isEnabled = false
+            setOnClickListener {
+                step++
+                showStep()
             }
         }
 
-        next.setOnClickListener {
-            if (lesson < 7) {
-                startActivity(android.content.Intent(this, PracticeCodingActivity::class.java).apply {
-                    putExtra(EXTRA_LANGUAGE, language)
-                    putExtra(EXTRA_LEVEL, level)
-                    putExtra(EXTRA_LESSON, lesson + 1)
-                })
-                finish()
-            } else finish()
-        }
-
         val back = Button(this).apply {
-            text = "← Voltar à aula"
+            text = "← Voltar"
             isAllCaps = false
             setOnClickListener { finish() }
         }
 
-        screen.addView(header)
-        screen.addView(instruction)
+        screen.addView(title)
+        screen.addView(help)
         screen.addView(editor, LinearLayout.LayoutParams(-1, 0, 1f))
-        screen.addView(check, LinearLayout.LayoutParams(-1, 62))
         screen.addView(feedback)
+        screen.addView(check, LinearLayout.LayoutParams(-1, 60))
         screen.addView(next, LinearLayout.LayoutParams(-1, 60))
         screen.addView(back, LinearLayout.LayoutParams(-1, 58))
         setContentView(screen)
     }
 
-    private fun validatePython(lesson: Int, code: String): Boolean {
-        if (code.isBlank()) return false
-        return when (lesson) {
-            0 -> code.contains("print(")
-            1 -> code.contains("=") && (code.contains("nome") || code.contains("idade"))
-            2 -> code.contains("=") && (code.contains("\"") || code.contains("'")) && code.any { it.isDigit() }
-            3 -> code.contains("if ") && code.contains(":")
-            4 -> code.contains("for ") && code.contains("range(")
-            5 -> code.contains("def ") && code.contains(":") && code.contains("return")
-            6 -> code.contains("[") && code.contains("]")
-            7 -> code.contains("input(") && code.contains("print(") && code.contains("if ") && code.contains(":") && code.contains("=")
+    private fun showStep() {
+        if (step >= steps.size) return
+        val item = steps[step]
+        feedback.text = "🎯 " + item.first + "\n\n" + item.second + "\n\n💡 Mantenha o código anterior e acrescente a nova parte."
+        next.isEnabled = false
+    }
+
+    private fun verifyStep() {
+        val code = editor.text.toString()
+        val ok = when (step) {
+            0 -> code.contains("numero_secreto") && code.contains("=")
+            1 -> code.contains("input(")
+            2 -> code.contains("if ") && code.contains("==")
+            3 -> (code.contains("elif ") || code.contains("else:")) && code.contains("print(")
+            4 -> code.contains("tentativas") && (code.contains("+ 1") || code.contains("+1"))
             else -> false
         }
-    }
 
-    private fun pythonHint(lesson: Int, code: String): String {
-        if (code.isBlank()) return "❌ O editor está vazio.\\n\\n💡 Comece pelo exemplo da aula e altere uma parte dele."
-        return when (lesson) {
-            0 -> if (!code.contains("print(")) "❌ Você ainda não usou print().\\n\\n💡 Use print(...) para mostrar uma mensagem." else "❌ Revise a escrita do print().\\n\\n💡 Compare seu código com o exemplo da aula."
-            1 -> if (!code.contains("=")) "❌ Falta criar uma variável.\\n\\n💡 Em Python, usamos = para guardar um valor." else "❌ A variável precisa ter um nome como nome ou idade.\\n\\n💡 Tente: nome = \"Ana\""
-            2 -> if (!code.any { it.isDigit() }) "❌ Falta um número.\\n\\n💡 Crie uma variável como idade = 20." else "❌ Você precisa trabalhar com texto e número.\\n\\n💡 Use aspas para texto e um número sem aspas."
-            3 -> if (!code.contains("if ")) "❌ Falta uma condição com if.\\n\\n💡 Comece com: if idade >= 18:" else "❌ Parece que a condição está incompleta.\\n\\n💡 Em Python, a linha do if termina com :."
-            4 -> if (!code.contains("range(")) "❌ Falta range().\\n\\n💡 Use for numero in range(5): para repetir 5 vezes." else "❌ Revise o laço for.\\n\\n💡 Ele precisa ter for, range() e :."
-            5 -> if (!code.contains("def ")) "❌ Falta criar a função com def.\\n\\n💡 Comece com def saudacao(nome):" else if (!code.contains("return")) "❌ A função precisa retornar um resultado.\\n\\n💡 Use return dentro da função." else "❌ Revise a estrutura da função.\\n\\n💡 A linha def precisa terminar com :."
-            6 -> "❌ Sua lista ainda não está completa.\\n\\n💡 Use colchetes [ ] e coloque pelo menos dois itens dentro."
-            7 -> if (!code.contains("input(")) "❌ Falta input().\\n\\n💡 Use input() para pedir uma informação ao usuário." else if (!code.contains("if ")) "❌ Falta a decisão do projeto.\\n\\n💡 Use if para verificar a informação recebida." else if (!code.contains("print(")) "❌ Falta mostrar o resultado.\\n\\n💡 Use print() para apresentar uma mensagem." else "❌ Revise a estrutura do projeto.\\n\\n💡 Você precisa juntar input(), variável, if e print()."
-            else -> "❌ Revise o objetivo da aula e tente novamente.\\n\\n💡 Use o exemplo como ponto de partida."
+        if (!ok) {
+            feedback.text = when (step) {
+                0 -> "❌ Falta a variável numero_secreto.\n\n💡 Exemplo: numero_secreto = 7"
+                1 -> "❌ Falta input().\n\n💡 Use palpite = int(input(\"Digite seu palpite: \"))"
+                2 -> "❌ Falta comparar os valores.\n\n💡 Use if palpite == numero_secreto:"
+                3 -> "❌ Falta uma alternativa com elif ou else e uma mensagem.\n\n💡 Use print() para explicar a dica."
+                4 -> "❌ Falta controlar as tentativas.\n\n💡 Crie tentativas = 0 e depois aumente com tentativas = tentativas + 1."
+                else -> "❌ Revise esta etapa."
+            }
+            return
+        }
+
+        if (step == steps.lastIndex) {
+            if (ProgressManager.completeProject(this, 1)) {
+                feedback.text = "🏆 Projeto concluído!\n\nVocê construiu seu primeiro jogo juntando vários conceitos.\n\n+100 XP"
+            } else {
+                feedback.text = "🏆 Projeto concluído!\n\nVocê já recebeu o XP deste projeto."
+            }
+            next.isEnabled = false
+        } else {
+            feedback.text = "✅ Etapa concluída!\n\nVocê entendeu esta parte. Agora avance para a próxima."
+            next.isEnabled = true
         }
     }
-
-    private fun pythonChallenges(): List<Challenge> = listOf(
-        Challenge("Aula 1 — Mostre uma mensagem", "Escreva um programa que mostre Olá, mundo! usando print().", "print(\"Olá, mundo!\")", "Você acabou de escrever seu primeiro programa."),
-        Challenge("Aula 2 — Crie uma variável", "Crie uma variável chamada nome e coloque um nome dentro dela.", "nome = \"Ana\"\nprint(nome)", "Variáveis permitem guardar informações."),
-        Challenge("Aula 3 — Trabalhe com dados", "Crie uma variável de texto e outra com um número.", "nome = \"Ana\"\nidade = 20", "Agora você consegue guardar diferentes tipos de dados."),
-        Challenge("Aula 4 — Tome uma decisão", "Use if para mostrar uma mensagem quando idade for 18 ou maior.", "idade = 20\n\nif idade >= 18:\n    print(\"Maior de idade\")", "Você ensinou o programa a tomar uma decisão."),
-        Challenge("Aula 5 — Repita uma tarefa", "Use for e range() para mostrar números de 0 a 4.", "for numero in range(5):\n    print(numero)", "Laços permitem repetir tarefas sem copiar o código."),
-        Challenge("Aula 6 — Crie uma função", "Crie uma função que receba um nome e retorne uma saudação.", "def saudacao(nome):\n    return \"Olá, \" + nome", "Funções ajudam a organizar e reutilizar código."),
-        Challenge("Aula 7 — Use uma lista", "Crie uma lista com pelo menos dois itens.", "frutas = [\"maçã\", \"banana\"]\nprint(frutas)", "Listas permitem trabalhar com vários valores juntos."),
-        Challenge("Aula 8 — Primeiro projeto", "Crie um pequeno programa: peça um valor com input(), guarde em uma variável, use if para tomar uma decisão e mostre um resultado com print().", "nome = input(\"Seu nome: \")\n\nif nome:\n    print(\"Olá, \" + nome + \"!\")", "Você juntou entrada, variável, condição e saída em um pequeno projeto.")
-    )
 }
