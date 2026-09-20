@@ -2,10 +2,10 @@
 
 Cloud: identidade, permissões, storage, redes, logging, secrets, backups e configuração.
 
-Para cada identidade pergunte: o que precisa fazer, quais recursos precisa, por quanto tempo e como auditar?
+Para cada identidade: o que precisa fazer, quais recursos, por quanto tempo e como auditar?
 
 Containers: imagens, volumes, redes, secrets, privilégios e atualização.
 
-Pipeline defensiva: commit, testes, análise estática, verificação de dependências, build, testes e publicação controlada.
+Pipeline defensiva: commit, testes, análise estática, dependências, build, testes e publicação controlada.
 
 Projeto: pipeline de laboratório que falhe quando testes falham, dependência crítica é detetada, secret é incluído ou configuração obrigatória está ausente.
