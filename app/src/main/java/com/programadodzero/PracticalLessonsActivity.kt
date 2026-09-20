@@ -58,10 +58,10 @@ class PracticalLessonsActivity : Activity() {
                 textSize = 16f
                 isAllCaps = false
                 setOnClickListener {
-                    startActivity(Intent(this@PracticalLessonsActivity, ExerciseActivity::class.java).apply {
-                        putExtra(ExerciseActivity.EXTRA_LANGUAGE, language)
-                        putExtra(ExerciseActivity.EXTRA_LEVEL, "Prática")
-                        putExtra(ExerciseActivity.EXTRA_LESSON, index)
+                    startActivity(Intent(this@PracticalLessonsActivity, PracticeCodingActivity::class.java).apply {
+                        putExtra(PracticeCodingActivity.EXTRA_LANGUAGE, language)
+                        putExtra(PracticeCodingActivity.EXTRA_LEVEL, "Prática")
+                        putExtra(PracticeCodingActivity.EXTRA_LESSON, index)
                     })
                 }
             }
