@@ -143,11 +143,7 @@ class ProjectActivity : Activity() {
         }
 
         if (step == steps.lastIndex) {
-            if (ProgressManager.completeProject(this, 1)) {
-                feedback.text = "🏆 Projeto concluído!\n\nVocê construiu seu primeiro jogo juntando vários conceitos.\n\n+100 XP"
-            } else {
-                feedback.text = "🏆 Projeto concluído!\n\nVocê já recebeu o XP deste projeto."
-            }
+            feedback.text = "✅ Etapa concluída!\n\nAgora execute o jogo para testar seu código de verdade.\n\n🏆 O projeto será concluído quando a execução funcionar."
             next.isEnabled = false
             play.isEnabled = true
         } else {
