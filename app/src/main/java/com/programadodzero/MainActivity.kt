@@ -11,7 +11,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 
 class MainActivity : Activity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -50,6 +49,34 @@ class MainActivity : Activity() {
         }
         tela.addView(progresso, LinearLayout.LayoutParams(-1, -2))
 
+        val pratica = Button(this).apply {
+            text = "🧪 Aulas práticas"
+            textSize = 16f
+            isAllCaps = false
+            setOnClickListener {
+                startActivity(Intent(this@MainActivity, PracticalLessonsActivity::class.java).apply {
+                    putExtra("language", "🐍  Python")
+                })
+            }
+        }
+        tela.addView(pratica, LinearLayout.LayoutParams(-1, 60).apply {
+            setMargins(0, 0, 0, 10)
+        })
+
+        val editor = Button(this).apply {
+            text = "⌨️ Praticar código"
+            textSize = 16f
+            isAllCaps = false
+            setOnClickListener {
+                startActivity(Intent(this@MainActivity, CodeEditorActivity::class.java).apply {
+                    putExtra("language", "🐍  Python")
+                })
+            }
+        }
+        tela.addView(editor, LinearLayout.LayoutParams(-1, 60).apply {
+            setMargins(0, 0, 0, 10)
+        })
+
         val perfil = Button(this).apply {
             text = "🏆 Meu progresso"
             textSize = 16f
@@ -60,19 +87,13 @@ class MainActivity : Activity() {
                 })
             }
         }
-        val editor = Button(this).apply {\n            text = "⌨️ Praticar código"\n            textSize = 16f\n            isAllCaps = false\n            setOnClickListener {\n                startActivity(Intent(this@MainActivity, CodeEditorActivity::class.java).apply {\n                    putExtra("language", "🐍  Python")\n                })\n            }\n        }\n        tela.addView(editor, LinearLayout.LayoutParams(-1, 60).apply {\n            setMargins(0, 0, 0, 10)\n        })\n\n        tela.addView(perfil, LinearLayout.LayoutParams(-1, 60).apply {
+        tela.addView(perfil, LinearLayout.LayoutParams(-1, 60).apply {
             setMargins(0, 0, 0, 14)
         })
 
         val linguagens = listOf(
-            "🐍  Python",
-            "🌐  JavaScript",
-            "🔷  TypeScript",
-            "☕  Java",
-            "⚙️  C",
-            "🚀  C++",
-            "🦀  Rust",
-            "🐹  Go"
+            "🐍  Python", "🌐  JavaScript", "🔷  TypeScript", "☕  Java",
+            "⚙️  C", "🚀  C++", "🦀  Rust", "🐹  Go"
         )
 
         for (linguagem in linguagens) {
@@ -80,19 +101,15 @@ class MainActivity : Activity() {
                 text = linguagem
                 textSize = 17f
                 isAllCaps = false
+                setOnClickListener {
+                    startActivity(Intent(this@MainActivity, LevelActivity::class.java).apply {
+                        putExtra(LevelActivity.EXTRA_LANGUAGE, linguagem)
+                    })
+                }
             }
-
-            val parametros = LinearLayout.LayoutParams(-1, 65).apply {
+            tela.addView(botao, LinearLayout.LayoutParams(-1, 65).apply {
                 setMargins(0, 6, 0, 6)
-            }
-
-            tela.addView(botao, parametros)
-
-            botao.setOnClickListener {
-                val intent = Intent(this, LevelActivity::class.java)
-                intent.putExtra(LevelActivity.EXTRA_LANGUAGE, linguagem)
-                startActivity(intent)
-            }
+            })
         }
 
         setContentView(tela)
