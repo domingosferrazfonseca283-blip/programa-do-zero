@@ -15,6 +15,7 @@ object ProgressManager {
     private const val DAILY_MISSION_DAY = "daily_mission_day"
     private const val DAILY_MISSION_XP = "daily_mission_xp"
     private const val FINAL_EXAM_SCORE_PREFIX = "final_exam_score:"
+    private const val FINAL_EXAM_ATTEMPTS_PREFIX = "final_exam_attempts:"
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -110,6 +111,10 @@ object ProgressManager {
         val p = prefs(context)
         p.edit().putInt(XP, p.getInt(XP, 0) + amount).apply()
     }
+
+    fun finalExamAttempts(context: Context, language: String): Int = prefs(context).getInt(FINAL_EXAM_ATTEMPTS_PREFIX + language, 0)
+
+    fun recordFinalExamAttempt(context: Context, language: String) { val key = FINAL_EXAM_ATTEMPTS_PREFIX + language; prefs(context).edit().putInt(key, finalExamAttempts(context, language) + 1).apply() }
 
     fun finalExamScore(context: Context, language: String): Int? = prefs(context).getInt(FINAL_EXAM_SCORE_PREFIX + language, -1).let { if (it >= 0) it else null }
 
