@@ -92,8 +92,8 @@ class LessonActivity : Activity() {
         screen.removeView(body)
         screen.removeView(code)
         screen.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
-        screen.addView(nextButton, LinearLayout.LayoutParams(-1, 65))
-        screen.addView(backButton, LinearLayout.LayoutParams(-1, 60))
+        screen.addView(nextButton, LinearLayout.LayoutParams(-1, -2))
+        screen.addView(backButton, LinearLayout.LayoutParams(-1, -2))
         setContentView(screen)
         showLesson()
     }
@@ -122,6 +122,9 @@ class LessonActivity : Activity() {
             }
             quizBox.addView(options)
             quizBox.addView(Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
                 text = "Verificar resposta"; isAllCaps = false
                 setOnClickListener {
                     val selected = options.checkedRadioButtonId - 1000
