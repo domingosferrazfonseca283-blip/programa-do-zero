@@ -48,7 +48,9 @@ class PracticeCodingActivity : Activity() {
             setTypeface(null, Typeface.BOLD)
         }
         val instruction = TextView(this).apply {
-            text = "${challenge.title}\n\n${challenge.instruction}"
+            text = "${challenge.title}
+
+${challenge.instruction}"
             textSize = 18f
             setTextColor(Color.LTGRAY)
             setPadding(0, 16, 0, 16)
@@ -91,7 +93,9 @@ class PracticeCodingActivity : Activity() {
             if (result) {
                 val firstTime = ProgressManager.completeExercise(this, language, challenge.id)
                 ProgressManager.completeLesson(this, language, challenge.id)
-                feedback.text = if (firstTime) "✅ Muito bem! ${challenge.success}\n\n+50 XP" else "✅ Código correto! ${challenge.success}"
+                feedback.text = if (firstTime) "✅ Muito bem! ${challenge.success}
+
++50 XP" else "✅ Código correto! ${challenge.success}"
                 check.isEnabled = false
                 next.isEnabled = true
             } else {
@@ -100,7 +104,26 @@ class PracticeCodingActivity : Activity() {
         }
 
         next.setOnClickListener {
-            val moduleLessons = ContentRepository.lessonsForModule(language, levelNumber, moduleNumber)\n            val currentModuleIndex = moduleLessons.indexOfFirst { it.id == challenge.id }\n            if (currentModuleIndex >= 0 && currentModuleIndex < moduleLessons.lastIndex) {\n                startActivity(android.content.Intent(this, LessonActivity::class.java).apply {\n                    putExtra(LessonActivity.EXTRA_LANGUAGE, language)\n                    putExtra(LessonActivity.EXTRA_LEVEL, level)\n                    putExtra(LessonActivity.EXTRA_LEVEL_NUMBER, levelNumber)\n                    putExtra(LessonActivity.EXTRA_MODULE, moduleNumber)\n                    putExtra(LessonActivity.EXTRA_LESSON_ID, moduleLessons[currentModuleIndex + 1].id)\n                })\n            } else {\n                startActivity(android.content.Intent(this, ModuleActivity::class.java).apply {\n                    putExtra(ModuleActivity.EXTRA_LANGUAGE, language)\n                    putExtra(ModuleActivity.EXTRA_LEVEL, levelNumber)\n                })\n            }\n            finish()\n        }\n\n        val back = Button(this).apply {
+            val moduleLessons = ContentRepository.lessonsForModule(language, levelNumber, moduleNumber)
+            val currentModuleIndex = moduleLessons.indexOfFirst { it.id == challenge.id }
+            if (currentModuleIndex >= 0 && currentModuleIndex < moduleLessons.lastIndex) {
+                startActivity(android.content.Intent(this, LessonActivity::class.java).apply {
+                    putExtra(LessonActivity.EXTRA_LANGUAGE, language)
+                    putExtra(LessonActivity.EXTRA_LEVEL, level)
+                    putExtra(LessonActivity.EXTRA_LEVEL_NUMBER, levelNumber)
+                    putExtra(LessonActivity.EXTRA_MODULE, moduleNumber)
+                    putExtra(LessonActivity.EXTRA_LESSON_ID, moduleLessons[currentModuleIndex + 1].id)
+                })
+            } else {
+                startActivity(android.content.Intent(this, ModuleActivity::class.java).apply {
+                    putExtra(ModuleActivity.EXTRA_LANGUAGE, language)
+                    putExtra(ModuleActivity.EXTRA_LEVEL, levelNumber)
+                })
+            }
+            finish()
+        }
+
+        val back = Button(this).apply {
             gravity = Gravity.CENTER
             includeFontPadding = false
             setPadding(16, 10, 16, 10)
@@ -123,22 +146,66 @@ class PracticeCodingActivity : Activity() {
         ChallengeValidator.validate(exerciseId, code)
 
     private fun pythonHint(exerciseId: String, code: String): String {
-        if (code.isBlank()) return "❌ O editor está vazio.\\n\\n💡 Comece pelo exemplo da aula e altere uma parte dele."
+        if (code.isBlank()) return "❌ O editor está vazio.\
+\
+💡 Comece pelo exemplo da aula e altere uma parte dele."
         return when (exerciseId) {
-            "python-01" -> if (!code.contains("print(")) "❌ Você ainda não usou print().\\n\\n💡 Use print(...) para mostrar uma mensagem." else "❌ Revise a escrita do print().\\n\\n💡 Compare seu código com o exemplo da aula."
-            "python-02" -> if (!code.contains("=")) "❌ Falta criar uma variável.\\n\\n💡 Em Python, usamos = para guardar um valor." else "❌ A variável precisa ter um nome como nome ou idade.\\n\\n💡 Tente: nome = \"Ana\""
-            "python-03" -> if (!code.any { it.isDigit() }) "❌ Falta um número.\\n\\n💡 Crie uma variável como idade = 20." else "❌ Você precisa trabalhar com texto e número.\\n\\n💡 Use aspas para texto e um número sem aspas."
-            "python-04" -> if (!code.contains("if ")) "❌ Falta uma condição com if.\\n\\n💡 Comece com: if idade >= 18:" else "❌ Parece que a condição está incompleta.\\n\\n💡 Em Python, a linha do if termina com :."
-            "python-05" -> if (!code.contains("range(")) "❌ Falta range().\\n\\n💡 Use for numero in range(5): para repetir 5 vezes." else "❌ Revise o laço for.\\n\\n💡 Ele precisa ter for, range() e :."
-            "python-06" -> if (!code.contains("def ")) "❌ Falta criar a função com def.\\n\\n💡 Comece com def saudacao(nome):" else if (!code.contains("return")) "❌ A função precisa retornar um resultado.\\n\\n💡 Use return dentro da função." else "❌ Revise a estrutura da função.\\n\\n💡 A linha def precisa terminar com :."
+            "python-01" -> if (!code.contains("print(")) "❌ Você ainda não usou print().\
+\
+💡 Use print(...) para mostrar uma mensagem." else "❌ Revise a escrita do print().\
+\
+💡 Compare seu código com o exemplo da aula."
+            "python-02" -> if (!code.contains("=")) "❌ Falta criar uma variável.\
+\
+💡 Em Python, usamos = para guardar um valor." else "❌ A variável precisa ter um nome como nome ou idade.\
+\
+💡 Tente: nome = \"Ana\""
+            "python-03" -> if (!code.any { it.isDigit() }) "❌ Falta um número.\
+\
+💡 Crie uma variável como idade = 20." else "❌ Você precisa trabalhar com texto e número.\
+\
+💡 Use aspas para texto e um número sem aspas."
+            "python-04" -> if (!code.contains("if ")) "❌ Falta uma condição com if.\
+\
+💡 Comece com: if idade >= 18:" else "❌ Parece que a condição está incompleta.\
+\
+💡 Em Python, a linha do if termina com :."
+            "python-05" -> if (!code.contains("range(")) "❌ Falta range().\
+\
+💡 Use for numero in range(5): para repetir 5 vezes." else "❌ Revise o laço for.\
+\
+💡 Ele precisa ter for, range() e :."
+            "python-06" -> if (!code.contains("def ")) "❌ Falta criar a função com def.\
+\
+💡 Comece com def saudacao(nome):" else if (!code.contains("return")) "❌ A função precisa retornar um resultado.\
+\
+💡 Use return dentro da função." else "❌ Revise a estrutura da função.\
+\
+💡 A linha def precisa terminar com :."
             "python-07" -> when {
-                !code.contains("[") || !code.contains("]") -> "❌ Falta criar uma lista.\\n\\n💡 Use colchetes [ ] para colocar vários itens juntos."
-                !code.contains(",") -> "❌ A lista precisa ter pelo menos dois itens.\\n\\n💡 Separe os itens com vírgula."
-                !code.contains("[1]") -> "❌ Agora mostre o segundo item da lista.\\n\\n💡 Se a lista se chama frutas, use frutas[1]."
+                !code.contains("[") || !code.contains("]") -> "❌ Falta criar uma lista.\
+\
+💡 Use colchetes [ ] para colocar vários itens juntos."
+                !code.contains(",") -> "❌ A lista precisa ter pelo menos dois itens.\
+\
+💡 Separe os itens com vírgula."
+                !code.contains("[1]") -> "❌ Agora mostre o segundo item da lista.\
+\
+💡 Se a lista se chama frutas, use frutas[1]."
                 else -> "❌ A lista precisa ser criada e o segundo item precisa ser mostrado."
             }
-            "python-08" -> if (!code.contains("input(")) "❌ Falta input().\\n\\n💡 Use input() para pedir uma informação ao usuário." else if (!code.contains("if ")) "❌ Falta a decisão do projeto.\\n\\n💡 Use if para verificar a informação recebida." else if (!code.contains("print(")) "❌ Falta mostrar o resultado.\\n\\n💡 Use print() para apresentar uma mensagem." else "❌ Revise a estrutura do projeto.\\n\\n💡 Você precisa juntar input(), variável, if e print()."
-            else -> "❌ Revise o objetivo da aula e tente novamente.\\n\\n💡 Use o exemplo como ponto de partida."
+            "python-08" -> if (!code.contains("input(")) "❌ Falta input().\
+\
+💡 Use input() para pedir uma informação ao usuário." else if (!code.contains("if ")) "❌ Falta a decisão do projeto.\
+\
+💡 Use if para verificar a informação recebida." else if (!code.contains("print(")) "❌ Falta mostrar o resultado.\
+\
+💡 Use print() para apresentar uma mensagem." else "❌ Revise a estrutura do projeto.\
+\
+💡 Você precisa juntar input(), variável, if e print()."
+            else -> "❌ Revise o objetivo da aula e tente novamente.\
+\
+💡 Use o exemplo como ponto de partida."
         }
     }
 
