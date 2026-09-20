@@ -72,9 +72,6 @@ class LevelActivity : Activity() {
             val levelLessons = ContentRepository.lessonsForLevel(linguagem, nivelNumero)
             val previousLessons = ContentRepository.lessonsFor(linguagem)
                 .filter { it.level < nivelNumero }
-            val previousComplete = previousLessons.all {
-                ProgressManager.isLessonCompleted(this, linguagem, it.id)
-            }
             val enabled = available &&
                 ProgressManager.canStartLanguage(this, linguagem, lessonIds) &&
                 previousComplete
