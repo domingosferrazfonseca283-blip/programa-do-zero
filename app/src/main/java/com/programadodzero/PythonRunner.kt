@@ -243,7 +243,8 @@ object PythonRunner {
                     inputs,
                     inputIndex,
                     classes,
-                    objects
+                    objects,
+                    files
                 )
                 i++
                 continue
@@ -703,7 +704,8 @@ object PythonRunner {
                 inputs,
                 inputIndex,
                 classes,
-                objects
+                objects,
+                files
             )
         }
 
@@ -731,13 +733,13 @@ object PythonRunner {
         if (plusMinus.size > 1) {
             var result = evaluateArithmetic(
                 plusMinus[0].second, variables, inputs, inputIndex, functions, objects, classes, files
-            ) ?: evaluate(plusMinus[0].second, variables, inputs, inputIndex, functions, objects, classes)
+            ) ?: evaluate(plusMinus[0].second, variables, inputs, inputIndex, functions, objects, classes, files)
 
             for (index in 1 until plusMinus.size) {
                 val (operator, term) = plusMinus[index]
                 val right = evaluateArithmetic(
-                    term, variables, inputs, inputIndex, functions, objects, classes
-                ) ?: evaluate(term, variables, inputs, inputIndex, functions, objects, classes)
+                    term, variables, inputs, inputIndex, functions, objects, classes, files
+                ) ?: evaluate(term, variables, inputs, inputIndex, functions, objects, classes, files)
                 val leftNumber = result.toIntOrNull() ?: return null
                 val rightNumber = right.toIntOrNull() ?: return null
                 result = if (operator == '+') {
@@ -753,7 +755,7 @@ object PythonRunner {
         if (multiplyDivide.size > 1) {
             var result = evaluateArithmetic(
                 multiplyDivide[0].second, variables, inputs, inputIndex, functions, objects, classes
-            ) ?: evaluate(multiplyDivide[0].second, variables, inputs, inputIndex, functions, objects, classes)
+            ) ?: evaluate(multiplyDivide[0].second, variables, inputs, inputIndex, functions, objects, classes, files)
 
             for (index in 1 until multiplyDivide.size) {
                 val (operator, term) = multiplyDivide[index]
@@ -859,7 +861,7 @@ object PythonRunner {
         return try {
             executeBlock(
                 function.body, 0, function.body.size, 0,
-                local, output, inputs, inputIndex, functions, classes, objects
+                local, output, inputs, inputIndex, functions, classes, objects, files
             )
             ""
         } catch (e: ReturnValue) {
