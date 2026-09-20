@@ -501,7 +501,7 @@ object PythonRunner {
 
     private fun evaluateCondition(
         condition: String,
-        variables: Map<String, String>,
+        variables: MutableMap<String, String>,
         inputs: List<String>,
         inputIndex: IntArray,
         functions: MutableMap<String, FunctionDef>,
@@ -615,7 +615,7 @@ object PythonRunner {
         if (attrRead != null) {
             val ref = variables[attrRead.groupValues[1]] ?: throw IllegalArgumentException("Objeto não encontrado.")
             val obj = objects[ref] ?: throw IllegalArgumentException("Variável não é um objeto.")
-            return obj.attributes[attrRead.groupValues[2]]
+            return obj.attributes[attrRead.groupValues[2]] ?: throw IllegalArgumentException("Atributo não encontrado.")
                 ?: throw IllegalArgumentException("Atributo não encontrado.")
         }
 
