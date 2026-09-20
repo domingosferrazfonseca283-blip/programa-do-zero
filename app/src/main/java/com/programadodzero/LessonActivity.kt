@@ -127,8 +127,11 @@ class LessonActivity : Activity() {
                     val selected = options.checkedRadioButtonId - 1000
                     if (selected < 0) Toast.makeText(this@LessonActivity, "Escolha uma resposta.", Toast.LENGTH_SHORT).show()
                     else if (selected == question.answerIndex) {
-                        ProgressManager.addXp(this@LessonActivity, 10)
-                        Toast.makeText(this@LessonActivity, "✅ Correto! +10 XP", Toast.LENGTH_SHORT).show()
+                        if (ProgressManager.recordReview(this@LessonActivity, language, question.id)) {
+                            Toast.makeText(this@LessonActivity, "✅ Correto! +10 XP", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(this@LessonActivity, "✅ Você já concluiu esta revisão.", Toast.LENGTH_SHORT).show()
+                        }
                         isEnabled = false
                     } else Toast.makeText(this@LessonActivity, "❌ Ainda não. " + question.explanation, Toast.LENGTH_LONG).show()
                 }
