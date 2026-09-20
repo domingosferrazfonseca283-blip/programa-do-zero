@@ -14,6 +14,7 @@ class ProjectActivity : Activity() {
     private lateinit var editor: EditText
     private lateinit var feedback: TextView
     private lateinit var next: Button
+    private lateinit var play: Button
 
     private val steps = listOf(
         "1/5 — Crie o número secreto" to "Crie uma variável chamada numero_secreto com um número.",
@@ -83,6 +84,13 @@ class ProjectActivity : Activity() {
             }
         }
 
+        play = Button(this).apply {
+            text = "🎮 Executar meu jogo"
+            isAllCaps = false
+            isEnabled = false
+            setOnClickListener { openPlayableGame() }
+        }
+
         val back = Button(this).apply {
             text = "← Voltar"
             isAllCaps = false
@@ -95,12 +103,17 @@ class ProjectActivity : Activity() {
         screen.addView(feedback)
         screen.addView(check, LinearLayout.LayoutParams(-1, 60))
         screen.addView(next, LinearLayout.LayoutParams(-1, 60))
+        screen.addView(play, LinearLayout.LayoutParams(-1, 60))
         screen.addView(back, LinearLayout.LayoutParams(-1, 58))
         setContentView(screen)
     }
 
     private fun showStep() {
-        if (step >= steps.size) return
+        if (step >= steps.size) {
+            play.isEnabled = true
+            return
+        }
+        play.isEnabled = false
         val item = steps[step]
         feedback.text = "🎯 " + item.first + "\n\n" + item.second + "\n\n💡 Mantenha o código anterior e acrescente a nova parte."
         next.isEnabled = false
@@ -136,9 +149,18 @@ class ProjectActivity : Activity() {
                 feedback.text = "🏆 Projeto concluído!\n\nVocê já recebeu o XP deste projeto."
             }
             next.isEnabled = false
+            play.isEnabled = true
         } else {
             feedback.text = "✅ Etapa concluída!\n\nVocê entendeu esta parte. Agora avance para a próxima."
             next.isEnabled = true
         }
+    }
+
+    private fun openPlayableGame() {
+        val intent = android.content.Intent(this, CodeEditorActivity::class.java).apply {
+            putExtra("language", "🐍  Python")
+            putExtra("project_mode", true)
+        }
+        startActivity(intent)
     }
 }
