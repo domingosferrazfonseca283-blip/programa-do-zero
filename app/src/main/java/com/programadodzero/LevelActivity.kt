@@ -81,7 +81,7 @@ class LevelActivity : Activity() {
             val status = when {
                 completed == levelLessons.size && levelLessons.isNotEmpty() -> "✅ Concluído"
                 enabled -> "▶️ Disponível"
-                else -> "🔒 Conclua o nível anterior"
+                else -> "🔒 Nível bloqueado"
             }
             val botao = Button(this).apply {
                 gravity = Gravity.CENTER
