@@ -162,7 +162,7 @@ object PythonRunner {
                 continue
             }
 
-            val withMatch = Regex("""with\\s+open\\((.*)\\)\\s+as\\s+([A-Za-z_][A-Za-z0-9_]*)s*:""").matchEntire(line)
+            val withMatch = Regex("""with\s+open\((.*)\)\s+as\s+([A-Za-z_][A-Za-z0-9_]*)\s*:""").matchEntire(line)
             if (withMatch != null) {
                 val cursor = findBlockEnd(lines, i + 1, end, indent)
                 val args = splitArguments(withMatch.groupValues[1])
@@ -616,7 +616,6 @@ object PythonRunner {
             val ref = variables[attrRead.groupValues[1]] ?: throw IllegalArgumentException("Objeto não encontrado.")
             val obj = objects[ref] ?: throw IllegalArgumentException("Variável não é um objeto.")
             return obj.attributes[attrRead.groupValues[2]] ?: throw IllegalArgumentException("Atributo não encontrado.")
-                ?: throw IllegalArgumentException("Atributo não encontrado.")
         }
 
         val openCall = Regex("open\\((.*)\\)").matchEntire(value)
