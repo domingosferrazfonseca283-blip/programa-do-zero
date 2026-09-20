@@ -6,6 +6,7 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
 import android.widget.Button
+import android.content.Intent
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -54,14 +55,18 @@ class LevelActivity : Activity() {
         tela.addView(titulo, LinearLayout.LayoutParams(-1, -2))
         tela.addView(subtitulo, LinearLayout.LayoutParams(-1, -2))
 
-        val niveis = listOf(
-            "🌱  Nunca programei",
-            "📘  Básico",
-            "🧠  Intermediário",
-            "🔥  Avançado"
+        val nivelNomes = mapOf(
+            1 to "🌱  Fundamentos",
+            2 to "📘  Intermediário",
+            3 to "🔥  Avançado"
         )
+        val niveis = ContentRepository.modulesFor(linguagem)
+            .map { it.level }
+            .distinct()
+            .sorted()
 
-        for (nivel in niveis) {
+        for (nivelNumero in niveis) {
+            val nivel = nivelNomes[nivelNumero] ?: "Nível $nivelNumero"
             val botao = Button(this).apply {
                 text = nivel
                 textSize = 17f
@@ -77,9 +82,9 @@ class LevelActivity : Activity() {
 
             botao.setOnClickListener {
                 if (ProgressManager.selectLanguage(this, linguagem, lessonIds)) {
-                    startActivity(android.content.Intent(this, LessonActivity::class.java).apply {
+                    startActivity(Intent(this, ModuleActivity::class.java).apply {
                         putExtra(LessonActivity.EXTRA_LANGUAGE, linguagem)
-                        putExtra(LessonActivity.EXTRA_LEVEL, nivel)
+                        putExtra(ModuleActivity.EXTRA_LEVEL, nivelNumero)
                     })
                 } else {
                     Toast.makeText(
