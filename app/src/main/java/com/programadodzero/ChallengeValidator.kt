@@ -10,6 +10,7 @@ object ChallengeValidator {
         if (code.isBlank()) return false
 
         val execution = when (lesson) {
+            3 -> null
             7 -> PythonRunner.run(code, listOf("Ana"))
             else -> PythonRunner.run(code)
         }
@@ -20,7 +21,8 @@ object ChallengeValidator {
             0 -> execution.output.trim() == "Olá, mundo!"
             1 -> hasAssignment(code) && execution.output.isNotBlank()
             2 -> hasTextAndNumberAssignment(code)
-            3 -> hasAdultCondition(code) && execution.output.isNotBlank()
+            3 -> validateAgeChallenge(code)
+
             4 -> hasRangeLoop(code) && execution.output.trim() == "0\n1\n2\n3\n4"
             5 -> hasFunction(code) && execution.output.trim().contains("Ana")
             6 -> hasListWithAtLeastTwoItems(code, execution.output)
@@ -47,6 +49,18 @@ object ChallengeValidator {
             it.substringAfter("=", "").trim().toIntOrNull() != null
         }
         return hasText && hasNumber
+    }
+
+    private fun validateAgeChallenge(code: String): Boolean {
+        if (!hasAdultCondition(code)) return false
+
+        val minor = PythonRunner.run(code, listOf("17"))
+        if (!minor.success || minor.output.isBlank()) return false
+
+        val adult = PythonRunner.run(code, listOf("20"))
+        if (!adult.success || adult.output.isBlank()) return false
+
+        return minor.output.trim() != adult.output.trim()
     }
 
     private fun hasAdultCondition(code: String): Boolean =
