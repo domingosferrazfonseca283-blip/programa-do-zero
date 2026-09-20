@@ -7,6 +7,11 @@
         android:supportsRtl="true">
 
         <activity
+            android:name=".LevelActivity"
+            android:screenOrientation="portrait"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait"
             android:exported="true">
