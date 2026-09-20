@@ -43,7 +43,9 @@ data class ReviewQuestion(
     val question: String,
     val options: List<String>,
     val answerIndex: Int,
-    val explanation: String
+    val explanation: String,
+    val difficulty: Int = 1,
+    val topic: String = "Fundamentos"
 )
 
 data class ProjectContent(
@@ -143,6 +145,8 @@ object ContentRepository {
         "python-19" to ReviewQuestion("python-19-q1", "O que análise de eficiência ajuda a avaliar?", listOf("O trabalho e recursos usados", "A cor do aplicativo", "O nome do computador", "A velocidade da internet"), 0, "Eficiência considera recursos necessários para executar uma solução."),
         "python-20" to ReviewQuestion("python-20-q1", "O que fazer antes de implementar um projeto?", listOf("Entender requisitos e dividir o problema", "Escrever tudo de uma vez", "Ignorar entradas", "Evitar testes"), 0, "Entender o problema reduz retrabalho e orienta a implementação.")
     )
+
+    fun questionBank(language: String): List<ReviewQuestion> = if (language == "🐍  Python") pythonReviewQuestions.values.toList() else emptyList()
 
     fun finalExamFor(language: String): List<ReviewQuestion> { if (language != "🐍  Python") return emptyList(); val all = pythonReviewQuestions.values.toList(); val seed = java.time.LocalDate.now().toEpochDay().toInt(); return all.sortedBy { it.id.hashCode() xor seed }.take(10) }
 
