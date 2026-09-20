@@ -101,25 +101,25 @@ class PracticeCodingActivity : Activity() {
         }
 
         next.setOnClickListener {
-            val moduleLessons = ContentRepository.lessonsForModule(language, levelNumber, moduleNumber)
-            val currentModuleIndex = moduleLessons.indexOfFirst { it.id == challenge.id }
-            if (currentModuleIndex >= 0 && currentModuleIndex < moduleLessons.lastIndex) {
+            val allLessons = ContentRepository.lessonsFor(language)
+            val currentIndex = allLessons.indexOfFirst { it.id == challenge.id }
+            val nextLesson = if (currentIndex >= 0 && currentIndex < allLessons.lastIndex) allLessons[currentIndex + 1] else null
+
+            if (nextLesson != null) {
                 startActivity(android.content.Intent(this, LessonActivity::class.java).apply {
                     putExtra(LessonActivity.EXTRA_LANGUAGE, language)
-                    putExtra(LessonActivity.EXTRA_LEVEL, level)
-                    putExtra(LessonActivity.EXTRA_LEVEL_NUMBER, levelNumber)
-                    putExtra(LessonActivity.EXTRA_MODULE, moduleNumber)
-                    putExtra(LessonActivity.EXTRA_LESSON_ID, moduleLessons[currentModuleIndex + 1].id)
+                    putExtra(LessonActivity.EXTRA_LEVEL, "Nível " + nextLesson.level)
+                    putExtra(LessonActivity.EXTRA_LEVEL_NUMBER, nextLesson.level)
+                    putExtra(LessonActivity.EXTRA_MODULE, nextLesson.module)
+                    putExtra(LessonActivity.EXTRA_LESSON_ID, nextLesson.id)
                 })
             } else {
-                startActivity(android.content.Intent(this, ModuleActivity::class.java).apply {
-                    putExtra(ModuleActivity.EXTRA_LANGUAGE, language)
-                    putExtra(ModuleActivity.EXTRA_LEVEL, levelNumber)
+                startActivity(android.content.Intent(this, FinalExamActivity::class.java).apply {
+                    putExtra("language", language)
                 })
             }
             finish()
         }
-
         val back = Button(this).apply {
             gravity = Gravity.CENTER
             includeFontPadding = false
