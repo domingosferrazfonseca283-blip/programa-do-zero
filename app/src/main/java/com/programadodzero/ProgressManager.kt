@@ -17,6 +17,8 @@ object ProgressManager {
     private const val FINAL_EXAM_SCORE_PREFIX = "final_exam_score:"
     private const val FINAL_EXAM_ATTEMPTS_PREFIX = "final_exam_attempts:"
     private const val FINAL_EXAM_TOPIC_PREFIX = "final_exam_topic:"
+    private const val FINAL_EXAM_TOPIC_ATTEMPTS_PREFIX = "final_exam_topic_attempts:"
+    private const val FINAL_EXAM_TOPIC_CORRECT_PREFIX = "final_exam_topic_correct:"
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -113,9 +115,24 @@ object ProgressManager {
         p.edit().putInt(XP, p.getInt(XP, 0) + amount).apply()
     }
 
-    fun recordExamTopicScore(context: Context, language: String, topic: String, correct: Boolean) { val key = FINAL_EXAM_TOPIC_PREFIX + language + ":" + topic; val old = prefs(context).getInt(key, 0); prefs(context).edit().putInt(key, old + if (correct) 1 else -1).apply() }
+    fun recordExamTopicScore(context: Context, language: String, topic: String, correct: Boolean) {
+        val attemptsKey = FINAL_EXAM_TOPIC_ATTEMPTS_PREFIX + language + ":" + topic
+        val correctKey = FINAL_EXAM_TOPIC_CORRECT_PREFIX + language + ":" + topic
+        val p = prefs(context)
+        p.edit()
+            .putInt(attemptsKey, p.getInt(attemptsKey, 0) + 1)
+            .putInt(correctKey, p.getInt(correctKey, 0) + if (correct) 1 else 0)
+            .apply()
+    }
 
-    fun examTopicScore(context: Context, language: String, topic: String): Int = prefs(context).getInt(FINAL_EXAM_TOPIC_PREFIX + language + ":" + topic, 0)
+    fun examTopicScore(context: Context, language: String, topic: String): Int {
+        val attempts = prefs(context).getInt(FINAL_EXAM_TOPIC_ATTEMPTS_PREFIX + language + ":" + topic, 0)
+        val correct = prefs(context).getInt(FINAL_EXAM_TOPIC_CORRECT_PREFIX + language + ":" + topic, 0)
+        return if (attempts == 0) 0 else correct * 100 / attempts
+    }
+
+    fun examTopicAttempts(context: Context, language: String, topic: String): Int =
+        prefs(context).getInt(FINAL_EXAM_TOPIC_ATTEMPTS_PREFIX + language + ":" + topic, 0)
 
     fun finalExamAttempts(context: Context, language: String): Int = prefs(context).getInt(FINAL_EXAM_ATTEMPTS_PREFIX + language, 0)
 
