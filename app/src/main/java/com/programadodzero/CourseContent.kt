@@ -38,6 +38,14 @@ data class ProjectStepContent(
     val example: String
 )
 
+data class ReviewQuestion(
+    val id: String,
+    val question: String,
+    val options: List<String>,
+    val answerIndex: Int,
+    val explanation: String
+)
+
 data class ProjectContent(
     val id: Int,
     val title: String,
@@ -97,6 +105,26 @@ object ContentRepository {
         ExerciseContent("python-13", "Aula 13 — Crie uma classe", "Crie uma classe Pessoa com atributo nome, instancie um objeto e mostre o nome.", "class Pessoa:\n    def __init__(self, nome):\n        self.nome = nome\n\npessoa = Pessoa(\"Ana\")\nprint(pessoa.nome)", "Objetos combinam estado e comportamento."),
         ExerciseContent("python-14", "Aula 14 — Modele uma conta", "Crie uma classe Conta com saldo e um método depositar que leve o saldo até 150.", "class Conta:\n    def __init__(self, saldo):\n        self.saldo = saldo\n\n    def depositar(self, valor):\n        self.saldo = self.saldo + valor\n\nconta = Conta(100)\nconta.depositar(50)\nprint(conta.saldo)", "Agora você está modelando uma entidade de sistema.")
     )
+
+    private val pythonReviewQuestions = mapOf(
+        "python-01" to ReviewQuestion("python-01-q1", "O que é programação?", listOf("Criar instruções para um computador", "Montar um computador", "Somente escrever textos", "Usar internet"), 0, "Programação consiste em criar instruções executáveis para resolver tarefas."),
+        "python-02" to ReviewQuestion("python-02-q1", "Para que serve uma variável?", listOf("Guardar um valor", "Desligar o computador", "Criar uma senha", "Abrir um arquivo"), 0, "Uma variável associa um nome a um valor."),
+        "python-03" to ReviewQuestion("python-03-q1", "Qual é um valor booleano?", listOf("True", "20", "Ana", "1.5"), 0, "Booleanos representam verdadeiro ou falso."),
+        "python-04" to ReviewQuestion("python-04-q1", "Quando o bloco if é executado?", listOf("Quando a condição é verdadeira", "Sempre", "Nunca", "Somente depois de um for"), 0, "O if escolhe um caminho quando sua condição é verdadeira."),
+        "python-05" to ReviewQuestion("python-05-q1", "Para que serve um laço?", listOf("Repetir uma tarefa", "Criar uma variável", "Apagar código", "Fechar o aplicativo"), 0, "Laços automatizam repetições."),
+        "python-06" to ReviewQuestion("python-06-q1", "O que um parâmetro fornece?", listOf("Dados para uma função", "Energia ao computador", "Um arquivo", "Uma senha"), 0, "Parâmetros permitem que funções recebam dados."),
+        "python-07" to ReviewQuestion("python-07-q1", "Qual é o primeiro índice de uma lista Python?", listOf("0", "1", "-1", "10"), 0, "Python usa indexação baseada em zero."),
+        "python-08" to ReviewQuestion("python-08-q1", "Quais são partes comuns de um programa?", listOf("Entrada, processamento e saída", "Tela, teclado e mouse", "Arquivo, pasta e rede", "Classe, objeto e servidor"), 0, "Esse fluxo representa uma estrutura básica de processamento."),
+        "python-09" to ReviewQuestion("python-09-q1", "Como acessar aluno['nome']?", listOf("Pela chave nome", "Pelo índice 0", "Com input()", "Com range()"), 0, "Dicionários são acessados por chaves."),
+        "python-10" to ReviewQuestion("python-10-q1", "O que upper() faz?", listOf("Converte para maiúsculas", "Apaga o texto", "Converte para números", "Cria uma lista"), 0, "upper() retorna uma versão em letras maiúsculas."),
+        "python-11" to ReviewQuestion("python-11-q1", "Para que serve except?", listOf("Tratar uma exceção", "Criar uma classe", "Repetir um laço", "Ler uma lista"), 0, "except define o tratamento quando uma exceção ocorre."),
+        "python-12" to ReviewQuestion("python-12-q1", "Qual modo abre arquivo para leitura?", listOf("r", "w", "a", "x"), 0, "O modo r é usado para leitura."),
+        "python-13" to ReviewQuestion("python-13-q1", "O que é um objeto?", listOf("Uma instância de uma classe", "Sempre um arquivo", "Uma função global", "Um comentário"), 0, "Um objeto é uma instância concreta de uma classe."),
+        "python-14" to ReviewQuestion("python-14-q1", "O que a orientação a objetos organiza?", listOf("Estado e comportamento", "Somente textos", "Somente arquivos", "A conexão Wi-Fi"), 0, "Classes ajudam a organizar estado e comportamento das entidades.")
+    )
+
+    fun reviewFor(language: String, lessonId: String): ReviewQuestion? =
+        if (language == "🐍  Python") pythonReviewQuestions[lessonId] else null
 
     private val pythonProject = ProjectContent(
         1, "Jogo de Adivinhação",
