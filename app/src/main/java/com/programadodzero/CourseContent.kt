@@ -21,6 +21,21 @@ data class ExerciseContent(
     val success: String
 )
 
+data class ProjectStepContent(
+    val title: String,
+    val instruction: String,
+    val hint: String,
+    val example: String
+)
+
+data class ProjectContent(
+    val id: Int,
+    val title: String,
+    val description: String,
+    val starter: String,
+    val steps: List<ProjectStepContent>
+)
+
 object ContentRepository {
     private val pythonLessons = listOf(
         LessonContent(
@@ -110,6 +125,20 @@ object ContentRepository {
         if (language == "🐍  Python") pythonLessons else genericLessons
 
 
+    private val pythonProject = ProjectContent(
+        id = 1,
+        title = "Projeto 1 — Jogo de Adivinhação",
+        description = "Construa um jogo em Python por etapas, depois execute o programa completo.",
+        starter = "numero_secreto = 7",
+        steps = listOf(
+            ProjectStepContent("1/5 — Crie o número secreto", "Crie uma variável chamada numero_secreto com um número.", "Exemplo: numero_secreto = 7", "numero_secreto = 7"),
+            ProjectStepContent("2/5 — Peça o palpite", "Use input() para pedir um palpite e guarde a resposta em uma variável.", "Exemplo: palpite = int(input(\"Digite seu palpite: \"))", "palpite = int(input(\"Digite seu palpite: \"))"),
+            ProjectStepContent("3/5 — Compare os números", "Use if para verificar se o palpite é igual ao número secreto.", "Exemplo: if palpite == numero_secreto:", "if palpite == numero_secreto:\n    print(\"Acertou!\")"),
+            ProjectStepContent("4/5 — Dê uma dica", "Use elif ou else para informar se o palpite é maior ou menor.", "Use print() para mostrar a dica.", "elif palpite > numero_secreto:\n    print(\"Muito alto!\")\nelse:\n    print(\"Muito baixo!\")"),
+            ProjectStepContent("5/5 — Conte tentativas", "Crie tentativas e aumente esse contador quando o jogador tentar.", "Comece com tentativas = 0 e aumente com tentativas = tentativas + 1.", "tentativas = 0\n\nwhile tentativas < 5:\n    # seu jogo aqui\n    tentativas = tentativas + 1")
+        )
+    )
+
     private val pythonExercises = listOf(
         ExerciseContent("python-01", "Aula 1 — Mostre uma mensagem", "Escreva um programa que mostre Olá, mundo! usando print().", "print(\"Olá, mundo!\")", "Você acabou de escrever seu primeiro programa."),
         ExerciseContent("python-02", "Aula 2 — Crie uma variável", "Crie uma variável chamada nome e coloque um nome dentro dela.", "nome = \"Ana\"\nprint(nome)", "Variáveis permitem guardar informações."),
@@ -123,5 +152,8 @@ object ContentRepository {
 
     fun exercisesFor(language: String): List<ExerciseContent> =
         if (language == "🐍  Python") pythonExercises else emptyList()
+
+    fun projectFor(language: String, projectId: Int = 1): ProjectContent? =
+        if (language == "🐍  Python" && projectId == 1) pythonProject else null
 
 }
