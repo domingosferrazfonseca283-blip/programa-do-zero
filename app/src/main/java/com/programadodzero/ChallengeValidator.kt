@@ -9,9 +9,12 @@ object ChallengeValidator {
     fun validate(lesson: Int, code: String): Boolean {
         if (code.isBlank()) return false
 
+        if (lesson == 7) {
+            return validateProjectChallenge(code)
+        }
+
         val execution = when (lesson) {
             3 -> null
-            7 -> PythonRunner.run(code, listOf("Ana"))
             else -> PythonRunner.run(code)
         }
 
@@ -26,7 +29,7 @@ object ChallengeValidator {
             4 -> validateLoopChallenge(code)
             5 -> validateFunctionChallenge(code)
             6 -> validateListChallenge(code, execution.output)
-            7 -> hasInputConditionAndOutput(code) && execution.output.isNotBlank()
+            7 -> false
             else -> false
         }
     }
@@ -138,22 +141,32 @@ object ChallengeValidator {
             secondItem.isNotBlank()
     }
 
-    private fun hasInputConditionAndOutput(code: String): Boolean {
+    private fun validateProjectChallenge(code: String): Boolean {
         val inputVariable = code.lines()
             .map { it.trim() }
             .mapNotNull { line ->
-                val match = Regex("^([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*input\\(").find(line)
-                match?.groupValues?.get(1)
+                Regex("^([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*input\\(")
+                    .find(line)
+                    ?.groupValues
+                    ?.get(1)
             }
             .firstOrNull()
+            ?: return false
 
-        return inputVariable != null &&
-            code.lines().any { line ->
-                val clean = line.trim()
-                clean.startsWith("if ") &&
-                    clean.contains(":") &&
-                    clean.contains(inputVariable)
-            } &&
-            code.contains("print(")
-    }
-}
+        val hasDecision = code.lines().any { line ->
+            val clean = line.trim()
+            clean.startsWith("if ") &&
+                clean.endsWith(":") &&
+                clean.contains(inputVariable)
+        }
+
+        if (!hasDecision || !code.contains("print(")) return false
+
+        val withValue = PythonRunner.run(code, listOf("Ana"))
+        val withoutValue = PythonRunner.run(code, listOf(""))
+
+        if (!withValue.success || !withoutValue.success) return false
+        if (withValue.output.isBlank() || withoutValue.output.isBlank()) return false
+
+        return withValue.output.trim() != withoutValue.output.trim()
+    }}
