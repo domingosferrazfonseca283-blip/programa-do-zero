@@ -35,18 +35,35 @@ object ProgressManager {
         return streak
     }
 
-    data class DailyMission(val title: String, val target: Int, val progress: Int, val rewardXp: Int, val completed: Boolean)
+    enum class MissionType { LESSON, REVIEW, EXERCISE }
+
+    data class DailyMission(val type: MissionType, val title: String, val target: Int, val progress: Int, val rewardXp: Int, val completed: Boolean)
 
     fun dailyMission(context: Context, language: String): DailyMission {
-        val day = java.time.LocalDate.now().toString()
-        val p = prefs(context)
-        if (p.getString(DAILY_MISSION_DAY, null) != day) {
-            p.edit().putString(DAILY_MISSION_DAY, day).putInt(DAILY_MISSION_XP, 0).apply()
+        val day = java.time.LocalDate.now().toEpochDay()
+        val type = when ((day % 3).toInt()) {
+            0 -> MissionType.LESSON
+            1 -> MissionType.REVIEW
+            else -> MissionType.EXERCISE
         }
         val lessons = ContentRepository.lessonsFor(language).map { it.id }
-        val progress = completedCount(context, language, lessons)
+        val progress = when (type) {
+            MissionType.LESSON -> completedCount(context, language, lessons)
+            MissionType.REVIEW -> completedReviewCount(context, language)
+            MissionType.EXERCISE -> completedExerciseCount(context, language, lessons)
+        }
         val target = 1
-        return DailyMission("Complete 1 aula hoje", target, minOf(progress, target), 30, progress >= target)
+        val title = when (type) {
+            MissionType.LESSON -> "Complete 1 aula hoje"
+            MissionType.REVIEW -> "Acerte 1 revisão hoje"
+            MissionType.EXERCISE -> "Conclua 1 exercício hoje"
+        }
+        val dayKey = day.toString()
+        val p = prefs(context)
+        if (p.getString(DAILY_MISSION_DAY, null) != dayKey) {
+            p.edit().putString(DAILY_MISSION_DAY, dayKey).putInt(DAILY_MISSION_XP, 0).apply()
+        }
+        return DailyMission(type, title, target, minOf(progress, target), 30, progress >= target)
     }
 
     fun claimDailyMission(context: Context, language: String): Boolean {
