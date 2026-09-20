@@ -68,12 +68,16 @@ class CodeEditorActivity : Activity() {
                 return@setOnClickListener
             }
 
-            if (language == "🐍  Python" && code.contains("print(")) {
-                val text = extractPrint(code)
-                output.text = "✅ Execução simulada\n\n$text"
-                ProgressManager.addXp(this, 10)
+            if (language == "🐍  Python") {
+                val result = PythonRunner.run(code)
+                output.text = if (result.success) {
+                    "▶ Resultado da execução\\n\\n" + result.output
+                } else {
+                    "❌ Erro ao executar\\n\\n" + result.output
+                }
+                if (result.success) ProgressManager.addXp(this, 10)
             } else {
-                output.text = "ℹ️ Este editor está em modo de prática.\n\nO executor completo da linguagem será adicionado nas próximas versões."
+                output.text = "ℹ️ O executor Python está disponível nesta versão.\\n\\nOs executores das outras linguagens serão adicionados depois."
             }
         }
 
