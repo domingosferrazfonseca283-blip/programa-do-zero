@@ -13,6 +13,7 @@
         <activity android:name=".ExerciseActivity" android:screenOrientation="portrait" android:exported="false" />
         <activity android:name=".LibraryReaderActivity" android:screenOrientation="portrait" android:exported="false" />
         <activity android:name=".LibraryActivity" android:screenOrientation="portrait" android:exported="false" />
+        <activity android:name=".CertificateActivity" android:screenOrientation="portrait" android:exported="false" />
         <activity android:name=".ProfileActivity" android:screenOrientation="portrait" android:exported="false" />
         <activity android:name=".LessonActivity" android:screenOrientation="portrait" android:exported="false" />
         <activity android:name=".LevelActivity" android:screenOrientation="portrait" android:exported="false" />
