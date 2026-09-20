@@ -3,6 +3,7 @@ package com.programadodzero
 import android.app.Activity
 import android.graphics.Color
 import android.graphics.Typeface
+import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
 import android.widget.Button
@@ -18,6 +19,7 @@ class LibraryReaderActivity : Activity() {
     private lateinit var chapterTitle: TextView
     private lateinit var progress: TextView
     private lateinit var favoriteButton: Button
+    private lateinit var courseButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +59,19 @@ class LibraryReaderActivity : Activity() {
             }
         }
         root.addView(favoriteButton, LinearLayout.LayoutParams(-1, 52))
+
+        courseButton = Button(this).apply {
+            text = "🎓 Ir para a aula da linguagem"
+            isAllCaps = false
+            setOnClickListener {
+                startActivity(Intent(this@LibraryReaderActivity, LevelActivity::class.java).apply {
+                    putExtra(LevelActivity.EXTRA_LANGUAGE, book.language)
+                })
+            }
+        }
+        root.addView(courseButton, LinearLayout.LayoutParams(-1, 52).apply {
+            setMargins(0, 6, 0, 10)
+        })
 
         chapterTitle = TextView(this).apply {
             textSize = 22f
