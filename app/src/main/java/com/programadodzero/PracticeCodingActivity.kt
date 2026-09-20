@@ -157,7 +157,7 @@ class PracticeCodingActivity : Activity() {
         Challenge("Aula 3 — Trabalhe com dados", "Crie uma variável de texto e outra com um número.", "nome = \"Ana\"\nidade = 20", "Agora você consegue guardar diferentes tipos de dados."),
         Challenge("Aula 4 — Tome uma decisão", "Use if para mostrar uma mensagem quando idade for 18 ou maior.", "idade = 20\n\nif idade >= 18:\n    print(\"Maior de idade\")", "Você ensinou o programa a tomar uma decisão."),
         Challenge("Aula 5 — Repita uma tarefa", "Use for e range() para mostrar números de 0 a 4.", "for numero in range(5):\n    print(numero)", "Laços permitem repetir tarefas sem copiar o código."),
-        Challenge("Aula 6 — Crie uma função", "Crie uma função que receba um nome e retorne uma saudação.", "def saudacao(nome):\n    return \"Olá, \" + nome", "Funções ajudam a organizar e reutilizar código."),
+                Challenge("Aula 6 — Crie uma função", "Crie uma função que receba um nome e retorne uma saudação.", "def saudacao(nome):\n    return \"Olá, \" + nome\n\nprint(saudacao(\"Ana\"))", "Funções ajudam a organizar e reutilizar código."),
         Challenge("Aula 7 — Use uma lista", "Crie uma lista com pelo menos dois itens.", "frutas = [\"maçã\", \"banana\"]\nprint(frutas)", "Listas permitem trabalhar com vários valores juntos."),
         Challenge("Aula 8 — Primeiro projeto", "Crie um pequeno programa: peça um valor com input(), guarde em uma variável, use if para tomar uma decisão e mostre um resultado com print().", "nome = input(\"Seu nome: \")\n\nif nome:\n    print(\"Olá, \" + nome + \"!\")", "Você juntou entrada, variável, condição e saída em um pequeno projeto.")
     )
