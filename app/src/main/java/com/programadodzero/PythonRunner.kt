@@ -413,13 +413,15 @@ object PythonRunner {
     ): String? {
         val plusMinus = splitOperator(expression, setOf('+', '-'))
         if (plusMinus.size > 1) {
-            var result = evaluateArithmetic(plusMinus[0], variables, inputs, inputIndex, functions)
-                ?: return null
+            var result = evaluateArithmetic(
+                plusMinus[0].second, variables, inputs, inputIndex, functions
+            ) ?: evaluate(plusMinus[0].second, variables, inputs, inputIndex, functions)
 
             for (index in 1 until plusMinus.size) {
                 val (operator, term) = plusMinus[index]
-                val right = evaluateArithmetic(term, variables, inputs, inputIndex, functions)
-                    ?: return null
+                val right = evaluateArithmetic(
+                    term, variables, inputs, inputIndex, functions
+                ) ?: evaluate(term, variables, inputs, inputIndex, functions)
                 val leftNumber = result.toIntOrNull() ?: return null
                 val rightNumber = right.toIntOrNull() ?: return null
                 result = if (operator == '+') {
@@ -433,13 +435,15 @@ object PythonRunner {
 
         val multiplyDivide = splitOperator(expression, setOf('*', '/'))
         if (multiplyDivide.size > 1) {
-            var result = evaluateArithmetic(multiplyDivide[0], variables, inputs, inputIndex, functions)
-                ?: return null
+            var result = evaluateArithmetic(
+                multiplyDivide[0].second, variables, inputs, inputIndex, functions
+            ) ?: evaluate(multiplyDivide[0].second, variables, inputs, inputIndex, functions)
 
             for (index in 1 until multiplyDivide.size) {
                 val (operator, term) = multiplyDivide[index]
-                val right = evaluateArithmetic(term, variables, inputs, inputIndex, functions)
-                    ?: return null
+                val right = evaluateArithmetic(
+                    term, variables, inputs, inputIndex, functions
+                ) ?: evaluate(term, variables, inputs, inputIndex, functions)
                 val leftNumber = result.toIntOrNull() ?: return null
                 val rightNumber = right.toIntOrNull() ?: return null
 
