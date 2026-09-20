@@ -15,12 +15,16 @@ class PracticeCodingActivity : Activity() {
         const val EXTRA_LEVEL = "level"
         const val EXTRA_LESSON = "lesson"
         const val EXTRA_LESSON_ID = "lesson_id"
+        const val EXTRA_LEVEL_NUMBER = "level_number"
+        const val EXTRA_MODULE = "module"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val language = intent.getStringExtra(EXTRA_LANGUAGE) ?: "🐍  Python"
         val level = intent.getStringExtra(EXTRA_LEVEL) ?: "Prática"
+        val levelNumber = intent.getIntExtra(EXTRA_LEVEL_NUMBER, 1)
+        val moduleNumber = intent.getIntExtra(EXTRA_MODULE, 1)
         val lessonIndex = intent.getIntExtra(EXTRA_LESSON, 0)
         val lessonId = intent.getStringExtra(EXTRA_LESSON_ID)
         val challenges = ContentRepository.exercisesFor(language)
@@ -89,22 +93,7 @@ class PracticeCodingActivity : Activity() {
         }
 
         next.setOnClickListener {
-            if (lesson < challenges.lastIndex) {
-                startActivity(android.content.Intent(this, PracticeCodingActivity::class.java).apply {
-                    putExtra(EXTRA_LANGUAGE, language)
-                    putExtra(EXTRA_LEVEL, level)
-                    putExtra(EXTRA_LESSON, lesson + 1)
-                })
-                finish()
-            } else {
-                startActivity(android.content.Intent(this, ProjectActivity::class.java).apply {
-                    putExtra(EXTRA_LANGUAGE, language)
-                })
-                finish()
-            }
-        }
-
-        val back = Button(this).apply {
+            val moduleLessons = ContentRepository.lessonsForModule(language, levelNumber, moduleNumber)\n            val currentModuleIndex = moduleLessons.indexOfFirst { it.id == challenge.id }\n            if (currentModuleIndex >= 0 && currentModuleIndex < moduleLessons.lastIndex) {\n                startActivity(android.content.Intent(this, LessonActivity::class.java).apply {\n                    putExtra(LessonActivity.EXTRA_LANGUAGE, language)\n                    putExtra(LessonActivity.EXTRA_LEVEL, level)\n                    putExtra(LessonActivity.EXTRA_LEVEL_NUMBER, levelNumber)\n                    putExtra(LessonActivity.EXTRA_MODULE, moduleNumber)\n                    putExtra(LessonActivity.EXTRA_LESSON_ID, moduleLessons[currentModuleIndex + 1].id)\n                })\n            } else {\n                startActivity(android.content.Intent(this, ModuleActivity::class.java).apply {\n                    putExtra(ModuleActivity.EXTRA_LANGUAGE, language)\n                    putExtra(ModuleActivity.EXTRA_LEVEL, levelNumber)\n                })\n            }\n            finish()\n        }\n\n        val back = Button(this).apply {
             text = "← Voltar à aula"
             isAllCaps = false
             setOnClickListener { finish() }
