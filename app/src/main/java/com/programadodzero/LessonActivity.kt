@@ -16,7 +16,6 @@ class LessonActivity : Activity() {
         const val EXTRA_LEVEL_NUMBER = "level_number"
         const val EXTRA_MODULE = "module"
         const val EXTRA_LESSON_ID = "lesson_id"
-        const val EXTRA_LEVEL_NUMBER = "level_number"
         const val EXTRA_LESSON = "lesson"
     }
 
