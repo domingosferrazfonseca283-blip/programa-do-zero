@@ -9,11 +9,31 @@ object ProgressManager {
     private const val COMPLETED_LESSONS = "completed_lessons"
     private const val COMPLETED_EXERCISES = "completed_exercises"
     private const val COMPLETED_PROJECTS = "completed_projects"
+    private const val COMPLETED_REVIEWS = "completed_reviews"
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
     fun getXp(context: Context): Int = prefs(context).getInt(XP, 0)
+
+    fun getLevel(context: Context): Int = 1 + getXp(context) / 100
+
+    fun xpIntoLevel(context: Context): Int = getXp(context) % 100
+
+    fun recordReview(context: Context, language: String, questionId: String): Boolean {
+        val p = prefs(context)
+        val current = p.getStringSet(COMPLETED_REVIEWS, emptySet())?.toMutableSet() ?: mutableSetOf()
+        if (!current.add(key(language, questionId))) return false
+        p.edit().putStringSet(COMPLETED_REVIEWS, current).apply()
+        addXp(context, 10)
+        return true
+    }
+
+    fun isReviewCompleted(context: Context, language: String, questionId: String): Boolean =
+        prefs(context).getStringSet(COMPLETED_REVIEWS, emptySet())?.contains(key(language, questionId)) == true
+
+    fun completedReviewCount(context: Context, language: String): Int =
+        prefs(context).getStringSet(COMPLETED_REVIEWS, emptySet())?.count { it.startsWith("$language:") } ?: 0
 
     fun addXp(context: Context, amount: Int) {
         val p = prefs(context)
