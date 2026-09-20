@@ -10,6 +10,7 @@ object PythonRunner {
 
     private class InputRequired(val prompt: String) : Exception()
     private class ReturnValue(val value: String) : Exception()
+    private class BreakLoop : Exception()
     private data class FunctionDef(val parameters: List<String>, val body: List<String>)
 
     fun run(code: String, inputs: List<String> = emptyList()): Result {
@@ -135,10 +136,14 @@ object PythonRunner {
                         )
                     }
 
-                    executeBlock(
-                        lines, i + 1, cursor, indent + 4,
-                        variables, output, inputs, inputIndex, functions
-                    )
+                    try {
+                        executeBlock(
+                            lines, i + 1, cursor, indent + 4,
+                            variables, output, inputs, inputIndex, functions
+                        )
+                    } catch (e: BreakLoop) {
+                        break
+                    }
                 }
 
                 i = cursor
@@ -172,6 +177,10 @@ object PythonRunner {
                 )
                 i++
                 continue
+            }
+
+            if (line == "break") {
+                throw BreakLoop()
             }
 
             if (line.startsWith("return ")) {
