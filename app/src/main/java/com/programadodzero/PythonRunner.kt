@@ -191,7 +191,7 @@ object PythonRunner {
                 val cursor = findBlockEnd(lines, i + 1, end, indent)
                 var iterations = 0
 
-                while (evaluateCondition(condition, variables, inputs, inputIndex, functions)) {
+                while (evaluateCondition(condition, variables, inputs, inputIndex, functions, classes, objects)) {
                     if (iterations++ >= 1000) {
                         throw IllegalArgumentException(
                             "Linha " + (i + 1) + ": o while executou muitas vezes. " +
@@ -238,7 +238,9 @@ object PythonRunner {
                     variables,
                     output,
                     inputs,
-                    inputIndex
+                    inputIndex,
+                    classes,
+                    objects
                 )
                 i++
                 continue
@@ -287,17 +289,50 @@ object PythonRunner {
                 continue
             }
 
+            val methodCall = Regex("([A-Za-z_][A-Za-z0-9_]*)\\.([A-Za-z_][A-Za-z0-9_]*)\\((.*)\\)").matchEntire(line)
+            if (methodCall != null) {
+                val ref = variables[methodCall.groupValues[1]]
+                if (ref != null && objects.containsKey(ref)) {
+                    callMethod(
+                        ref,
+                        methodCall.groupValues[2],
+                        methodCall.groupValues[3],
+                        variables,
+                        objects,
+                        classes,
+                        output,
+                        inputs,
+                        inputIndex,
+                        functions
+                    )
+                    i++
+                    continue
+                }
+            }
+
             if (line.startsWith("return ")) {
                 val value = evaluate(
                     line.removePrefix("return ").trim(),
-                    variables, inputs, inputIndex, functions
+                    variables, inputs, inputIndex, functions, objects, classes
                 )
                 throw ReturnValue(value)
             }
 
             if (line.startsWith("print(") && line.endsWith(")")) {
                 val expression = line.removePrefix("print(").removeSuffix(")")
-                output.add(evaluate(expression, variables, inputs, inputIndex, functions))
+                output.add(evaluate(expression, variables, inputs, inputIndex, functions, objects, classes))
+                i++
+                continue
+            }
+
+            val attributeAssignment = Regex("([A-Za-z_][A-Za-z0-9_]*)\\.([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*(.+)").matchEntire(line)
+            if (attributeAssignment != null) {
+                val ref = variables[attributeAssignment.groupValues[1]]
+                    ?: throw IllegalArgumentException("Objeto não encontrado.")
+                val obj = objects[ref]
+                    ?: throw IllegalArgumentException("Variável não é um objeto.")
+                obj.attributes[attributeAssignment.groupValues[2]] =
+                    evaluate(attributeAssignment.groupValues[3], variables, inputs, inputIndex, functions, objects, classes)
                 i++
                 continue
             }
@@ -305,7 +340,7 @@ object PythonRunner {
             if (line.matches(Regex("[A-Za-z_][A-Za-z0-9_]*\\s*=\\s*.+"))) {
                 val parts = line.split("=", limit = 2)
                 variables[parts[0].trim()] =
-                    evaluate(parts[1].trim(), variables, inputs, inputIndex, functions)
+                    evaluate(parts[1].trim(), variables, inputs, inputIndex, functions, objects, classes)
                 i++
                 continue
             }
@@ -355,7 +390,7 @@ object PythonRunner {
 
             if (condition != null) {
                 val blockEnd = findBlockEnd(lines, cursor + 1, end, indent)
-                if (!executed && evaluateCondition(condition, variables, inputs, inputIndex, functions)) {
+                if (!executed && evaluateCondition(condition, variables, inputs, inputIndex, functions, classes, objects)) {
                     executeBlock(
                         lines, cursor + 1, blockEnd, indent + 4,
                         variables, output, inputs, inputIndex, functions, classes, objects
@@ -637,7 +672,7 @@ object PythonRunner {
         variables[value]?.let { return it }
         if (value.matches(Regex("-?\\d+"))) return value
 
-        val arithmetic = evaluateArithmetic(value, variables, inputs, inputIndex, functions)
+        val arithmetic = evaluateArithmetic(value, variables, inputs, inputIndex, functions, objects, classes)
         if (arithmetic != null) return arithmetic
 
         throw IllegalArgumentException("Não entendi a expressão: " + value)
@@ -649,19 +684,21 @@ object PythonRunner {
         variables: Map<String, String>,
         inputs: List<String>,
         inputIndex: IntArray,
-        functions: MutableMap<String, FunctionDef>
+        functions: MutableMap<String, FunctionDef>,
+        objects: MutableMap<String, ObjectInstance>,
+        classes: MutableMap<String, ClassDef>
     ): String? {
         val plusMinus = splitOperator(expression, setOf('+', '-'))
         if (plusMinus.size > 1) {
             var result = evaluateArithmetic(
-                plusMinus[0].second, variables, inputs, inputIndex, functions
-            ) ?: evaluate(plusMinus[0].second, variables, inputs, inputIndex, functions)
+                plusMinus[0].second, variables, inputs, inputIndex, functions, objects, classes
+            ) ?: evaluate(plusMinus[0].second, variables, inputs, inputIndex, functions, objects, classes)
 
             for (index in 1 until plusMinus.size) {
                 val (operator, term) = plusMinus[index]
                 val right = evaluateArithmetic(
-                    term, variables, inputs, inputIndex, functions
-                ) ?: evaluate(term, variables, inputs, inputIndex, functions)
+                    term, variables, inputs, inputIndex, functions, objects, classes
+                ) ?: evaluate(term, variables, inputs, inputIndex, functions, objects, classes)
                 val leftNumber = result.toIntOrNull() ?: return null
                 val rightNumber = right.toIntOrNull() ?: return null
                 result = if (operator == '+') {
@@ -676,8 +713,8 @@ object PythonRunner {
         val multiplyDivide = splitOperator(expression, setOf('*', '/'))
         if (multiplyDivide.size > 1) {
             var result = evaluateArithmetic(
-                multiplyDivide[0].second, variables, inputs, inputIndex, functions
-            ) ?: evaluate(multiplyDivide[0].second, variables, inputs, inputIndex, functions)
+                multiplyDivide[0].second, variables, inputs, inputIndex, functions, objects, classes
+            ) ?: evaluate(multiplyDivide[0].second, variables, inputs, inputIndex, functions, objects, classes)
 
             for (index in 1 until multiplyDivide.size) {
                 val (operator, term) = multiplyDivide[index]
@@ -775,7 +812,7 @@ object PythonRunner {
         val local = variables.toMutableMap()
         function.parameters.forEachIndexed { index, parameter ->
             local[parameter] = evaluate(
-                arguments[index], variables, inputs, inputIndex, functions
+                arguments[index], variables, inputs, inputIndex, functions, objects, classes
             )
         }
 
