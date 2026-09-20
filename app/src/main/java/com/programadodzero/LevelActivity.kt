@@ -70,11 +70,8 @@ class LevelActivity : Activity() {
             val nivel = nivelNomes[nivelNumero] ?: "Nível $nivelNumero"
             val levelModules = ContentRepository.modulesForLevel(linguagem, nivelNumero)
             val levelLessons = ContentRepository.lessonsForLevel(linguagem, nivelNumero)
-            val previousLessons = ContentRepository.lessonsFor(linguagem)
-                .filter { it.level < nivelNumero }
             val enabled = available &&
-                ProgressManager.canStartLanguage(this, linguagem, lessonIds) &&
-                previousComplete
+                ProgressManager.canStartLanguage(this, linguagem, lessonIds)
             val completed = levelLessons.count {
                 ProgressManager.isLessonCompleted(this, linguagem, it.id)
             }
