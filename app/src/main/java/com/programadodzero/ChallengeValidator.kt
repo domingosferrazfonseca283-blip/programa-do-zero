@@ -10,6 +10,7 @@ object ChallengeValidator {
         if (code.isBlank()) return false
         if (lesson == 3) return validateAgeChallenge(code)
         if (lesson == 7) return validateProjectChallenge(code)
+        if (lesson >= 8) return validateAdvancedChallenge(lesson, code)
 
         val execution = PythonRunner.run(code)
         if (!execution.success) return false
@@ -21,6 +22,23 @@ object ChallengeValidator {
             4 -> validateLoopChallenge(code)
             5 -> validateFunctionChallenge(code)
             6 -> validateListChallenge(code, execution.output)
+            else -> false
+        }
+    }
+
+    private fun validateAdvancedChallenge(lesson: Int, code: String): Boolean {
+        return when (lesson) {
+            8 -> code.contains("{") && code.contains("}") &&
+                code.contains("\"nome\"") && Regex("""\[[\"']nome[\"']\]""").containsMatchIn(code)
+            9 -> code.contains(".upper()") && code.contains("print(")
+            10 -> code.contains("try:") && code.contains("except")
+            11 -> code.contains("open(") || (code.contains("dados.txt") && code.contains("#"))
+            12 -> code.contains("class Pessoa") &&
+                code.contains("__init__") && code.contains("self.nome") &&
+                code.contains("Pessoa(")
+            13 -> code.contains("class Conta") &&
+                code.contains("__init__") && code.contains("self.saldo") &&
+                code.contains("Conta(")
             else -> false
         }
     }
