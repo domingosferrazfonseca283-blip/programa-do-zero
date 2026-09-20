@@ -23,7 +23,7 @@ object ChallengeValidator {
             2 -> hasTextAndNumberAssignment(code)
             3 -> validateAgeChallenge(code)
 
-            4 -> hasRangeLoop(code) && execution.output.trim() == "0\n1\n2\n3\n4"
+            4 -> validateLoopChallenge(code)
             5 -> hasFunction(code) && execution.output.trim().contains("Ana")
             6 -> hasListWithAtLeastTwoItems(code, execution.output)
             7 -> hasInputConditionAndOutput(code) && execution.output.isNotBlank()
@@ -70,6 +70,21 @@ object ChallengeValidator {
             val comparesWithEighteen = clean.contains(">=18") || clean.contains("18<=")
             isIfLine && comparesWithEighteen
         }
+
+    private fun validateLoopChallenge(code: String): Boolean {
+        if (!hasRangeLoop(code)) return false
+
+        val result = PythonRunner.run(code)
+        if (!result.success) return false
+
+        val lines = result.output.lines().map { it.trim() }
+        if (lines.size < 3) return false
+
+        val numbers = lines.mapNotNull { it.toIntOrNull() }
+        if (numbers.size != lines.size) return false
+
+        return numbers.zipWithNext().all { (a, b) -> b == a + 1 }
+    }
 
     private fun hasRangeLoop(code: String): Boolean =
         code.lines().any { line ->
