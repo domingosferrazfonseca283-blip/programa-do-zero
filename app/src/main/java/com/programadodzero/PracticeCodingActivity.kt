@@ -68,11 +68,17 @@ class PracticeCodingActivity : Activity() {
             setPadding(0, 14, 0, 10)
         }
         val check = Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
             text = "▶ Verificar código"
             textSize = 17f
             isAllCaps = false
         }
         val next = Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
             text = if (lesson < challenges.lastIndex) "Próxima aula →" else "🏆 Concluir linguagem"
             isAllCaps = false
             isEnabled = false
@@ -94,6 +100,9 @@ class PracticeCodingActivity : Activity() {
 
         next.setOnClickListener {
             val moduleLessons = ContentRepository.lessonsForModule(language, levelNumber, moduleNumber)\n            val currentModuleIndex = moduleLessons.indexOfFirst { it.id == challenge.id }\n            if (currentModuleIndex >= 0 && currentModuleIndex < moduleLessons.lastIndex) {\n                startActivity(android.content.Intent(this, LessonActivity::class.java).apply {\n                    putExtra(LessonActivity.EXTRA_LANGUAGE, language)\n                    putExtra(LessonActivity.EXTRA_LEVEL, level)\n                    putExtra(LessonActivity.EXTRA_LEVEL_NUMBER, levelNumber)\n                    putExtra(LessonActivity.EXTRA_MODULE, moduleNumber)\n                    putExtra(LessonActivity.EXTRA_LESSON_ID, moduleLessons[currentModuleIndex + 1].id)\n                })\n            } else {\n                startActivity(android.content.Intent(this, ModuleActivity::class.java).apply {\n                    putExtra(ModuleActivity.EXTRA_LANGUAGE, language)\n                    putExtra(ModuleActivity.EXTRA_LEVEL, levelNumber)\n                })\n            }\n            finish()\n        }\n\n        val back = Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
             text = "← Voltar à aula"
             isAllCaps = false
             setOnClickListener { finish() }
@@ -104,7 +113,7 @@ class PracticeCodingActivity : Activity() {
         screen.addView(editor, LinearLayout.LayoutParams(-1, 0, 1f))
         screen.addView(check, LinearLayout.LayoutParams(-1, 62))
         screen.addView(feedback)
-        screen.addView(next, LinearLayout.LayoutParams(-1, 60))
+        screen.addView(next, LinearLayout.LayoutParams(-1, -2))
         screen.addView(back, LinearLayout.LayoutParams(-1, 58))
         setContentView(screen)
     }
