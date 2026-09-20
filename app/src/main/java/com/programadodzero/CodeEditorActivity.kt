@@ -133,8 +133,14 @@ class CodeEditorActivity : Activity() {
             ProgressManager.addXp(this, 10)
             earnedXpForCurrentRun = true
             if (projectMode) {
-                ProgressManager.completeProject(this, 1)
-                output.append("\n\n🏆 Execução concluída! +10 XP")
+                val projectXpAwarded = ProgressManager.completeProject(this, 1)
+                output.append(
+                    if (projectXpAwarded) {
+                        "\n\n🏆 Execução concluída! +10 XP da execução +100 XP do projeto"
+                    } else {
+                        "\n\n🏆 Execução concluída! +10 XP"
+                    }
+                )
             }
         }
     }
