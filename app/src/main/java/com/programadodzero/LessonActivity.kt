@@ -3,6 +3,7 @@ package com.programadodzero
 import android.app.Activity
 import android.graphics.Color
 import android.graphics.Typeface
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.LinearLayout
@@ -75,6 +76,14 @@ class LessonActivity : Activity() {
         }
 
         nextButton.setOnClickListener {
+            val intent = Intent(this, ExerciseActivity::class.java)
+            intent.putExtra(ExerciseActivity.EXTRA_LANGUAGE, language)
+            intent.putExtra(ExerciseActivity.EXTRA_LEVEL, level)
+            intent.putExtra(ExerciseActivity.EXTRA_LESSON, currentLesson)
+            startActivity(intent)
+        }
+
+        nextButton.setOnLongClickListener {
             if (currentLesson < lessons.lastIndex) {
                 currentLesson++
                 showLesson(lessons)
@@ -83,6 +92,7 @@ class LessonActivity : Activity() {
                 nextButton.isEnabled = false
                 progress.text = "5 de 5 aulas • 100% concluído"
             }
+            true
         }
 
         val backButton = Button(this).apply {
