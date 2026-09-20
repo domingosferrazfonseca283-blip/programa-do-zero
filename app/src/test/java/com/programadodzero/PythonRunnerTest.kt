@@ -280,11 +280,10 @@ class ChallengeValidatorTest {
     }
 
     @Test
-    fun exigeSequenciaDeZeroAQuatro() {
-        assertTrue(ChallengeValidator.validate(4, """for numero in range(5):\n    print(numero)"""))
-        assertFalse(ChallengeValidator.validate(4, """for numero in range(4):\n    print(numero)"""))
+    fun aulaDeRepeticaoAceitaTresOuMaisNumerosCrescentes() {
+        assertTrue(ChallengeValidator.validate(4, """for numero in range(3):\n    print(numero)"""))
+        assertTrue(ChallengeValidator.validate(4, """for numero in range(4):\n    print(numero)"""))
     }
-
 
     @Test
     fun aulaDeFuncaoAceitaNomeDeFuncaoDiferente() {
@@ -362,8 +361,47 @@ class ChallengeValidatorTest {
     }
 
     @Test
-    fun exigeEntradaCondicaoESaidaNoProjeto() {
-        assertTrue(ChallengeValidator.validate(7, """nome = input("Nome: ")\nif nome:\n    print("Olá, " + nome)"""))
-        assertFalse(ChallengeValidator.validate(7, """nome = input("Nome: ")\nprint(nome)"""))
+    fun projetoFinalTestaComportamentoComEntradasDiferentes() {
+        assertTrue(
+            ChallengeValidator.validate(
+                7,
+                """
+                nome = input("Nome: ")
+                if nome:
+                    print("Olá, " + nome)
+                else:
+                    print("Digite um nome")
+                """.trimIndent()
+            )
+        )
+    }
+
+    @Test
+    fun projetoFinalRejeitaCondicaoQueNaoMudaOResultado() {
+        assertFalse(
+            ChallengeValidator.validate(
+                7,
+                """
+                nome = input("Nome: ")
+                if nome:
+                    print("Pronto")
+                else:
+                    print("Pronto")
+                """.trimIndent()
+            )
+        )
+    }
+
+    @Test
+    fun projetoFinalRejeitaProgramaSemCondicaoBaseadaNaEntrada() {
+        assertFalse(
+            ChallengeValidator.validate(
+                7,
+                """
+                nome = input("Nome: ")
+                print("Olá")
+                """.trimIndent()
+            )
+        )
     }
 }
