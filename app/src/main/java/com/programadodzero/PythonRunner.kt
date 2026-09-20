@@ -405,6 +405,9 @@ object PythonRunner {
                 ?: throw IllegalArgumentException("int() precisa receber um número.")
         }
 
+        if (value == "True") return "true"
+        if (value == "False") return "false"
+
         if (value.startsWith("input(") && value.endsWith(")")) {
             val promptExpression = value.removePrefix("input(").removeSuffix(")").trim()
             val prompt = if (promptExpression.isBlank()) {
