@@ -74,6 +74,26 @@ class PythonRunnerTest {
         assertEquals("7", second.output)
     }
 
+
+    @Test
+    fun aulaDeIdadeTestaEntradasDiferentes() {
+        val codigo = """
+            idade = int(input("Digite sua idade: "))
+            if idade >= 18:
+                print("Maior de idade")
+            else:
+                print("Menor de idade")
+        """.trimIndent()
+
+        val menor = PythonRunner.run(codigo, listOf("17"))
+        val adulto = PythonRunner.run(codigo, listOf("20"))
+
+        assertTrue(menor.success)
+        assertTrue(adulto.success)
+        assertEquals("Menor de idade", menor.output)
+        assertEquals("Maior de idade", adulto.output)
+    }
+
     @Test
     fun condicaoComparaNumeros() {
         val result = PythonRunner.run(
