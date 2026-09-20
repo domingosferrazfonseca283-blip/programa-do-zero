@@ -68,6 +68,9 @@ class LevelActivity : Activity() {
         for (nivelNumero in niveis) {
             val nivel = nivelNomes[nivelNumero] ?: "Nível $nivelNumero"
             val botao = Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
                 text = nivel
                 textSize = 17f
                 isAllCaps = false
@@ -97,13 +100,16 @@ class LevelActivity : Activity() {
         }
 
         val voltar = Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
             text = "← Voltar"
             textSize = 16f
             isAllCaps = false
             setOnClickListener { finish() }
         }
 
-        tela.addView(voltar, LinearLayout.LayoutParams(-1, 60).apply {
+        tela.addView(voltar, LinearLayout.LayoutParams(-1, -2).apply {
             setMargins(0, 24, 0, 0)
         })
 
