@@ -9,6 +9,9 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.Toast
 
 class LessonActivity : Activity() {
     companion object {
@@ -26,6 +29,7 @@ class LessonActivity : Activity() {
     private lateinit var code: TextView
     private lateinit var nextButton: Button
     private lateinit var review: TextView
+    private lateinit var quizBox: LinearLayout
     private lateinit var lessons: List<LessonContent>
     private lateinit var language: String
     private lateinit var level: String
@@ -58,6 +62,7 @@ class LessonActivity : Activity() {
         title = TextView(this).apply { textSize = 27f; setTextColor(Color.WHITE); setTypeface(null, Typeface.BOLD) }
         body = TextView(this).apply { textSize = 18f; setTextColor(Color.LTGRAY); setPadding(0,18,0,18) }
         review = TextView(this).apply { textSize = 17f; setTextColor(Color.WHITE); setPadding(0,18,0,18) }
+        quizBox = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(0,10,0,20) }
         code = TextView(this).apply { textSize = 16f; setTextColor(Color.WHITE); setPadding(20,18,20,18); setBackgroundColor(Color.rgb(30,41,59)); typeface = Typeface.MONOSPACE }
         nextButton = Button(this).apply { textSize = 17f; isAllCaps = false }
 
@@ -80,6 +85,7 @@ class LessonActivity : Activity() {
             addView(body)
             addView(code, LinearLayout.LayoutParams(-1, -2))
             addView(review)
+            addView(quizBox)
         }
         val scroll = ScrollView(this).apply { addView(lessonContent) }
         screen.removeView(title)
@@ -106,6 +112,28 @@ class LessonActivity : Activity() {
         val objectives = lesson.objectives.joinToString("\n") { "• $it" }
         val points = lesson.keyPoints.joinToString("\n") { "• $it" }
         review.text = "🎯 OBJETIVOS\n$objectives\n\n📖 EXPLICAÇÃO\n${lesson.explanation.ifBlank { lesson.body }}\n\n💡 PONTOS-CHAVE\n$points\n\n🧠 REVISÃO\n${lesson.reviewQuestion}\n\nResposta: ${lesson.reviewAnswer}"
+        quizBox.removeAllViews()
+        val question = ContentRepository.reviewFor(language, lesson.id)
+        if (question != null) {
+            quizBox.addView(TextView(this).apply { text = "📝 Teste rápido"; textSize = 20f; setTextColor(Color.WHITE) })
+            val options = RadioGroup(this)
+            question.options.forEachIndexed { index, option ->
+                options.addView(RadioButton(this).apply { text = option; textSize = 17f; setTextColor(Color.WHITE); id = 1000 + index })
+            }
+            quizBox.addView(options)
+            quizBox.addView(Button(this).apply {
+                text = "Verificar resposta"; isAllCaps = false
+                setOnClickListener {
+                    val selected = options.checkedRadioButtonId - 1000
+                    if (selected < 0) Toast.makeText(this@LessonActivity, "Escolha uma resposta.", Toast.LENGTH_SHORT).show()
+                    else if (selected == question.answerIndex) {
+                        ProgressManager.addXp(this@LessonActivity, 10)
+                        Toast.makeText(this@LessonActivity, "✅ Correto! +10 XP", Toast.LENGTH_SHORT).show()
+                        isEnabled = false
+                    } else Toast.makeText(this@LessonActivity, "❌ Ainda não. " + question.explanation, Toast.LENGTH_LONG).show()
+                }
+            })
+        }
         nextButton.text = when {
             !completed -> "🧩 Fazer prática da aula"
             currentLesson < lessons.lastIndex -> "✅ Prática concluída • Próxima aula →"
