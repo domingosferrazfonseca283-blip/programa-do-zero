@@ -1,18 +1,9 @@
 # Python — Concorrência e Performance
 
-Primeiro diferencie CPU-bound, I/O-bound, latência e throughput.
+Diferencie CPU-bound, I/O-bound, latência e throughput.
 
-## Threads
-Estude tarefas concorrentes, sincronização, condições de corrida, locks e filas.
+Estude threads, sincronização, condições de corrida, locks, filas, processos e asyncio.
 
-## Processos
-Compare execução sequencial e paralela em tarefas adequadas para CPU.
+Meça tempo, memória, CPU e latência antes de otimizar.
 
-## Asyncio
-Estude event loop, coroutines, await, tasks, timeout e cancelamento.
-
-## Performance
-Meça tempo, memória, CPU e latência antes e depois das alterações.
-
-## Projeto
-Processador de ficheiros autorizados com versão sequencial e concorrente. Compare resultados e tempos.
+Projeto: processador de ficheiros autorizados com versão sequencial e concorrente; comparar resultados e tempos.
