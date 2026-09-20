@@ -5,7 +5,8 @@ import android.content.Context
 object ProgressManager {
     private const val PREFS = "learning_progress"
     private const val XP = "xp"
-    private const val COMPLETED = "completed_lessons"
+    private const val COMPLETED_LESSONS = "completed_lessons"
+    private const val COMPLETED_EXERCISES = "completed_exercises"
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -17,22 +18,43 @@ object ProgressManager {
         p.edit().putInt(XP, p.getInt(XP, 0) + amount).apply()
     }
 
+    private fun key(language: String, item: Int) = "$language:$item"
+
     fun isLessonCompleted(context: Context, language: String, lesson: Int): Boolean {
-        return prefs(context).getStringSet(COMPLETED, emptySet())
-            ?.contains("$language:$lesson") == true
+        return prefs(context).getStringSet(COMPLETED_LESSONS, emptySet())
+            ?.contains(key(language, lesson)) == true
     }
 
     fun completeLesson(context: Context, language: String, lesson: Int) {
         val p = prefs(context)
-        val key = "$language:$lesson"
-        val current = p.getStringSet(COMPLETED, emptySet())?.toMutableSet() ?: mutableSetOf()
-        if (current.add(key)) {
-            p.edit().putStringSet(COMPLETED, current).apply()
+        val current = p.getStringSet(COMPLETED_LESSONS, emptySet())?.toMutableSet() ?: mutableSetOf()
+        if (current.add(key(language, lesson))) {
+            p.edit().putStringSet(COMPLETED_LESSONS, current).apply()
             addXp(context, 25)
         }
     }
 
     fun completedCount(context: Context, language: String, total: Int): Int {
         return (0 until total).count { isLessonCompleted(context, language, it) }
+    }
+
+    fun isExerciseCompleted(context: Context, language: String, exercise: Int): Boolean {
+        return prefs(context).getStringSet(COMPLETED_EXERCISES, emptySet())
+            ?.contains(key(language, exercise)) == true
+    }
+
+    fun completeExercise(context: Context, language: String, exercise: Int): Boolean {
+        val p = prefs(context)
+        val current = p.getStringSet(COMPLETED_EXERCISES, emptySet())?.toMutableSet() ?: mutableSetOf()
+        if (current.add(key(language, exercise))) {
+            p.edit().putStringSet(COMPLETED_EXERCISES, current).apply()
+            addXp(context, 25)
+            return true
+        }
+        return false
+    }
+
+    fun completedExerciseCount(context: Context, language: String, total: Int): Int {
+        return (0 until total).count { isExerciseCompleted(context, language, it) }
     }
 }
