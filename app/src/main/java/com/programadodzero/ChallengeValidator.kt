@@ -18,6 +18,7 @@ object ChallengeValidator {
             "python-12" -> validateAdvancedChallenge(exerciseId, code)
             "python-13" -> validateAdvancedChallenge(exerciseId, code)
             "python-14" -> validateAdvancedChallenge(exerciseId, code)
+            "python-15", "python-16", "python-17", "python-18", "python-19", "python-20" -> validateAdvancedChallenge(exerciseId, code)
             else -> {
                 val execution = PythonRunner.run(code)
                 if (!execution.success) return false
@@ -44,6 +45,12 @@ object ChallengeValidator {
             "python-12" -> validateFileChallenge(code)
             "python-13" -> validateOopPerson(code)
             "python-14" -> validateOopAccount(code)
+            "python-15" -> validateExecution(code, "15")
+            "python-16" -> code.contains("for ") && code.contains("if ") && code.contains("==") && PythonRunner.run(code).output.contains("Encontrado")
+            "python-17" -> code.contains("input(") && code.contains(">= 0") && PythonRunner.run(code, listOf("20")).success
+            "python-18" -> code.contains("def ") && code.contains("return") && code.contains("dobro")
+            "python-19" -> validateLoopChallenge(code)
+            "python-20" -> code.contains("def calcular_total") && code.contains("return") && PythonRunner.run(code).output.contains("30")
             else -> false
         }
     }
@@ -51,7 +58,7 @@ object ChallengeValidator {
     
 
 
-    private fun validateFileChallenge(code: String): Boolean {
+    private fun validateExecution(code: String, expected: String): Boolean {\n        val result = PythonRunner.run(code)\n        return result.success && result.output.trim() == expected\n    }\n\n    private fun validateFileChallenge(code: String): Boolean {
         if (!code.contains("open(") || !code.contains(".write(") || !code.contains(".read()")) return false
 
         val result = PythonRunner.run(code)
