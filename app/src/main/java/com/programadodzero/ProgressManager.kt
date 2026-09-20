@@ -138,8 +138,17 @@ object ProgressManager {
         !getActiveLanguage(context).isNullOrBlank()
 
     fun isLanguageComplete(context: Context, language: String, lessonIds: List<String>): Boolean {
-        return completedCount(context, language, lessonIds) == lessonIds.size &&
+        val lessonsAndExercises = lessonIds.isNotEmpty() &&
+            completedCount(context, language, lessonIds) == lessonIds.size &&
             completedExerciseCount(context, language, lessonIds) == lessonIds.size
+
+        val examQuestions = ContentRepository.finalExamFor(language)
+        val examScore = finalExamScore(context, language)
+        val examPassed = examQuestions.isNotEmpty() &&
+            examScore != null &&
+            examScore * 100 / examQuestions.size >= 70
+
+        return lessonsAndExercises && examPassed
     }
 
     fun canStartLanguage(context: Context, language: String, lessonIds: List<String>): Boolean {
