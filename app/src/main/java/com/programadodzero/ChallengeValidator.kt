@@ -25,7 +25,7 @@ object ChallengeValidator {
 
             4 -> validateLoopChallenge(code)
             5 -> validateFunctionChallenge(code)
-            6 -> hasListWithAtLeastTwoItems(code, execution.output)
+            6 -> validateListChallenge(code, execution.output)
             7 -> hasInputConditionAndOutput(code) && execution.output.isNotBlank()
             else -> false
         }
@@ -108,14 +108,34 @@ object ChallengeValidator {
         code.lines().any { it.trim().startsWith("def ") && it.contains("(") && it.contains("):") } &&
             code.contains("return")
 
-    private fun hasListWithAtLeastTwoItems(code: String, output: String): Boolean {
-        val listAssignment = code.lines().any { line ->
-            val clean = line.trim()
-            clean.contains("[") && clean.contains("]") && clean.contains("=")
+    private fun validateListChallenge(code: String, output: String): Boolean {
+        val listVariable = code.lines()
+            .map { it.trim() }
+            .mapNotNull { line ->
+                Regex("^([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*\\[(.*)]$").find(line)
+                    ?.let { match ->
+                        val items = match.groupValues[2]
+                        match.groupValues[1] to items
+                    }
+            }
+            .firstOrNull { it.second.split(",").count { item -> item.trim().isNotEmpty() } >= 2 }
+            ?: return false
+
+        val variableName = listVariable.first
+        val usesSecondItem = code.lines().any { line ->
+            line.trim().contains("$variableName[1]")
         }
-        val listOutput = output.trim()
-        return listAssignment && listOutput.startsWith("[") &&
-            listOutput.endsWith("]") && listOutput.contains(",")
+        if (!usesSecondItem) return false
+
+        val lines = output.lines().map { it.trim() }.filter { it.isNotEmpty() }
+        if (lines.size < 2) return false
+
+        val printedList = lines.first()
+        val secondItem = lines.last()
+        return printedList.startsWith("[") &&
+            printedList.endsWith("]") &&
+            printedList.contains(",") &&
+            secondItem.isNotBlank()
     }
 
     private fun hasInputConditionAndOutput(code: String): Boolean {
