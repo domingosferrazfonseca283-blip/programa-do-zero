@@ -65,7 +65,7 @@ class LibraryActivity : Activity() {
         })
 
         setContentView(root)
-        render(LibraryRepository.books)
+        render(LibraryRepository.allBooks())
     }
 
     private fun render(books: List<LibraryBook>) {
@@ -81,15 +81,17 @@ class LibraryActivity : Activity() {
         }
         for (book in books) {
             listContainer.addView(Button(this).apply {
-                text = book.language + "\n📖 " + book.title + "\n" + book.chapters.size + " capítulos"
-                textSize = 16f
+                text = book.language + "\n📖 " + book.title + "\n" +
+                    book.chapters.size + " capítulos  •  " + book.license +
+                    "\nFonte: " + book.source
+                textSize = 14f
                 isAllCaps = false
                 setOnClickListener {
                     startActivity(Intent(this@LibraryActivity, LibraryReaderActivity::class.java).apply {
                         putExtra(LibraryReaderActivity.EXTRA_BOOK_ID, book.id)
                     })
                 }
-            }, LinearLayout.LayoutParams(-1, 90).apply { setMargins(0, 6, 0, 6) })
+            }, LinearLayout.LayoutParams(-1, 112).apply { setMargins(0, 6, 0, 6) })
         }
     }
 }
