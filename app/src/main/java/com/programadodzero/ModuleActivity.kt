@@ -22,6 +22,11 @@ class ModuleActivity : Activity() {
         val language = intent.getStringExtra(EXTRA_LANGUAGE) ?: "Linguagem"
         val level = intent.getIntExtra(EXTRA_LEVEL, 1)
         val modules = ContentRepository.modulesForLevel(language, level)
+        val previousLevelLessons = ContentRepository.lessonsFor(language)
+            .filter { it.level < level }
+        val levelUnlocked = previousLevelLessons.all {
+            ProgressManager.isLessonCompleted(this, language, it.id)
+        }
 
         val screen = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -37,7 +42,11 @@ class ModuleActivity : Activity() {
         }
         screen.addView(title, LinearLayout.LayoutParams(-1, -2))
         val intro = TextView(this).apply {
-            text = "Escolha um módulo para continuar sua formação."
+            text = if (levelUnlocked) {
+                "Escolha um módulo para continuar sua formação."
+            } else {
+                "🔒 Este nível está bloqueado.\nConclua o nível anterior para liberar as aulas."
+            }
             textSize = 17f
             setTextColor(Color.LTGRAY)
             gravity = Gravity.CENTER
@@ -69,7 +78,7 @@ class ModuleActivity : Activity() {
                 gravity = Gravity.CENTER
                 includeFontPadding = false
                 setPadding(16, 8, 16, 8)
-                isEnabled = unlocked && lessons.isNotEmpty()
+                isEnabled = levelUnlocked && unlocked && lessons.isNotEmpty()
                 alpha = if (isEnabled) 1f else 0.5f
                 setOnClickListener {
                     val firstPending = lessons.firstOrNull {
