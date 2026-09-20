@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.Gravity
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 
 class ModuleActivity : Activity() {
@@ -46,19 +47,46 @@ class ModuleActivity : Activity() {
 
         for (module in modules) {
             val lessons = ContentRepository.lessonsForModule(language, level, module.order)
+            val completed = lessons.count { ProgressManager.isLessonCompleted(this, language, it.id) }
+            val previousModules = modules.filter { it.order < module.order }
+            val previousLessons = previousModules.flatMap { previous ->
+                ContentRepository.lessonsForModule(language, level, previous.order)
+            }
+            val unlocked = previousLessons.all {
+                ProgressManager.isLessonCompleted(this, language, it.id)
+            }
+            val status = when {
+                lessons.isEmpty() -> "🚧 Em construção"
+                completed == lessons.size -> "✅ Concluído"
+                unlocked -> "▶️ Disponível"
+                else -> "🔒 Bloqueado"
+            }
             val button = Button(this).apply {
-                text = "Módulo " + module.order + " — " + module.title + "\n" + module.description + "\n" + lessons.size + " aula(s)"
-                textSize = 16f
+                text = "Módulo " + module.order + " — " + module.title + "\n" +
+                    module.description + "\n" + completed + "/" + lessons.size + " aulas • " + status
+                textSize = 15f
                 isAllCaps = false
+                gravity = Gravity.CENTER
+                includeFontPadding = false
+                setPadding(16, 8, 16, 8)
+                isEnabled = unlocked && lessons.isNotEmpty()
+                alpha = if (isEnabled) 1f else 0.5f
                 setOnClickListener {
-                    startActivity(Intent(this@ModuleActivity, LessonActivity::class.java).apply {
-                        putExtra(LessonActivity.EXTRA_LANGUAGE, language)
-                        putExtra(LessonActivity.EXTRA_LEVEL_NUMBER, level)
-                        putExtra(LessonActivity.EXTRA_MODULE, module.order)
-                    })
+                    val firstPending = lessons.firstOrNull {
+                        !ProgressManager.isLessonCompleted(this@ModuleActivity, language, it.id)
+                    } ?: lessons.lastOrNull()
+                    if (firstPending != null) {
+                        startActivity(Intent(this@ModuleActivity, LessonActivity::class.java).apply {
+                            putExtra(LessonActivity.EXTRA_LANGUAGE, language)
+                            putExtra(LessonActivity.EXTRA_LEVEL, "Nível " + level)
+                            putExtra(LessonActivity.EXTRA_LEVEL_NUMBER, level)
+                            putExtra(LessonActivity.EXTRA_MODULE, module.order)
+                            putExtra(LessonActivity.EXTRA_LESSON_ID, firstPending.id)
+                        })
+                    }
                 }
             }
-            screen.addView(button, LinearLayout.LayoutParams(-1, 88).apply { setMargins(0, 7, 0, 7) })
+            screen.addView(button, LinearLayout.LayoutParams(-1, 104).apply { setMargins(0, 7, 0, 7) })
         }
 
         val back = Button(this).apply {
@@ -67,6 +95,10 @@ class ModuleActivity : Activity() {
             setOnClickListener { finish() }
         }
         screen.addView(back, LinearLayout.LayoutParams(-1, -2).apply { setMargins(0, 20, 0, 0) })
-        setContentView(screen)
+        val scroll = ScrollView(this).apply {
+            isFillViewport = true
+            addView(screen)
+        }
+        setContentView(scroll)
     }
 }
