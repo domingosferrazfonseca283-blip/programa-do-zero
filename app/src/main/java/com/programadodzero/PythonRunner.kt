@@ -13,16 +13,20 @@ object PythonRunner {
     private class BreakLoop : Exception()
     private class ContinueLoop : Exception()
     private data class FunctionDef(val parameters: List<String>, val body: List<String>)
+    private data class ClassDef(val methods: Map<String, FunctionDef>)
+    private data class ObjectInstance(val className: String, val attributes: MutableMap<String, String>)
 
     fun run(code: String, inputs: List<String> = emptyList()): Result {
         val variables = mutableMapOf<String, String>()
         val output = mutableListOf<String>()
         val inputIndex = intArrayOf(0)
         val functions = mutableMapOf<String, FunctionDef>()
+        val classes = mutableMapOf<String, ClassDef>()
+        val objects = mutableMapOf<String, ObjectInstance>()
         val lines = code.lines()
 
         return try {
-            executeBlock(lines, 0, lines.size, 0, variables, output, inputs, inputIndex, functions)
+            executeBlock(lines, 0, lines.size, 0, variables, output, inputs, inputIndex, functions, classes, objects)
             Result(
                 true,
                 if (output.isEmpty()) "Código executado sem saída." else output.joinToString("\n")
@@ -43,7 +47,9 @@ object PythonRunner {
         output: MutableList<String>,
         inputs: List<String>,
         inputIndex: IntArray,
-        functions: MutableMap<String, FunctionDef>
+        functions: MutableMap<String, FunctionDef>,
+        classes: MutableMap<String, ClassDef>,
+        objects: MutableMap<String, ObjectInstance>
     ): Int {
         var i = start
 
@@ -92,6 +98,32 @@ object PythonRunner {
                 }
                 functions[name] = FunctionDef(parameters, body)
                 i = cursor
+                continue
+            }
+
+            if (line.startsWith("class ") && line.endsWith(":")) {
+                val className = Regex("class\\s+([A-Za-z_][A-Za-z0-9_]*):").matchEntire(line)?.groupValues?.get(1)
+                    ?: throw IllegalArgumentException("Linha " + (i + 1) + ": classe inválida.")
+                val classEnd = findBlockEnd(lines, i + 1, end, indent)
+                val methods = mutableMapOf<String, FunctionDef>()
+                var cursor = i + 1
+                while (cursor < classEnd) {
+                    if (lines[cursor].trim().isBlank() || lines[cursor].trim().startsWith("#")) { cursor++; continue }
+                    val m = Regex("def\\s+([A-Za-z_][A-Za-z0-9_]*)\\(([^)]*)\\):").matchEntire(lines[cursor].trim())
+                        ?: throw IllegalArgumentException("Linha " + (cursor + 1) + ": método inválido.")
+                    val params = m.groupValues[2].split(",").map { it.trim() }.filter { it.isNotBlank() }
+                    if (params.firstOrNull() != "self") throw IllegalArgumentException("O método precisa começar com self.")
+                    var methodEnd = cursor + 1
+                    while (methodEnd < classEnd) {
+                        if (lines[methodEnd].trim().isBlank() || lines[methodEnd].trim().startsWith("#")) { methodEnd++; continue }
+                        if (indentation(lines[methodEnd]) <= indent + 4) break
+                        methodEnd++
+                    }
+                    methods[m.groupValues[1]] = FunctionDef(params.drop(1), lines.subList(cursor + 1, methodEnd).map { it.drop(minOf(it.length, indent + 8)) })
+                    cursor = methodEnd
+                }
+                classes[className] = ClassDef(methods)
+                i = classEnd
                 continue
             }
 
@@ -467,9 +499,28 @@ object PythonRunner {
         variables: Map<String, String>,
         inputs: List<String>,
         inputIndex: IntArray,
-        functions: MutableMap<String, FunctionDef>
+        functions: MutableMap<String, FunctionDef>,
+        objects: MutableMap<String, ObjectInstance> = mutableMapOf(),
+        classes: MutableMap<String, ClassDef> = mutableMapOf()
     ): String {
         val value = expression.trim()
+
+        val attrRead = Regex("([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)").matchEntire(value)
+        if (attrRead != null) {
+            val ref = variables[attrRead.groupValues[1]] ?: throw IllegalArgumentException("Objeto não encontrado.")
+            val obj = objects[ref] ?: throw IllegalArgumentException("Variável não é um objeto.")
+            return obj.attributes[attrRead.groupValues[2]]
+                ?: throw IllegalArgumentException("Atributo não encontrado.")
+        }
+
+        val classCall = Regex("([A-Za-z_][A-Za-z0-9_]*)\((.*)\)").matchEntire(value)
+        if (classCall != null && classes.containsKey(classCall.groupValues[1])) {
+            val ref = "@obj" + System.nanoTime()
+            objects[ref] = ObjectInstance(classCall.groupValues[1], mutableMapOf())
+            val init = classes[classCall.groupValues[1]]?.methods?.get("__init__")
+            if (init != null) callMethod(ref, "__init__", classCall.groupValues[2], variables, objects, classes, mutableListOf(), inputs, inputIndex, functions)
+            return ref
+        }
 
         if (value.startsWith("int(") && value.endsWith(")")) {
             val inner = value.removePrefix("int(").removeSuffix(")")
@@ -723,11 +774,39 @@ object PythonRunner {
         return try {
             executeBlock(
                 function.body, 0, function.body.size, 0,
-                local, output, inputs, inputIndex, functions
+                local, output, inputs, inputIndex, functions, classes, objects
             )
             ""
         } catch (e: ReturnValue) {
             e.value
+        }
+    }
+
+    private fun callMethod(
+        ref: String,
+        methodName: String,
+        argumentsText: String,
+        variables: MutableMap<String, String>,
+        objects: MutableMap<String, ObjectInstance>,
+        classes: MutableMap<String, ClassDef>,
+        output: MutableList<String>,
+        inputs: List<String>,
+        inputIndex: IntArray,
+        functions: MutableMap<String, FunctionDef>
+    ) {
+        val obj = objects[ref] ?: throw IllegalArgumentException("Objeto inválido.")
+        val method = classes[obj.className]?.methods?.get(methodName)
+            ?: throw IllegalArgumentException("Método não encontrado.")
+        val args = if (argumentsText.isBlank()) emptyList() else splitArguments(argumentsText)
+        if (args.size != method.parameters.size) throw IllegalArgumentException("Quantidade de argumentos inválida.")
+        val local = variables.toMutableMap()
+        local["self"] = ref
+        method.parameters.forEachIndexed { index, parameter ->
+            local[parameter] = evaluate(args[index], variables, inputs, inputIndex, functions, objects, classes)
+        }
+        try {
+            executeBlock(method.body, 0, method.body.size, 0, local, output, inputs, inputIndex, functions, classes, objects)
+        } catch (e: ReturnValue) {
         }
     }
 
