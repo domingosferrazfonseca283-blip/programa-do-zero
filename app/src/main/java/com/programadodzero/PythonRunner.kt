@@ -147,7 +147,7 @@ object PythonRunner {
                 for (value in rangeStart until rangeEnd) {
                     variables[variable] = value.toString()
                     try {
-                        executeBlock(lines, i + 1, cursor, indent + 4, variables, output, inputs, inputIndex, functions)
+                        executeBlock(lines, i + 1, cursor, indent + 4, variables, output, inputs, inputIndex, functions, classes, objects)
                     } catch (e: BreakLoop) {
                         break
                     } catch (e: ContinueLoop) {
@@ -180,7 +180,7 @@ object PythonRunner {
                 } catch (e: ReturnValue) {
                     throw e
                 } catch (e: IllegalArgumentException) {
-                    executeBlock(lines, exceptIndex + 1, exceptEnd, indent + 4, variables, output, inputs, inputIndex, functions)
+                    executeBlock(lines, exceptIndex + 1, exceptEnd, indent + 4, variables, output, inputs, inputIndex, functions, classes, objects)
                 }
                 i = exceptEnd
                 continue
@@ -202,7 +202,7 @@ object PythonRunner {
                     try {
                         executeBlock(
                             lines, i + 1, cursor, indent + 4,
-                            variables, output, inputs, inputIndex, functions
+                            variables, output, inputs, inputIndex, functions, classes, objects
                         )
                     } catch (e: BreakLoop) {
                         break
@@ -218,7 +218,7 @@ object PythonRunner {
             if (line.startsWith("if ") && line.endsWith(":")) {
                 val (nextIndex, executed) = executeIfChain(
                     lines, i, end, indent,
-                    variables, output, inputs, inputIndex, functions
+                    variables, output, inputs, inputIndex, functions, classes, objects
                 )
                 i = nextIndex
                 if (executed) continue
@@ -327,7 +327,9 @@ object PythonRunner {
         output: MutableList<String>,
         inputs: List<String>,
         inputIndex: IntArray,
-        functions: MutableMap<String, FunctionDef>
+        functions: MutableMap<String, FunctionDef>,
+        classes: MutableMap<String, ClassDef>,
+        objects: MutableMap<String, ObjectInstance>
     ): Pair<Int, Boolean> {
         var cursor = start
         var executed = false
@@ -356,7 +358,7 @@ object PythonRunner {
                 if (!executed && evaluateCondition(condition, variables, inputs, inputIndex, functions)) {
                     executeBlock(
                         lines, cursor + 1, blockEnd, indent + 4,
-                        variables, output, inputs, inputIndex, functions
+                        variables, output, inputs, inputIndex, functions, classes, objects
                     )
                     executed = true
                 }
@@ -402,28 +404,30 @@ object PythonRunner {
         variables: Map<String, String>,
         inputs: List<String>,
         inputIndex: IntArray,
-        functions: MutableMap<String, FunctionDef>
+        functions: MutableMap<String, FunctionDef>,
+        classes: MutableMap<String, ClassDef>,
+        objects: MutableMap<String, ObjectInstance>
     ): Boolean {
         val text = condition.trim()
 
         val orParts = splitLogicalOperator(text, "or")
         if (orParts.size > 1) {
             return orParts.any {
-                evaluateCondition(it, variables, inputs, inputIndex, functions)
+                evaluateCondition(it, variables, inputs, inputIndex, functions, classes, objects)
             }
         }
 
         val andParts = splitLogicalOperator(text, "and")
         if (andParts.size > 1) {
             return andParts.all {
-                evaluateCondition(it, variables, inputs, inputIndex, functions)
+                evaluateCondition(it, variables, inputs, inputIndex, functions, classes, objects)
             }
         }
 
         if (text.startsWith("not ")) {
             return !evaluateCondition(
                 text.removePrefix("not ").trim(),
-                variables, inputs, inputIndex, functions
+                variables, inputs, inputIndex, functions, classes, objects
             )
         }
 
@@ -432,8 +436,8 @@ object PythonRunner {
         for (operator in operators) {
             val parts = text.split(operator, limit = 2)
             if (parts.size == 2) {
-                val left = evaluate(parts[0].trim(), variables, inputs, inputIndex, functions)
-                val right = evaluate(parts[1].trim(), variables, inputs, inputIndex, functions)
+                val left = evaluate(parts[0].trim(), variables, inputs, inputIndex, functions, objects, classes)
+                val right = evaluate(parts[1].trim(), variables, inputs, inputIndex, functions, objects, classes)
                 val leftNumber = left.toIntOrNull()
                 val rightNumber = right.toIntOrNull()
 
@@ -449,7 +453,7 @@ object PythonRunner {
             }
         }
 
-        val value = evaluate(text, variables, inputs, inputIndex, functions)
+        val value = evaluate(text, variables, inputs, inputIndex, functions, objects, classes)
         return isTruthy(value)
     }
 
@@ -624,7 +628,9 @@ object PythonRunner {
                 variables.toMutableMap(),
                 mutableListOf(),
                 inputs,
-                inputIndex
+                inputIndex,
+                classes,
+                objects
             )
         }
 
@@ -749,7 +755,9 @@ object PythonRunner {
         variables: MutableMap<String, String>,
         output: MutableList<String>,
         inputs: List<String>,
-        inputIndex: IntArray
+        inputIndex: IntArray,
+        classes: MutableMap<String, ClassDef>,
+        objects: MutableMap<String, ObjectInstance>
     ): String {
         val function = functions[name]
             ?: throw IllegalArgumentException("Função não encontrada: " + name)
