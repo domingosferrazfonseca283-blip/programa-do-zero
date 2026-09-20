@@ -8,6 +8,7 @@ import android.view.Gravity
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 
 class PracticeCodingActivity : Activity() {
@@ -130,12 +131,20 @@ class PracticeCodingActivity : Activity() {
 
         screen.addView(header)
         screen.addView(instruction)
-        screen.addView(editor, LinearLayout.LayoutParams(-1, 0, 1f))
-        screen.addView(check, LinearLayout.LayoutParams(-1, 62))
+        screen.addView(editor, LinearLayout.LayoutParams(-1, 420))
+        screen.addView(check, LinearLayout.LayoutParams(-1, 64).apply {
+            setMargins(0, 10, 0, 8)
+        })
         screen.addView(feedback)
-        screen.addView(next, LinearLayout.LayoutParams(-1, -2))
-        screen.addView(back, LinearLayout.LayoutParams(-1, 58))
-        setContentView(screen)
+        screen.addView(next, LinearLayout.LayoutParams(-1, 64).apply {
+            setMargins(0, 8, 0, 8)
+        })
+        screen.addView(back, LinearLayout.LayoutParams(-1, 64))
+        val scroll = ScrollView(this).apply {
+            isFillViewport = true
+            addView(screen)
+        }
+        setContentView(scroll)
     }
 
     private fun validatePython(exerciseId: String, code: String): Boolean =
