@@ -1,6 +1,7 @@
 package com.programadodzero
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
@@ -10,6 +11,11 @@ import android.widget.LinearLayout
 import android.widget.TextView
 
 class CodeEditorActivity : Activity() {
+
+    private lateinit var editor: EditText
+    private lateinit var output: TextView
+    private val inputs = mutableListOf<String>()
+    private var earnedXpForCurrentRun = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,8 +42,17 @@ class CodeEditorActivity : Activity() {
             setPadding(0, 14, 0, 18)
         }
 
-        val editor = EditText(this).apply {
-            setText("print(\"Olá, mundo!\")")
+        editor = EditText(this).apply {
+            setText(
+                "numero_secreto = 7\n" +
+                    "palpite = int(input(\"Digite seu palpite: \"))\n\n" +
+                    "if palpite == numero_secreto:\n" +
+                    "    print(\"Acertou!\")\n" +
+                    "elif palpite > numero_secreto:\n" +
+                    "    print(\"Muito alto!\")\n" +
+                    "else:\n" +
+                    "    print(\"Muito baixo!\")"
+            )
             textSize = 17f
             setTextColor(Color.WHITE)
             setHintTextColor(Color.LTGRAY)
@@ -48,7 +63,7 @@ class CodeEditorActivity : Activity() {
             minLines = 8
         }
 
-        val output = TextView(this).apply {
+        output = TextView(this).apply {
             text = "Saída aparecerá aqui..."
             textSize = 16f
             setTextColor(Color.LTGRAY)
@@ -62,23 +77,9 @@ class CodeEditorActivity : Activity() {
         }
 
         run.setOnClickListener {
-            val code = editor.text.toString().trim()
-            if (code.isEmpty()) {
-                output.text = "⚠️ Escreva algum código primeiro."
-                return@setOnClickListener
-            }
-
-            if (language == "🐍  Python") {
-                val result = PythonRunner.run(code)
-                output.text = if (result.success) {
-                    "▶ Resultado da execução\\n\\n" + result.output
-                } else {
-                    "❌ Erro ao executar\\n\\n" + result.output
-                }
-                if (result.success) ProgressManager.addXp(this, 10)
-            } else {
-                output.text = "ℹ️ O executor Python está disponível nesta versão.\\n\\nOs executores das outras linguagens serão adicionados depois."
-            }
+            inputs.clear()
+            earnedXpForCurrentRun = false
+            executePython(language)
         }
 
         val back = Button(this).apply {
@@ -97,10 +98,53 @@ class CodeEditorActivity : Activity() {
         setContentView(screen)
     }
 
-    private fun extractPrint(code: String): String {
-        val start = code.indexOf("print(") + 6
-        val end = code.indexOf(")", start)
-        if (start <= 5 || end < start) return "Código recebido."
-        return code.substring(start, end).trim().removeSurrounding("\"", "\"")
+    private fun executePython(language: String) {
+        val code = editor.text.toString().trim()
+        if (code.isEmpty()) {
+            output.text = "⚠️ Escreva algum código primeiro."
+            return
+        }
+
+        if (language != "🐍  Python") {
+            output.text = "ℹ️ O executor Python está disponível nesta versão.\n\nOs executores das outras linguagens serão adicionados depois."
+            return
+        }
+
+        val result = PythonRunner.run(code, inputs)
+
+        if (result.needsInput) {
+            askForInput(result.inputPrompt)
+            return
+        }
+
+        output.text = if (result.success) {
+            "▶ Resultado da execução\n\n" + result.output
+        } else {
+            "❌ Erro ao executar\n\n" + result.output
+        }
+
+        if (result.success && !earnedXpForCurrentRun) {
+            ProgressManager.addXp(this, 10)
+            earnedXpForCurrentRun = true
+        }
+    }
+
+    private fun askForInput(prompt: String) {
+        val input = EditText(this).apply {
+            hint = "Digite sua resposta"
+            textSize = 17f
+            setSingleLine(true)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("⌨️ Seu programa pediu uma entrada")
+            .setMessage(if (prompt.isBlank()) "Digite um valor:" else prompt)
+            .setView(input)
+            .setPositiveButton("Enviar") { _, _ ->
+                inputs.add(input.text.toString())
+                executePython("🐍  Python")
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 }
