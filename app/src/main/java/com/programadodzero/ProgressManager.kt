@@ -55,35 +55,35 @@ object ProgressManager {
         return false
     }
 
-    private fun key(language: String, item: Int) = "$language:$item"
+    private fun key(language: String, itemId: String) = "$language:$itemId"
 
-    fun isLessonCompleted(context: Context, language: String, lesson: Int): Boolean {
+    fun isLessonCompleted(context: Context, language: String, lessonId: String): Boolean {
         return prefs(context).getStringSet(COMPLETED_LESSONS, emptySet())
-            ?.contains(key(language, lesson)) == true
+            ?.contains(key(language, lessonId)) == true
     }
 
-    fun completeLesson(context: Context, language: String, lesson: Int) {
+    fun completeLesson(context: Context, language: String, lessonId: String) {
         val p = prefs(context)
         val current = p.getStringSet(COMPLETED_LESSONS, emptySet())?.toMutableSet() ?: mutableSetOf()
-        if (current.add(key(language, lesson))) {
+        if (current.add(key(language, lessonId))) {
             p.edit().putStringSet(COMPLETED_LESSONS, current).apply()
             addXp(context, 25)
         }
     }
 
     fun completedCount(context: Context, language: String, total: Int): Int {
-        return (0 until total).count { isLessonCompleted(context, language, it) }
+        return (0 until total).count { isLessonCompleted(context, language, "legacy-$it") }
     }
 
-    fun isExerciseCompleted(context: Context, language: String, exercise: Int): Boolean {
+    fun isExerciseCompleted(context: Context, language: String, exerciseId: String): Boolean {
         return prefs(context).getStringSet(COMPLETED_EXERCISES, emptySet())
-            ?.contains(key(language, exercise)) == true
+            ?.contains(key(language, exerciseId)) == true
     }
 
-    fun completeExercise(context: Context, language: String, exercise: Int): Boolean {
+    fun completeExercise(context: Context, language: String, exerciseId: String): Boolean {
         val p = prefs(context)
         val current = p.getStringSet(COMPLETED_EXERCISES, emptySet())?.toMutableSet() ?: mutableSetOf()
-        if (current.add(key(language, exercise))) {
+        if (current.add(key(language, exerciseId))) {
             p.edit().putStringSet(COMPLETED_EXERCISES, current).apply()
             addXp(context, 25)
             return true
@@ -106,6 +106,6 @@ object ProgressManager {
     }
 
     fun completedExerciseCount(context: Context, language: String, total: Int): Int {
-        return (0 until total).count { isExerciseCompleted(context, language, it) }
+        return (0 until total).count { isExerciseCompleted(context, language, "legacy-$it") }
     }
 }
