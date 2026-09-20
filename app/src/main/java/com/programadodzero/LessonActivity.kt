@@ -99,13 +99,16 @@ class LessonActivity : Activity() {
             } else if (currentLesson < lessons.lastIndex) {
                 currentLesson++
                 showLesson()
+            } else {
+                startActivity(Intent(this, FinalExamActivity::class.java).apply {
+                    putExtra("language", language)
+                })
             }
         }
 
         val backButton = Button(this).apply { text = "← Voltar"; isAllCaps = false; setOnClickListener { finish() } }
         screen.addView(header)
         screen.addView(progress)
-        screen.addView(title)
         val lessonContent = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             addView(title)
@@ -170,9 +173,9 @@ class LessonActivity : Activity() {
         nextButton.text = when {
             !completed -> "🧩 Fazer prática da aula"
             currentLesson < lessons.lastIndex -> "✅ Prática concluída • Próxima aula →"
-            else -> "🏆 Trilha concluída"
+            else -> "🎓 Fazer avaliação final"
         }
-        nextButton.isEnabled = !(completed && currentLesson == lessons.lastIndex)
+        nextButton.isEnabled = true
     }
 
     private fun startExercise() {
