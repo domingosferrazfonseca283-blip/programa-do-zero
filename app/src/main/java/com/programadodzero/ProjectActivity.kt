@@ -15,17 +15,13 @@ class ProjectActivity : Activity() {
     private lateinit var feedback: TextView
     private lateinit var next: Button
     private lateinit var play: Button
-
-    private val steps = listOf(
-        "1/5 — Crie o número secreto" to "Crie uma variável chamada numero_secreto com um número.",
-        "2/5 — Peça o palpite" to "Use input() para pedir um palpite e guarde a resposta em uma variável.",
-        "3/5 — Compare os números" to "Use if para verificar se o palpite é igual ao número secreto.",
-        "4/5 — Dê uma dica" to "Use elif ou else para informar se o palpite é maior ou menor.",
-        "5/5 — Conte tentativas" to "Crie tentativas e aumente esse contador quando o jogador tentar."
-    )
+    private lateinit var project: ProjectContent
+    private lateinit var language: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        language = intent.getStringExtra("language") ?: "🐍  Python"
+        project = ContentRepository.projectFor(language) ?: run { finish(); return }
         buildScreen()
         showStep()
     }
@@ -36,23 +32,20 @@ class ProjectActivity : Activity() {
             setPadding(24, 28, 24, 24)
             setBackgroundColor(Color.rgb(15, 23, 42))
         }
-
         val title = TextView(this).apply {
-            text = "🎮 Projeto 1 — Jogo de Adivinhação"
+            text = "🎮 " + project.title
             textSize = 22f
             setTextColor(Color.WHITE)
             setTypeface(null, Typeface.BOLD)
         }
-
         val help = TextView(this).apply {
-            text = "Construa o jogo por etapas. Você pode corrigir o código e tentar novamente."
+            text = project.description
             textSize = 16f
             setTextColor(Color.LTGRAY)
             setPadding(0, 12, 0, 12)
         }
-
         editor = EditText(this).apply {
-            setText("numero_secreto = 7")
+            setText(project.starter)
             textSize = 16f
             setTextColor(Color.WHITE)
             setBackgroundColor(Color.rgb(30, 41, 59))
@@ -61,42 +54,33 @@ class ProjectActivity : Activity() {
             setPadding(14, 14, 14, 14)
             minLines = 10
         }
-
         feedback = TextView(this).apply {
             textSize = 16f
             setTextColor(Color.LTGRAY)
             setPadding(0, 12, 0, 8)
         }
-
         val check = Button(this).apply {
             text = "▶ Verificar etapa"
             isAllCaps = false
             setOnClickListener { verifyStep() }
         }
-
         next = Button(this).apply {
             text = "Próxima etapa →"
             isAllCaps = false
             isEnabled = false
-            setOnClickListener {
-                step++
-                showStep()
-            }
+            setOnClickListener { step++; showStep() }
         }
-
         play = Button(this).apply {
             text = "🎮 Executar meu jogo"
             isAllCaps = false
             isEnabled = false
             setOnClickListener { openPlayableGame() }
         }
-
         val back = Button(this).apply {
             text = "← Voltar"
             isAllCaps = false
             setOnClickListener { finish() }
         }
-
         screen.addView(title)
         screen.addView(help)
         screen.addView(editor, LinearLayout.LayoutParams(-1, 0, 1f))
@@ -109,13 +93,15 @@ class ProjectActivity : Activity() {
     }
 
     private fun showStep() {
-        if (step >= steps.size) {
+        if (step >= project.steps.size) {
+            feedback.text = "🏆 Todas as etapas foram concluídas.\n\nExecute o projeto para validar o programa completo."
             play.isEnabled = true
+            next.isEnabled = false
             return
         }
         play.isEnabled = false
-        val item = steps[step]
-        feedback.text = "🎯 " + item.first + "\n\n" + item.second + "\n\n💡 Mantenha o código anterior e acrescente a nova parte."
+        val item = project.steps[step]
+        feedback.text = "🎯 ${item.title}\n\n${item.instruction}\n\n💡 ${item.hint}"
         next.isEnabled = false
     }
 
@@ -129,21 +115,13 @@ class ProjectActivity : Activity() {
             4 -> code.contains("while ") && code.contains("tentativas") && (code.contains("+ 1") || code.contains("+1"))
             else -> false
         }
-
         if (!ok) {
-            feedback.text = when (step) {
-                0 -> "❌ Falta a variável numero_secreto.\n\n💡 Exemplo: numero_secreto = 7"
-                1 -> "❌ Falta input().\n\n💡 Use palpite = int(input(\"Digite seu palpite: \"))"
-                2 -> "❌ Falta comparar os valores.\n\n💡 Use if palpite == numero_secreto:"
-                3 -> "❌ Falta uma alternativa com elif ou else e uma mensagem.\n\n💡 Use print() para explicar a dica."
-                4 -> "❌ Falta controlar as tentativas.\n\n💡 Crie tentativas = 0 e depois aumente com tentativas = tentativas + 1."
-                else -> "❌ Revise esta etapa."
-            }
+            val item = project.steps[step]
+            feedback.text = "❌ Ainda falta uma parte desta etapa.\n\n💡 ${item.hint}\n\nExemplo:\n${item.example}"
             return
         }
-
-        if (step == steps.lastIndex) {
-            feedback.text = "✅ Etapa concluída!\n\nAgora execute o jogo para testar seu código de verdade.\n\n🏆 O projeto será concluído quando a execução funcionar."
+        if (step == project.steps.lastIndex) {
+            feedback.text = "✅ Etapa concluída!\n\nAgora execute o jogo para testar o código completo."
             next.isEnabled = false
             play.isEnabled = true
         } else {
@@ -153,10 +131,9 @@ class ProjectActivity : Activity() {
     }
 
     private fun openPlayableGame() {
-        val intent = android.content.Intent(this, CodeEditorActivity::class.java).apply {
-            putExtra("language", "🐍  Python")
+        startActivity(android.content.Intent(this, CodeEditorActivity::class.java).apply {
+            putExtra("language", language)
             putExtra("project_mode", true)
-        }
-        startActivity(intent)
+        })
     }
 }
