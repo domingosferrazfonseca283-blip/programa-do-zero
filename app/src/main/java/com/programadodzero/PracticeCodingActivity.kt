@@ -48,9 +48,7 @@ class PracticeCodingActivity : Activity() {
             setTypeface(null, Typeface.BOLD)
         }
         val instruction = TextView(this).apply {
-            text = "${challenge.title}
-
-${challenge.instruction}"
+            text = "${challenge.title}\n\n${challenge.instruction}"
             textSize = 18f
             setTextColor(Color.LTGRAY)
             setPadding(0, 16, 0, 16)
@@ -93,9 +91,7 @@ ${challenge.instruction}"
             if (result) {
                 val firstTime = ProgressManager.completeExercise(this, language, challenge.id)
                 ProgressManager.completeLesson(this, language, challenge.id)
-                feedback.text = if (firstTime) "✅ Muito bem! ${challenge.success}
-
-+50 XP" else "✅ Código correto! ${challenge.success}"
+                feedback.text = if (firstTime) "✅ Muito bem! ${challenge.success}\n\n+50 XP" else "✅ Código correto! ${challenge.success}"
                 check.isEnabled = false
                 next.isEnabled = true
             } else {
