@@ -314,9 +314,31 @@ class ChallengeValidatorTest {
     }
 
     @Test
-    fun exigeFuncaoQueRealmenteProduzaSaudacao() {
-        assertTrue(ChallengeValidator.validate(5, """def cumprimentar(nome):\n    return "Olá, " + nome\nprint(cumprimentar("Ana"))"""))
-        assertFalse(ChallengeValidator.validate(5, """def cumprimentar(nome):\n    return "Olá"\nprint("Ana")"""))
+    fun aulaDeFuncaoVerificaQueResultadoMudaComParametro() {
+        assertTrue(
+            ChallengeValidator.validate(
+                5,
+                """
+                def cumprimentar(nome):
+                    return "Olá, " + nome
+                print(cumprimentar("Ana"))
+                """.trimIndent()
+            )
+        )
+    }
+
+    @Test
+    fun aulaDeFuncaoRejeitaSaidaFixaForaDaFuncao() {
+        assertFalse(
+            ChallengeValidator.validate(
+                5,
+                """
+                def cumprimentar(nome):
+                    return "Olá"
+                print("Ana")
+                """.trimIndent()
+            )
+        )
     }
 
     @Test
