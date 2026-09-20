@@ -37,6 +37,8 @@ object LibraryRepository {
         return "$topic\n\nEste capítulo apresenta o conceito de forma progressiva. Entenda o problema que a técnica resolve, observe exemplos pequenos e pratique antes de avançar.\n\nPrática: escreva um exemplo simples, altere uma parte e compare os resultados."
     }
 
+    val openResources: List<LibraryBook> = listOf(LibraryBook("oer-python-foundations", "Python", "Programming Foundations — TU Delft", "Livro aberto de fundamentos de programação em Python, com exercícios e progressão prática.", emptyList(), "TU Delft OPEN Books — Nikolina Šoštarić", "CC BY 4.0"), LibraryBook("oer-exploring-cs", "Python", "Exploring Computer Science", "Livro introdutório aberto de ciência da computação com Python.", emptyList(), "Ian Finlayson", "CC BY-NC-SA 4.0"), LibraryBook("oer-think-python", "Python", "Think Python 2e", "Livro aberto sobre pensamento computacional e Python.", emptyList(), "Allen Downey", "CC BY-NC-SA 3.0"))
+
     val books: List<LibraryBook> = listOf(
         book("python-fundamentos", "🐍  Python", "Python do Zero ao Código", "Livro introdutório original para acompanhar a trilha de Python.", listOf("Pensamento computacional e sintaxe", "Variáveis e tipos de dados", "Entrada, saída e conversões", "Condições e tomada de decisão", "Repetições e laços", "Funções e parâmetros", "Listas e operações", "Dicionários e dados estruturados", "Strings e processamento de texto", "Erros e tratamento de exceções", "Arquivos e persistência", "Classes e objetos", "Organização de sistemas", "Algoritmos e complexidade", "Testes e qualidade", "Projeto profissional")),
         book("javascript-fundamentos", "🌐  JavaScript", "JavaScript do Zero", "Livro introdutório original sobre a linguagem e seus fundamentos.", listOf("Sintaxe, valores e variáveis", "Condições, laços e funções", "Objetos, arrays e módulos", "Projetos e código para a web")),
@@ -52,10 +54,12 @@ object LibraryRepository {
         ,book("ciberseguranca", "🛡️  Cibersegurança", "Cibersegurança do Zero", "Introdução defensiva a segurança, privacidade e boas práticas.", listOf("Princípios de segurança", "Autenticação e senhas", "Redes e ameaças", "Defesa, logs e resposta a incidentes"))
     )
 
+    fun allBooks(): List<LibraryBook> = books + openResources
+
     fun search(query: String): List<LibraryBook> {
         val q = query.trim().lowercase()
-        if (q.isBlank()) return books
-        return books.filter {
+        if (q.isBlank()) return allBooks()
+        return allBooks().filter {
             it.title.lowercase().contains(q) ||
             it.language.lowercase().contains(q) ||
             it.description.lowercase().contains(q) ||
@@ -63,5 +67,5 @@ object LibraryRepository {
         }
     }
 
-    fun find(bookId: String): LibraryBook? = books.firstOrNull { it.id == bookId }
+    fun find(bookId: String): LibraryBook? = allBooks().firstOrNull { it.id == bookId }
 }
