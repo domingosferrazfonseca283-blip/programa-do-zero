@@ -16,11 +16,13 @@ class CodeEditorActivity : Activity() {
     private lateinit var output: TextView
     private val inputs = mutableListOf<String>()
     private var earnedXpForCurrentRun = false
+    private var projectMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val language = intent.getStringExtra("language") ?: "🐍  Python"
+        projectMode = intent.getBooleanExtra("project_mode", false)
 
         val screen = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -29,14 +31,18 @@ class CodeEditorActivity : Activity() {
         }
 
         val title = TextView(this).apply {
-            text = "⌨️ Seu primeiro código"
+            text = if (projectMode) "🎮 Executar meu jogo" else "⌨️ Seu primeiro código"
             textSize = 25f
             setTextColor(Color.WHITE)
             setTypeface(null, Typeface.BOLD)
         }
 
         val info = TextView(this).apply {
-            text = "Linguagem: $language\nEscreva o código e execute o exercício."
+            text = if (projectMode) {
+                "Linguagem: $language\nExecute seu jogo e teste o palpite."
+            } else {
+                "Linguagem: $language\nEscreva o código e execute o exercício."
+            }
             textSize = 17f
             setTextColor(Color.LTGRAY)
             setPadding(0, 14, 0, 18)
@@ -126,6 +132,10 @@ class CodeEditorActivity : Activity() {
         if (result.success && !earnedXpForCurrentRun) {
             ProgressManager.addXp(this, 10)
             earnedXpForCurrentRun = true
+            if (projectMode) {
+                ProgressManager.completeProject(this, 1)
+                output.append("\n\n🏆 Execução concluída! +10 XP")
+            }
         }
     }
 
