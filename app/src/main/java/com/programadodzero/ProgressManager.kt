@@ -8,6 +8,7 @@ object ProgressManager {
     private const val ACTIVE_LANGUAGE = "active_language"
     private const val COMPLETED_LESSONS = "completed_lessons"
     private const val COMPLETED_EXERCISES = "completed_exercises"
+    private const val COMPLETED_PROJECTS = "completed_projects"
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -85,6 +86,20 @@ object ProgressManager {
         if (current.add(key(language, exercise))) {
             p.edit().putStringSet(COMPLETED_EXERCISES, current).apply()
             addXp(context, 25)
+            return true
+        }
+        return false
+    }
+
+    fun isProjectCompleted(context: Context, project: Int): Boolean =
+        prefs(context).getStringSet(COMPLETED_PROJECTS, emptySet())?.contains(project.toString()) == true
+
+    fun completeProject(context: Context, project: Int): Boolean {
+        val p = prefs(context)
+        val current = p.getStringSet(COMPLETED_PROJECTS, emptySet())?.toMutableSet() ?: mutableSetOf()
+        if (current.add(project.toString())) {
+            p.edit().putStringSet(COMPLETED_PROJECTS, current).apply()
+            addXp(context, 100)
             return true
         }
         return false
