@@ -147,6 +147,25 @@ class PythonRunnerTest {
     }
 
     @Test
+    fun condicoesAndOrENotFuncionam() {
+        val result = PythonRunner.run(
+            """
+            idade = 20
+            temDocumento = 1
+            bloqueado = 0
+            if idade >= 18 and temDocumento == 1:
+                print("entrada")
+            if idade < 18 or temDocumento == 1:
+                print("documento")
+            if not bloqueado:
+                print("liberado")
+            """.trimIndent()
+        )
+        assertTrue(result.success)
+        assertEquals("entrada\ndocumento\nliberado", result.output)
+    }
+
+    @Test
     fun divisaoPorZeroMostraErro() {
         val result = PythonRunner.run("print(10 / 0)")
         assertFalse(result.success)
