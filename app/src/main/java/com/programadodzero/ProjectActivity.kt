@@ -126,7 +126,7 @@ class ProjectActivity : Activity() {
             1 -> code.contains("input(")
             2 -> code.contains("if ") && code.contains("==")
             3 -> (code.contains("elif ") || code.contains("else:")) && code.contains("print(")
-            4 -> code.contains("tentativas") && (code.contains("+ 1") || code.contains("+1"))
+            4 -> code.contains("while ") && code.contains("tentativas") && (code.contains("+ 1") || code.contains("+1"))
             else -> false
         }
 
