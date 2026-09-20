@@ -93,9 +93,9 @@ class LessonActivity : Activity() {
 
     private fun startExercise() {
         startActivity(Intent(this, PracticeCodingActivity::class.java).apply {
-            putExtra(ExerciseActivity.EXTRA_LANGUAGE, language)
-            putExtra(ExerciseActivity.EXTRA_LEVEL, level)
-            putExtra(ExerciseActivity.EXTRA_LESSON, currentLesson)
+            putExtra(PracticeCodingActivity.EXTRA_LANGUAGE, language)
+            putExtra(PracticeCodingActivity.EXTRA_LEVEL, level)
+            putExtra(PracticeCodingActivity.EXTRA_LESSON, currentLesson)
         })
     }
 
