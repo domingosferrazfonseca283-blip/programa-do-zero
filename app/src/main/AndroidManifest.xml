@@ -15,6 +15,17 @@
         <activity android:name=".LibraryActivity" android:screenOrientation="portrait" android:exported="false" />
         <activity android:name=".FinalExamActivity" android:screenOrientation="portrait" android:exported="false" />
         <activity android:name=".CertificateActivity" android:screenOrientation="portrait" android:exported="false" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.programadodzero.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <activity android:name=".ProfileActivity" android:screenOrientation="portrait" android:exported="false" />
         <activity android:name=".LessonActivity" android:screenOrientation="portrait" android:exported="false" />
         <activity android:name=".LevelActivity" android:screenOrientation="portrait" android:exported="false" />
