@@ -1,6 +1,7 @@
 package com.programadodzero
 
 import android.app.Activity
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
@@ -8,7 +9,6 @@ import android.view.Gravity
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 
 class LevelActivity : Activity() {
 
@@ -37,7 +37,7 @@ class LevelActivity : Activity() {
         }
 
         val subtitulo = TextView(this).apply {
-            text = "Isso ajuda a criar uma trilha personalizada para você."
+            text = "Escolha seu ponto de partida."
             textSize = 17f
             setTextColor(Color.LTGRAY)
             gravity = Gravity.CENTER
@@ -68,11 +68,10 @@ class LevelActivity : Activity() {
             tela.addView(botao, parametros)
 
             botao.setOnClickListener {
-                Toast.makeText(
-                    this,
-                    "Trilha $linguagem • $nivel",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val intent = Intent(this, LessonActivity::class.java)
+                intent.putExtra(LessonActivity.EXTRA_LANGUAGE, linguagem)
+                intent.putExtra(LessonActivity.EXTRA_LEVEL, nivel)
+                startActivity(intent)
             }
         }
 
@@ -80,17 +79,12 @@ class LevelActivity : Activity() {
             text = "← Voltar"
             textSize = 16f
             isAllCaps = false
+            setOnClickListener { finish() }
         }
 
-        voltar.setOnClickListener {
-            finish()
-        }
-
-        val voltarParams = LinearLayout.LayoutParams(-1, 60).apply {
+        tela.addView(voltar, LinearLayout.LayoutParams(-1, 60).apply {
             setMargins(0, 24, 0, 0)
-        }
-
-        tela.addView(voltar, voltarParams)
+        })
 
         setContentView(tela)
     }
