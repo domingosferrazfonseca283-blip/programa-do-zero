@@ -207,3 +207,4 @@ object ChallengeValidator {
 
         return withValue.output.trim() != withoutValue.output.trim()
 }
+}
