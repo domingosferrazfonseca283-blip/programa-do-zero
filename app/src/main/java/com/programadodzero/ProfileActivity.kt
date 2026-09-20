@@ -71,12 +71,50 @@ class ProfileActivity : Activity() {
             setPadding(0, 10, 0, 30)
         }
 
-        val topicSuggestions = ContentRepository.questionBank(language).groupBy { it.topic }.map { (topic, questions) -> topic to questions.sumOf { ProgressManager.examTopicScore(this, language, it.topic) } }.filter { it.second < 0 }.sortedBy { it.second }.take(3)
+        val topicSuggestions = ContentRepository.questionBank(language)
+            .groupBy { it.topic }
+            .map { (topic, questions) ->
+                topic to questions.sumOf { ProgressManager.examTopicScore(this, language, it.topic) }
+            }
+            .filter { it.second < 0 }
+            .sortedBy { it.second }
+            .take(3)
 
-if (topicSuggestions.isNotEmpty()) { screen.addView(TextView(this).apply { text = "🧠 Recomendações de revisão"; textSize = 20f; setPadding(0, 24, 0, 8) }); topicSuggestions.forEach { (topic, _) -> screen.addView(TextView(this).apply { text = "📌 Revise: $topic"; textSize = 16f; setPadding(0, 4, 0, 4) }) } }
+        if (topicSuggestions.isNotEmpty()) {
+            screen.addView(TextView(this).apply {
+                text = "🧠 Recomendações de revisão"
+                textSize = 20f
+                setTextColor(Color.WHITE)
+                setPadding(0, 24, 0, 8)
+            })
 
-val examScore = ProgressManager.finalExamScore(this, language)
-        val examButton = Button(this).apply { text = if (examScore == null) "🎓 Fazer avaliação final" else "🎓 Avaliação final: " + examScore + "/10"; isAllCaps = false; setOnClickListener { startActivity(Intent(this@ProfileActivity, FinalExamActivity::class.java).apply { putExtra("language", language) }) } }
+            topicSuggestions.forEach { (topic, _) ->
+                val question = ContentRepository.questionBank(language).firstOrNull { it.topic == topic }
+                val lessonId = question?.id?.substringBefore("-q")
+                val lesson = lessonId?.let { id ->
+                    ContentRepository.lessonsFor(language).firstOrNull { it.id == id }
+                }
+
+                screen.addView(Button(this).apply {
+                    text = "📌 Revisar: $topic" + (lesson?.let { "\n▶ " + it.title } ?: "")
+                    isAllCaps = false
+                    setOnClickListener {
+                        if (lesson != null) {
+                            startActivity(Intent(this@ProfileActivity, LessonActivity::class.java).apply {
+                                putExtra(LessonActivity.EXTRA_LANGUAGE, language)
+                                putExtra(LessonActivity.EXTRA_LEVEL_NUMBER, lesson.level)
+                                putExtra(LessonActivity.EXTRA_MODULE, lesson.module)
+                                putExtra(LessonActivity.EXTRA_LESSON_ID, lesson.id)
+                            })
+                        }
+                    }
+                }, LinearLayout.LayoutParams(-1, 70))
+            }
+        }
+
+        val examScore = ProgressManager.finalExamScore(this, language)
+        val examTotal = ContentRepository.finalExamFor(language).size
+        val examButton = Button(this).apply { text = if (examScore == null) "🎓 Fazer avaliação final" else "🎓 Avaliação final: " + examScore + "/" + examTotal; isAllCaps = false; setOnClickListener { startActivity(Intent(this@ProfileActivity, FinalExamActivity::class.java).apply { putExtra("language", language) }) } }
         screen.addView(examButton, LinearLayout.LayoutParams(-1, 60))
 
         if (complete) {
