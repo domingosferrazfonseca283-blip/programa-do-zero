@@ -9,7 +9,7 @@ import android.content.Intent
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.net.Uri
+import androidx.core.content.FileProvider
 import java.io.File
 import java.io.FileOutputStream
 import java.security.MessageDigest
@@ -153,12 +153,13 @@ class CertificateActivity : Activity() {
 
     private fun openPdf(file: File) {
         try {
+            val uri = FileProvider.getUriForFile(this, "com.programadodzero.files", file)
             startActivity(Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(android.net.Uri.fromFile(file), "application/pdf")
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                setDataAndType(uri, "application/pdf")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             })
         } catch (_: Exception) {
-            // Some Android versions block file:// sharing. The PDF remains saved locally.
+            // Se não houver leitor de PDF instalado, o arquivo continua salvo localmente.
         }
     }
 
