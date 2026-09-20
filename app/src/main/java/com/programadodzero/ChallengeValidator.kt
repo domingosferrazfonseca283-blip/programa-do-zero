@@ -41,7 +41,7 @@ object ChallengeValidator {
                 code.contains("\"nome\"") && Regex("""\[[\"']nome[\"']\]""").containsMatchIn(code)
             "python-10" -> code.contains(".upper()") && code.contains("print(")
             "python-11" -> code.contains("try:") && code.contains("except")
-            "python-12" -> code.contains("open(") || (code.contains("dados.txt") && code.contains("#"))
+            "python-12" -> validateFileChallenge(code)
             "python-13" -> validateOopPerson(code)
             "python-14" -> validateOopAccount(code)
             else -> false
@@ -49,6 +49,19 @@ object ChallengeValidator {
     }
 
     
+
+
+    private fun validateFileChallenge(code: String): Boolean {
+        if (!code.contains("open(") || !code.contains(".write(") || !code.contains(".read()")) return false
+
+        val result = PythonRunner.run(code)
+        if (!result.success) return false
+
+        return result.output.lines()
+            .map { it.trim() }
+            .any { it == "Olá, arquivo!" }
+    }
+
     private fun validateOopPerson(code: String): Boolean {
         if (!code.contains("class Pessoa") || !code.contains("__init__") || !code.contains("self.nome")) return false
         val result = PythonRunner.run(code)
