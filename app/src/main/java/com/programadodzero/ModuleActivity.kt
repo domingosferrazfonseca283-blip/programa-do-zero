@@ -22,11 +22,10 @@ class ModuleActivity : Activity() {
         val language = intent.getStringExtra(EXTRA_LANGUAGE) ?: "Linguagem"
         val level = intent.getIntExtra(EXTRA_LEVEL, 1)
         val modules = ContentRepository.modulesForLevel(language, level)
-        val previousLevelLessons = ContentRepository.lessonsFor(language)
-            .filter { it.level < level }
-        val levelUnlocked = previousLevelLessons.all {
+        val previousLevelLessons = ContentRepository.lessonsFor(language).filter { it.level < level }
+        val levelUnlocked = level == 1 || (previousLevelLessons.isNotEmpty() && previousLevelLessons.all {
             ProgressManager.isLessonCompleted(this, language, it.id)
-        }
+        })
 
         val screen = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -61,9 +60,10 @@ class ModuleActivity : Activity() {
             val previousLessons = previousModules.flatMap { previous ->
                 ContentRepository.lessonsForModule(language, level, previous.order)
             }
-            val unlocked = previousLessons.all {
-                ProgressManager.isLessonCompleted(this, language, it.id)
-            }
+            val unlocked = module.order == modules.minOfOrNull { it.order } ||
+                (previousLessons.isNotEmpty() && previousLessons.all {
+                    ProgressManager.isLessonCompleted(this, language, it.id)
+                })
             val status = when {
                 lessons.isEmpty() -> "🚧 Em construção"
                 completed == lessons.size -> "✅ Concluído"
@@ -83,16 +83,15 @@ class ModuleActivity : Activity() {
                 setOnClickListener {
                     val firstPending = lessons.firstOrNull {
                         !ProgressManager.isLessonCompleted(this@ModuleActivity, language, it.id)
-                    } ?: lessons.lastOrNull()
-                    if (firstPending != null) {
-                        startActivity(Intent(this@ModuleActivity, LessonActivity::class.java).apply {
-                            putExtra(LessonActivity.EXTRA_LANGUAGE, language)
-                            putExtra(LessonActivity.EXTRA_LEVEL, "Nível " + level)
-                            putExtra(LessonActivity.EXTRA_LEVEL_NUMBER, level)
-                            putExtra(LessonActivity.EXTRA_MODULE, module.order)
-                            putExtra(LessonActivity.EXTRA_LESSON_ID, firstPending.id)
-                        })
                     }
+                    if (firstPending == null) return@setOnClickListener
+                    startActivity(Intent(this@ModuleActivity, LessonActivity::class.java).apply {
+                        putExtra(LessonActivity.EXTRA_LANGUAGE, language)
+                        putExtra(LessonActivity.EXTRA_LEVEL, "Nível $level")
+                        putExtra(LessonActivity.EXTRA_LEVEL_NUMBER, level)
+                        putExtra(LessonActivity.EXTRA_MODULE, module.order)
+                        putExtra(LessonActivity.EXTRA_LESSON_ID, firstPending.id)
+                    })
                 }
             }
             screen.addView(button, LinearLayout.LayoutParams(-1, 104).apply { setMargins(0, 7, 0, 7) })
