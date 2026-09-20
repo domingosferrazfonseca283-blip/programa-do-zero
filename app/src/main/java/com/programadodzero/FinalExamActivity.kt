@@ -48,7 +48,7 @@ class FinalExamActivity : Activity() {
             val newBest = previousBest == null || score > previousBest
             result.text = if (passed) {
                 "🎉 APROVADO! $score/${questions.size} ($percent%)" +
-                    if (newBest) "\n+100 XP pelo novo melhor resultado" else "\nMelhor resultado mantido" +
+                    (if (newBest) "\n+100 XP pelo novo melhor resultado" else "\nMelhor resultado mantido") +
                     "\nTentativas: ${ProgressManager.finalExamAttempts(this, language)}" +
                     "\n\nO certificado profissional está liberado no seu perfil."
             } else {
