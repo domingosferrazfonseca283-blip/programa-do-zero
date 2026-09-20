@@ -24,11 +24,12 @@ class FinalExamActivity : Activity() {
         val submit = Button(this).apply { text = "✅ Corrigir avaliação"; isAllCaps = false }; root.addView(submit)
         val result = TextView(this).apply { textSize = 18f; setTextColor(Color.WHITE); setPadding(0,20,0,20); gravity = Gravity.CENTER }; root.addView(result)
         submit.setOnClickListener {
+            ProgressManager.recordFinalExamAttempt(this, language)
             var score = 0
             questions.forEachIndexed { i, q -> val checked = choices[i].checkedRadioButtonId; if (checked != -1 && choices[i].findViewById<RadioButton>(checked).tag == q.answerIndex) score++ }
             val percent = score * 100 / questions.size
             val passed = ProgressManager.passFinalExam(this, language, score, questions.size)
-            result.text = if (passed) "🎉 APROVADO! $score/${questions.size} ($percent%)\n+100 XP\n\nO certificado profissional está liberado no seu perfil." else "📚 $score/${questions.size} ($percent%)\n\nVocê precisa de pelo menos 70%. Revise as aulas e tente novamente."
+            result.text = if (passed) "🎉 APROVADO! $score/${questions.size} ($percent%)\n+100 XP\nTentativas: ${ProgressManager.finalExamAttempts(this, language)}\n\nO certificado profissional está liberado no seu perfil." else "📚 $score/${questions.size} ($percent%)\nTentativas: ${ProgressManager.finalExamAttempts(this, language)}\n\nVocê precisa de pelo menos 70%. Revise as aulas e tente novamente."
             if (passed) submit.isEnabled = false
         }
         root.addView(Button(this).apply { text = "← Voltar"; isAllCaps = false; setOnClickListener { finish() } })
