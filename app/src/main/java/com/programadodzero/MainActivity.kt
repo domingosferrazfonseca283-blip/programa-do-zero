@@ -50,6 +50,9 @@ class MainActivity : Activity() {
         tela.addView(progresso, LinearLayout.LayoutParams(-1, -2))
 
         val biblioteca = Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
             text = "📚 Biblioteca offline"
             textSize = 16f
             isAllCaps = false
@@ -57,11 +60,14 @@ class MainActivity : Activity() {
                 startActivity(Intent(this@MainActivity, LibraryActivity::class.java))
             }
         }
-        tela.addView(biblioteca, LinearLayout.LayoutParams(-1, 60).apply {
+        tela.addView(biblioteca, LinearLayout.LayoutParams(-1, -2).apply {
             setMargins(0, 0, 0, 10)
         })
 
         val pratica = Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
             text = "🧪 Aulas práticas"
             textSize = 16f
             isAllCaps = false
@@ -71,11 +77,14 @@ class MainActivity : Activity() {
                 })
             }
         }
-        tela.addView(pratica, LinearLayout.LayoutParams(-1, 60).apply {
+        tela.addView(pratica, LinearLayout.LayoutParams(-1, -2).apply {
             setMargins(0, 0, 0, 10)
         })
 
         val editor = Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
             text = "⌨️ Praticar código"
             textSize = 16f
             isAllCaps = false
@@ -85,11 +94,14 @@ class MainActivity : Activity() {
                 })
             }
         }
-        tela.addView(editor, LinearLayout.LayoutParams(-1, 60).apply {
+        tela.addView(editor, LinearLayout.LayoutParams(-1, -2).apply {
             setMargins(0, 0, 0, 10)
         })
 
         val perfil = Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
             text = "🏆 Meu progresso"
             textSize = 16f
             isAllCaps = false
@@ -99,7 +111,7 @@ class MainActivity : Activity() {
                 })
             }
         }
-        tela.addView(perfil, LinearLayout.LayoutParams(-1, 60).apply {
+        tela.addView(perfil, LinearLayout.LayoutParams(-1, -2).apply {
             setMargins(0, 0, 0, 14)
         })
 
@@ -110,6 +122,9 @@ class MainActivity : Activity() {
 
         for (linguagem in linguagens) {
             val botao = Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
                 text = linguagem
                 textSize = 17f
                 isAllCaps = false
@@ -119,7 +134,7 @@ class MainActivity : Activity() {
                     })
                 }
             }
-            tela.addView(botao, LinearLayout.LayoutParams(-1, 65).apply {
+            tela.addView(botao, LinearLayout.LayoutParams(-1, -2).apply {
                 setMargins(0, 6, 0, 6)
             })
         }
