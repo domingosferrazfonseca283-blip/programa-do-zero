@@ -10,6 +10,8 @@ object ProgressManager {
     private const val COMPLETED_EXERCISES = "completed_exercises"
     private const val COMPLETED_PROJECTS = "completed_projects"
     private const val COMPLETED_REVIEWS = "completed_reviews"
+    private const val LAST_STUDY_DAY = "last_study_day"
+    private const val STUDY_STREAK = "study_streak"
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -17,6 +19,31 @@ object ProgressManager {
     fun getXp(context: Context): Int = prefs(context).getInt(XP, 0)
 
     fun getLevel(context: Context): Int = 1 + getXp(context) / 100
+
+    fun getStudyStreak(context: Context): Int = prefs(context).getInt(STUDY_STREAK, 0)
+
+    fun registerStudyDay(context: Context): Int {
+        val p = prefs(context)
+        val today = java.time.LocalDate.now().toString()
+        val last = p.getString(LAST_STUDY_DAY, null)
+        if (last == today) return getStudyStreak(context)
+        val yesterday = java.time.LocalDate.now().minusDays(1).toString()
+        val streak = if (last == yesterday) getStudyStreak(context) + 1 else 1
+        p.edit().putString(LAST_STUDY_DAY, today).putInt(STUDY_STREAK, streak).apply()
+        return streak
+    }
+
+    fun achievements(context: Context, language: String): List<String> {
+        val lessons = ContentRepository.lessonsFor(language).map { it.id }
+        val result = mutableListOf<String>()
+        if (getXp(context) >= 100) result.add("⭐ Primeiros 100 XP")
+        if (completedCount(context, language, lessons) >= 5) result.add("📚 5 aulas concluídas")
+        if (completedExerciseCount(context, language, lessons) >= 5) result.add("🧩 5 exercícios concluídos")
+        if (completedReviewCount(context, language) >= 5) result.add("🧠 5 revisões acertadas")
+        if (getStudyStreak(context) >= 3) result.add("🔥 3 dias de sequência")
+        if (lessons.isNotEmpty() && completedCount(context, language, lessons) == lessons.size) result.add("🏆 Trilha concluída")
+        return result
+    }
 
     fun xpIntoLevel(context: Context): Int = getXp(context) % 100
 
@@ -36,6 +63,7 @@ object ProgressManager {
         prefs(context).getStringSet(COMPLETED_REVIEWS, emptySet())?.count { it.startsWith("$language:") } ?: 0
 
     fun addXp(context: Context, amount: Int) {
+        registerStudyDay(context)
         val p = prefs(context)
         p.edit().putInt(XP, p.getInt(XP, 0) + amount).apply()
     }
