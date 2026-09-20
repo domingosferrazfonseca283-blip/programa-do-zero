@@ -24,7 +24,7 @@ object ChallengeValidator {
             3 -> validateAgeChallenge(code)
 
             4 -> validateLoopChallenge(code)
-            5 -> hasFunction(code) && execution.output.trim().contains("Ana")
+            5 -> validateFunctionChallenge(code)
             6 -> hasListWithAtLeastTwoItems(code, execution.output)
             7 -> hasInputConditionAndOutput(code) && execution.output.isNotBlank()
             else -> false
@@ -93,6 +93,16 @@ object ChallengeValidator {
                 clean.contains("range(") &&
                 clean.endsWith(":")
         }
+
+    private fun validateFunctionChallenge(code: String): Boolean {
+        if (!hasFunction(code)) return false
+
+        val result = PythonRunner.run(code)
+        if (!result.success) return false
+
+        val output = result.output.trim()
+        return output.contains("Ana") && output.length > 3
+    }
 
     private fun hasFunction(code: String): Boolean =
         code.lines().any { it.trim().startsWith("def ") && it.contains("(") && it.contains("):") } &&
