@@ -70,8 +70,14 @@ class LevelActivity : Activity() {
             val nivel = nivelNomes[nivelNumero] ?: "Nível $nivelNumero"
             val levelModules = ContentRepository.modulesForLevel(linguagem, nivelNumero)
             val levelLessons = ContentRepository.lessonsForLevel(linguagem, nivelNumero)
+            val previousLevelLessons = ContentRepository.lessonsFor(linguagem).filter { it.level < nivelNumero }
+            val levelUnlocked = nivelNumero == 1 ||
+                (previousLevelLessons.isNotEmpty() && previousLevelLessons.all {
+                    ProgressManager.isLessonCompleted(this, linguagem, it.id)
+                })
             val enabled = available &&
-                ProgressManager.canStartLanguage(this, linguagem, lessonIds)
+                ProgressManager.canStartLanguage(this, linguagem, lessonIds) &&
+                levelUnlocked
             val completed = levelLessons.count {
                 ProgressManager.isLessonCompleted(this, linguagem, it.id)
             }
@@ -98,7 +104,7 @@ class LevelActivity : Activity() {
             botao.setOnClickListener {
                 if (ProgressManager.selectLanguage(this, linguagem, lessonIds)) {
                     startActivity(Intent(this, ModuleActivity::class.java).apply {
-                        putExtra(LessonActivity.EXTRA_LANGUAGE, linguagem)
+                        putExtra(ModuleActivity.EXTRA_LANGUAGE, linguagem)
                         putExtra(ModuleActivity.EXTRA_LEVEL, nivelNumero)
                     })
                 } else {
