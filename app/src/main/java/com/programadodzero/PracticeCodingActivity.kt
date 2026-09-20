@@ -75,8 +75,8 @@ class PracticeCodingActivity : Activity() {
             val codeText = editor.text.toString().trim()
             val result = validatePython(challenge.id, codeText)
             if (result) {
-                val firstTime = ProgressManager.completeExercise(this, language, lesson)
-                ProgressManager.completeLesson(this, language, lesson)
+                val firstTime = ProgressManager.completeExercise(this, language, challenge.id)
+                ProgressManager.completeLesson(this, language, challenge.id)
                 feedback.text = if (firstTime) "✅ Muito bem! ${challenge.success}\n\n+50 XP" else "✅ Código correto! ${challenge.success}"
                 check.isEnabled = false
                 next.isEnabled = true
