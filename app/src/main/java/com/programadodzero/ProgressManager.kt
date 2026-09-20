@@ -26,18 +26,18 @@ object ProgressManager {
     fun hasActiveLanguage(context: Context): Boolean =
         !getActiveLanguage(context).isNullOrBlank()
 
-    fun isLanguageComplete(context: Context, language: String, total: Int): Boolean {
-        return completedCount(context, language, total) == total &&
-            completedExerciseCount(context, language, total) == total
+    fun isLanguageComplete(context: Context, language: String, lessonIds: List<String>): Boolean {
+        return completedCount(context, language, lessonIds) == lessonIds.size &&
+            completedExerciseCount(context, language, lessonIds) == lessonIds.size
     }
 
-    fun canStartLanguage(context: Context, language: String, total: Int): Boolean {
+    fun canStartLanguage(context: Context, language: String, lessonIds: List<String>): Boolean {
         val active = getActiveLanguage(context)
         return active == null || active == language ||
-            isLanguageComplete(context, active, total)
+            isLanguageComplete(context, active, lessonIds)
     }
 
-    fun selectLanguage(context: Context, language: String, total: Int): Boolean {
+    fun selectLanguage(context: Context, language: String, lessonIds: List<String>): Boolean {
         val active = getActiveLanguage(context)
 
         if (active == null) {
@@ -47,7 +47,7 @@ object ProgressManager {
 
         if (active == language) return true
 
-        if (isLanguageComplete(context, active, total)) {
+        if (isLanguageComplete(context, active, lessonIds)) {
             prefs(context).edit().putString(ACTIVE_LANGUAGE, language).apply()
             return true
         }
@@ -71,8 +71,8 @@ object ProgressManager {
         }
     }
 
-    fun completedCount(context: Context, language: String, total: Int): Int {
-        return (0 until total).count { isLessonCompleted(context, language, "legacy-$it") }
+    fun completedCount(context: Context, language: String, lessonIds: List<String>): Int {
+        return lessonIds.count { isLessonCompleted(context, language, it) }
     }
 
     fun isExerciseCompleted(context: Context, language: String, exerciseId: String): Boolean {
@@ -105,7 +105,7 @@ object ProgressManager {
         return false
     }
 
-    fun completedExerciseCount(context: Context, language: String, total: Int): Int {
-        return (0 until total).count { isExerciseCompleted(context, language, "legacy-$it") }
+    fun completedExerciseCount(context: Context, language: String, lessonIds: List<String>): Int {
+        return lessonIds.count { isExerciseCompleted(context, language, it) }
     }
 }
