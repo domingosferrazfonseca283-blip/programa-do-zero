@@ -50,6 +50,20 @@ class MainActivity : Activity() {
         }
         tela.addView(progresso, LinearLayout.LayoutParams(-1, -2))
 
+        val perfil = Button(this).apply {
+            text = "🏆 Meu progresso"
+            textSize = 16f
+            isAllCaps = false
+            setOnClickListener {
+                startActivity(Intent(this@MainActivity, ProfileActivity::class.java).apply {
+                    putExtra("language", "🐍  Python")
+                })
+            }
+        }
+        tela.addView(perfil, LinearLayout.LayoutParams(-1, 60).apply {
+            setMargins(0, 0, 0, 14)
+        })
+
         val linguagens = listOf(
             "🐍  Python",
             "🌐  JavaScript",
