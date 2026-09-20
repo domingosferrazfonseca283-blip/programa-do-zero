@@ -114,50 +114,8 @@ class PracticeCodingActivity : Activity() {
         setContentView(screen)
     }
 
-    private fun validatePython(lesson: Int, code: String): Boolean {
-        if (code.isBlank()) return false
-
-        val execution = when (lesson) {
-            7 -> PythonRunner.run(code, listOf("Ana"))
-            else -> PythonRunner.run(code)
-        }
-
-        if (!execution.success) return false
-
-        return when (lesson) {
-            0 -> execution.output.isNotBlank()
-            1 -> hasAssignment(code) && execution.output.isNotBlank()
-            2 -> hasTextAndNumberAssignment(code)
-            3 -> hasCondition(code) && execution.output.isNotBlank()
-            4 -> code.contains("for ") && code.contains("range(") && execution.output.lines().size >= 5
-            5 -> code.contains("def ") && code.contains("return") && execution.output.isNotBlank()
-            6 -> code.contains("[") && code.contains("]") && execution.output.isNotBlank()
-            7 -> code.contains("input(") && hasCondition(code) && execution.output.isNotBlank()
-            else -> false
-        }
-    }
-    private fun hasAssignment(code: String): Boolean =
-        code.lines().any { line ->
-            val clean = line.trim()
-            clean.isNotEmpty() && !clean.startsWith("#") &&
-                clean.contains("=") && !clean.contains("==") &&
-                !clean.startsWith("if ") && !clean.startsWith("elif ")
-        }
-
-    private fun hasTextAndNumberAssignment(code: String): Boolean {
-        val hasText = code.lines().any { line ->
-            val clean = line.trim()
-            clean.contains("=") && (clean.contains("\"") || clean.contains("'"))
-        }
-        val hasNumber = code.lines().any { line ->
-            val clean = line.trim()
-            clean.contains("=") && clean.substringAfter("=", "").trim().toIntOrNull() != null
-        }
-        return hasText && hasNumber
-    }
-
-    private fun hasCondition(code: String): Boolean =
-        code.lines().any { it.trim().startsWith("if ") && it.contains(":") }
+    private fun validatePython(lesson: Int, code: String): Boolean =
+        ChallengeValidator.validate(lesson, code)
 
     private fun pythonHint(lesson: Int, code: String): String {
         if (code.isBlank()) return "❌ O editor está vazio.\\n\\n💡 Comece pelo exemplo da aula e altere uma parte dele."
