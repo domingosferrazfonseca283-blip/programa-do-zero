@@ -34,7 +34,7 @@ class PracticeCodingActivity : Activity() {
             setBackgroundColor(Color.rgb(15, 23, 42))
         }
         val header = TextView(this).apply {
-            text = "⌨️ Prática de código ${lesson + 1}/8 • $language"
+            text = "⌨️ Prática de código ${lesson + 1}/${challenges.size} • $language"
             textSize = 20f
             setTextColor(Color.WHITE)
             setTypeface(null, Typeface.BOLD)
@@ -66,7 +66,7 @@ class PracticeCodingActivity : Activity() {
             isAllCaps = false
         }
         val next = Button(this).apply {
-            text = if (lesson < 7) "Próxima aula →" else "🏆 Concluir linguagem"
+            text = if (lesson < challenges.lastIndex) "Próxima aula →" else "🏆 Concluir linguagem"
             isAllCaps = false
             isEnabled = false
         }
@@ -86,7 +86,7 @@ class PracticeCodingActivity : Activity() {
         }
 
         next.setOnClickListener {
-            if (lesson < 7) {
+            if (lesson < challenges.lastIndex) {
                 startActivity(android.content.Intent(this, PracticeCodingActivity::class.java).apply {
                     putExtra(EXTRA_LANGUAGE, language)
                     putExtra(EXTRA_LEVEL, level)
