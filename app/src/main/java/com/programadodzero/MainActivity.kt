@@ -1,58 +1,45 @@
 package com.programadodzero
 
 import android.app.Activity
-import android.os.Bundle
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
+import android.os.Bundle
 import android.view.Gravity
-import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 
 class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val tela = LinearLayout(this)
+        val tela = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(40, 60, 40, 40)
+            setBackgroundColor(Color.rgb(15, 23, 42))
+        }
 
-        tela.orientation = LinearLayout.VERTICAL
-        tela.gravity = Gravity.CENTER_HORIZONTAL
-        tela.setPadding(40, 60, 40, 40)
-        tela.setBackgroundColor(Color.rgb(15, 23, 42))
+        val titulo = TextView(this).apply {
+            text = "👨‍💻 Programação do Zero"
+            textSize = 28f
+            setTextColor(Color.WHITE)
+            setTypeface(null, Typeface.BOLD)
+            gravity = Gravity.CENTER
+        }
 
-        val titulo = TextView(this)
+        val subtitulo = TextView(this).apply {
+            text = "Escolha uma linguagem para começar sua jornada"
+            textSize = 18f
+            setTextColor(Color.LTGRAY)
+            gravity = Gravity.CENTER
+            setPadding(0, 20, 0, 24)
+        }
 
-        titulo.text = "👨‍💻 Bem-vindo!"
-        titulo.textSize = 30f
-        titulo.setTextColor(Color.WHITE)
-        titulo.setTypeface(null, Typeface.BOLD)
-        titulo.gravity = Gravity.CENTER
-
-        tela.addView(
-            titulo,
-            LinearLayout.LayoutParams(
-                -1,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        val subtitulo = TextView(this)
-
-        subtitulo.text = "\nEscolha uma linguagem para começar sua jornada:"
-        subtitulo.textSize = 18f
-        subtitulo.setTextColor(Color.LTGRAY)
-        subtitulo.gravity = Gravity.CENTER
-
-        tela.addView(
-            subtitulo,
-            LinearLayout.LayoutParams(
-                -1,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-        )
+        tela.addView(titulo, LinearLayout.LayoutParams(-1, -2))
+        tela.addView(subtitulo, LinearLayout.LayoutParams(-1, -2))
 
         val linguagens = listOf(
             "🐍  Python",
@@ -66,27 +53,22 @@ class MainActivity : Activity() {
         )
 
         for (linguagem in linguagens) {
+            val botao = Button(this).apply {
+                text = linguagem
+                textSize = 17f
+                isAllCaps = false
+            }
 
-            val botao = Button(this)
-
-            botao.text = linguagem
-            botao.textSize = 17f
-
-            val parametros = LinearLayout.LayoutParams(
-                -1,
-                65
-            )
-
-            parametros.setMargins(0, 8, 0, 8)
+            val parametros = LinearLayout.LayoutParams(-1, 65).apply {
+                setMargins(0, 6, 0, 6)
+            }
 
             tela.addView(botao, parametros)
 
             botao.setOnClickListener {
-                Toast.makeText(
-                    this,
-                    "Você escolheu $linguagem",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val intent = Intent(this, LevelActivity::class.java)
+                intent.putExtra(LevelActivity.EXTRA_LANGUAGE, linguagem)
+                startActivity(intent)
             }
         }
 
