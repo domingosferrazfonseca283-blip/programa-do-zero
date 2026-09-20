@@ -170,7 +170,7 @@ object PythonRunner {
                 }
                 val exceptEnd = findBlockEnd(lines, exceptIndex + 1, end, indent)
                 try {
-                    executeBlock(lines, i + 1, tryEnd, indent + 4, variables, output, inputs, inputIndex, functions)
+                    executeBlock(lines, i + 1, tryEnd, indent + 4, variables, output, inputs, inputIndex, functions, classes, objects)
                 } catch (e: InputRequired) {
                     throw e
                 } catch (e: BreakLoop) {
