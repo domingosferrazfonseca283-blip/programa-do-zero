@@ -8,6 +8,7 @@ import android.view.Gravity
 import android.widget.Button
 import android.content.Intent
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 
@@ -67,11 +68,13 @@ class LevelActivity : Activity() {
 
         for (nivelNumero in niveis) {
             val nivel = nivelNomes[nivelNumero] ?: "Nível $nivelNumero"
+            val levelModules = ContentRepository.modulesForLevel(linguagem, nivelNumero)
+            val levelLessons = ContentRepository.lessonsForLevel(linguagem, nivelNumero)
             val botao = Button(this).apply {
             gravity = Gravity.CENTER
             includeFontPadding = false
             setPadding(16, 10, 16, 10)
-                text = nivel
+                text = nivel + "\n" + levelModules.size + " módulos • " + levelLessons.size + " aulas"
                 textSize = 17f
                 isAllCaps = false
                 isEnabled = available && ProgressManager.canStartLanguage(
@@ -113,6 +116,10 @@ class LevelActivity : Activity() {
             setMargins(0, 24, 0, 0)
         })
 
-        setContentView(tela)
+        val scroll = ScrollView(this).apply {
+            isFillViewport = true
+            addView(tela)
+        }
+        setContentView(scroll)
     }
 }
