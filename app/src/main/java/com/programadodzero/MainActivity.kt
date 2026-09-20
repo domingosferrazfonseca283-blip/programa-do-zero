@@ -41,6 +41,15 @@ class MainActivity : Activity() {
         tela.addView(titulo, LinearLayout.LayoutParams(-1, -2))
         tela.addView(subtitulo, LinearLayout.LayoutParams(-1, -2))
 
+        val progresso = TextView(this).apply {
+            text = "⭐ ${ProgressManager.getXp(this@MainActivity)} XP"
+            textSize = 17f
+            setTextColor(Color.LTGRAY)
+            gravity = Gravity.CENTER
+            setPadding(0, 0, 0, 20)
+        }
+        tela.addView(progresso, LinearLayout.LayoutParams(-1, -2))
+
         val linguagens = listOf(
             "🐍  Python",
             "🌐  JavaScript",
