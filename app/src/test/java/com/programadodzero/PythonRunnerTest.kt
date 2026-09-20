@@ -321,9 +321,44 @@ class ChallengeValidatorTest {
     }
 
     @Test
-    fun exigeListaComPeloMenosDoisItens() {
-        assertTrue(ChallengeValidator.validate(6, """itens = ["a", "b"]\nprint(itens)"""))
-        assertFalse(ChallengeValidator.validate(6, """itens = ["a"]\nprint(itens)"""))
+    fun listaDaAulaSetePrecisaSerUsadaDeVerdade() {
+        assertTrue(
+            ChallengeValidator.validate(
+                6,
+                """
+                nomes = ["Ana", "Bruno"]
+                print(nomes)
+                print(nomes[1])
+                """.trimIndent()
+            )
+        )
+    }
+
+    @Test
+    fun aulaSeteRejeitaListaSemAcessoAoSegundoItem() {
+        assertFalse(
+            ChallengeValidator.validate(
+                6,
+                """
+                nomes = ["Ana", "Bruno"]
+                print(nomes)
+                """.trimIndent()
+            )
+        )
+    }
+
+    @Test
+    fun aulaSeteRejeitaListaComApenasUmItem() {
+        assertFalse(
+            ChallengeValidator.validate(
+                6,
+                """
+                nomes = ["Ana"]
+                print(nomes)
+                print(nomes[1])
+                """.trimIndent()
+            )
+        )
     }
 
     @Test
