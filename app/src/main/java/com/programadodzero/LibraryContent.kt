@@ -33,7 +33,7 @@ object LibraryRepository {
     """.trimIndent()
 
     val books: List<LibraryBook> = listOf(
-        book("python-fundamentos", "🐍  Python", "Python do Zero ao Código", "Livro introdutório original para acompanhar a trilha de Python.", listOf("Pensamento computacional e sintaxe", "Variáveis, tipos e decisões", "Laços, funções e estruturas de dados", "Projetos, testes e organização")),
+        book("python-fundamentos", "🐍  Python", "Python do Zero ao Código", "Livro introdutório original para acompanhar a trilha de Python.", listOf("Pensamento computacional e sintaxe", "Variáveis e tipos de dados", "Entrada, saída e conversões", "Condições e tomada de decisão", "Repetições e laços", "Funções e parâmetros", "Listas e operações", "Dicionários e dados estruturados", "Strings e processamento de texto", "Erros e tratamento de exceções", "Arquivos e persistência", "Classes e objetos", "Organização de sistemas", "Algoritmos e complexidade", "Testes e qualidade", "Projeto profissional")),
         book("javascript-fundamentos", "🌐  JavaScript", "JavaScript do Zero", "Livro introdutório original sobre a linguagem e seus fundamentos.", listOf("Sintaxe, valores e variáveis", "Condições, laços e funções", "Objetos, arrays e módulos", "Projetos e código para a web")),
         book("typescript-fundamentos", "🔷  TypeScript", "TypeScript do Zero", "Introdução prática a tipos e desenvolvimento seguro.", listOf("Tipos e inferência", "Funções e interfaces", "Objetos, generics e organização", "Projetos TypeScript")),
         book("java-fundamentos", "☕  Java", "Java do Zero", "Fundamentos da linguagem Java para iniciantes.", listOf("Sintaxe e tipos", "Condições, laços e métodos", "Classes e orientação a objetos", "Projetos e boas práticas")),
