@@ -107,6 +107,46 @@ class PythonRunnerTest {
     }
 
     @Test
+    fun funcaoComParametroERetornoFunciona() {
+        val result = PythonRunner.run(
+            """
+            def saudar(nome):
+                return "Olá, " + nome
+            print(saudar("Carlos"))
+            """.trimIndent()
+        )
+        assertTrue(result.success)
+        assertEquals("Olá, Carlos", result.output)
+    }
+
+    @Test
+    fun listaEIndiceFuncionam() {
+        val result = PythonRunner.run(
+            """
+            frutas = ["maçã", "banana"]
+            print(frutas)
+            print(frutas[1])
+            """.trimIndent()
+        )
+        assertTrue(result.success)
+        assertEquals("[maçã, banana]\nbanana", result.output)
+    }
+
+    @Test
+    fun solucoesComNomesDiferentesContinuamFuncionando() {
+        val result = PythonRunner.run(
+            """
+            pessoa = "João"
+            idadeAtual = 21
+            if idadeAtual >= 18:
+                print("Pode entrar")
+            """.trimIndent()
+        )
+        assertTrue(result.success)
+        assertEquals("Pode entrar", result.output)
+    }
+
+    @Test
     fun divisaoPorZeroMostraErro() {
         val result = PythonRunner.run("print(10 / 0)")
         assertFalse(result.success)
