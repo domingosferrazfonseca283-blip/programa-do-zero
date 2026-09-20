@@ -15,7 +15,12 @@ data class LessonContent(
     val code: String,
     val level: Int = 1,
     val module: Int = 1,
-    val order: Int = 0
+    val order: Int = 0,
+    val objectives: List<String> = emptyList(),
+    val explanation: String = "",
+    val keyPoints: List<String> = emptyList(),
+    val reviewQuestion: String = "",
+    val reviewAnswer: String = ""
 )
 
 data class ExerciseContent(
@@ -60,20 +65,20 @@ object ContentRepository {
     )
 
     private val pythonLessons = listOf(
-        LessonContent("python-01", "Aula 1 — O que é programação?", "Programar é dar instruções claras para o computador.", "print(\"Olá, mundo!\")", 1, 1, 1),
-        LessonContent("python-02", "Aula 2 — Variáveis", "Variáveis guardam informações que podemos usar depois.", "nome = \"Ana\"\nidade = 20\nprint(nome)", 1, 2, 1),
-        LessonContent("python-03", "Aula 3 — Tipos de dados", "Texto, números, decimais e booleanos representam tipos diferentes.", "nome = \"Ana\"\nidade = 20\naltura = 1.65\naluno = True", 1, 3, 1),
+        LessonContent("python-01", "Aula 1 — O que é programação?", "Programar é dar instruções claras para o computador.", "print(\"Olá, mundo!\")", 1, 1, 1, listOf("Identificar o que é programação"), "Entender instruções e sequência", listOf("Um programa é uma sequência de instruções. O computador executa essas instruções seguindo regras precisas."), "Programar é transformar um problema em passos que uma máquina consegue executar.", "O computador não adivinha a intenção: precisamos expressar cada passo com clareza."),
+        LessonContent("python-02", "Aula 2 — Variáveis", "Variáveis guardam informações que podemos usar depois.", "nome = \"Ana\"\nidade = 20\nprint(nome)", 1, 2, 1, listOf("Criar e alterar variáveis"), "Usar nomes claros para dados", listOf("Uma variável é um nome associado a um valor. Em Python, a atribuição usa = e o valor pode mudar durante o programa."), "Variáveis permitem guardar dados e reutilizá-los.", "Use nomes que expliquem o significado do dado."),
+        LessonContent("python-03", "Aula 3 — Tipos de dados", "Texto, números, decimais e booleanos representam tipos diferentes.", "nome = \"Ana\"\nidade = 20\naltura = 1.65\naluno = True", 1, 3, 1, listOf("Distinguir texto, inteiro, decimal e booleano"), "Escolher um tipo adequado", listOf("Tipos descrevem a natureza dos valores. Strings representam texto, int números inteiros, float números decimais e bool valores verdadeiro/falso."), "O tipo influencia as operações que podem ser feitas com um valor.", "Não confunda o texto "20" com o número 20."),
         LessonContent("python-04", "Aula 4 — Condições", "Use if para tomar decisões.", "idade = 20\n\nif idade >= 18:\n    print(\"Maior de idade\")", 1, 4, 1),
         LessonContent("python-05", "Aula 5 — Repetições", "Use for para repetir tarefas.", "for numero in range(5):\n    print(numero)", 1, 5, 1),
-        LessonContent("python-06", "Aula 6 — Funções", "Funções agrupam instruções reutilizáveis.", "def saudacao(nome):\n    return \"Olá, \" + nome", 2, 1, 1),
-        LessonContent("python-07", "Aula 7 — Listas", "Listas guardam vários valores.", "frutas = [\"maçã\", \"banana\", \"uva\"]", 2, 2, 1),
-        LessonContent("python-08", "Aula 8 — Primeiro projeto", "Vamos juntar os conceitos para criar um pequeno programa.", "nome = input(\"Seu nome: \")\nprint(\"Olá, \" + nome + \"!\")", 2, 3, 1),
+        LessonContent("python-06", "Aula 6 — Funções", "Funções agrupam instruções reutilizáveis.", "def saudacao(nome):\n    return \"Olá, \" + nome", 2, 1, 1, listOf("Definir funções"), "Receber parâmetros e retornar valores", listOf("Funções encapsulam uma tarefa. Parâmetros permitem receber dados e return devolve um resultado para quem chamou."), "Uma boa função tem uma responsabilidade clara e pode ser reutilizada.", "Funções ajudam a reduzir duplicação e organizar sistemas."),
+        LessonContent("python-07", "Aula 7 — Listas", "Listas guardam vários valores.", "frutas = [\"maçã\", \"banana\", \"uva\"]", 2, 2, 1, listOf("Criar listas"), "Acessar itens por índice", listOf("Listas armazenam vários valores em uma única estrutura. Em Python, o primeiro índice é 0."), "Podemos consultar, alterar e adicionar elementos conforme o programa evolui.", "O índice 1 representa o segundo elemento."),
+        LessonContent("python-08", "Aula 8 — Primeiro projeto", "Vamos juntar os conceitos para criar um pequeno programa.", "nome = input(\"Seu nome: \")\nprint(\"Olá, \" + nome + \"!\")", 2, 3, 1, listOf("Combinar fundamentos"), "Construir um programa pequeno de ponta a ponta", listOf("Projetos são onde conceitos deixam de ser isolados. Entrada, processamento e saída formam um fluxo básico de programa."), "Organize primeiro o problema em passos e depois transforme cada passo em código.", "Um projeto pequeno também deve ser testado com entradas diferentes."),
         LessonContent("python-09", "Aula 9 — Dicionários", "Dicionários associam chaves a valores.", "aluno = {\"nome\": \"Ana\", \"idade\": 20}\nprint(aluno[\"nome\"])", 2, 4, 1),
         LessonContent("python-10", "Aula 10 — Strings", "Strings podem ser transformadas e consultadas.", "nome = \"Ana\"\nprint(nome.upper())", 2, 5, 1),
         LessonContent("python-11", "Aula 11 — Tratamento de erros", "Use try/except para tratar entradas inesperadas.", "try:\n    numero = int(input(\"Número: \"))\nexcept:\n    print(\"Entrada inválida\")", 2, 6, 1),
         LessonContent("python-12", "Aula 12 — Arquivos e dados", "Arquivos permitem trabalhar com dados persistentes.", "with open(\"dados.txt\", \"w\") as arquivo:\n    arquivo.write(\"Olá, arquivo!\")", 2, 7, 1),
-        LessonContent("python-13", "Aula 13 — Classes e objetos", "Classes definem estruturas e objetos representam instâncias.", "class Pessoa:\n    def __init__(self, nome):\n        self.nome = nome\n\npessoa = Pessoa(\"Ana\")\nprint(pessoa.nome)", 3, 1, 1),
-        LessonContent("python-14", "Aula 14 — Organização de sistemas", "Comece a modelar entidades de um sistema.", "class Conta:\n    def __init__(self, saldo):\n        self.saldo = saldo\n\nconta = Conta(100)\nprint(conta.saldo)", 3, 2, 1)
+        LessonContent("python-13", "Aula 13 — Classes e objetos", "Classes definem estruturas e objetos representam instâncias.", "class Pessoa:\n    def __init__(self, nome):\n        self.nome = nome\n\npessoa = Pessoa(\"Ana\")\nprint(pessoa.nome)", 3, 1, 1, listOf("Criar classes"), "Instanciar objetos", listOf("Uma classe define uma estrutura e seus comportamentos. Um objeto é uma instância concreta dessa classe."), "self representa o próprio objeto dentro de seus métodos.", "Classes ajudam a modelar entidades do domínio."),
+        LessonContent("python-14", "Aula 14 — Organização de sistemas", "Comece a modelar entidades de um sistema.", "class Conta:\n    def __init__(self, saldo):\n        self.saldo = saldo\n\nconta = Conta(100)\nprint(conta.saldo)", 3, 2, 1, listOf("Modelar entidades"), "Separar estado e comportamento", listOf("Sistemas maiores ficam mais fáceis de manter quando responsabilidades são distribuídas em estruturas bem definidas."), "Uma classe pode guardar estado e oferecer métodos para alterar esse estado de forma controlada.", "Modele primeiro as entidades e responsabilidades antes de escrever todo o sistema.")
     )
 
     private val pythonExercises = listOf(
