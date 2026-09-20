@@ -1,59 +1,28 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-        <activity\n            android:name=".PracticeCodingActivity"\n            android:screenOrientation="portrait"\n            android:exported="false" />\n\n    <application
-        <activity
-            android:name=".PracticeCodingActivity"
-            android:screenOrientation="portrait"
-            android:exported="false" />
-
-
+    <application
         android:theme="@style/AppTheme"
         android:label="Programação do Zero"
         android:allowBackup="true"
         android:supportsRtl="true">
 
-        <activity
-            android:name=".PracticalLessonsActivity"
-            android:screenOrientation="portrait"
-            android:exported="false" />
-
-        <activity
-            android:name=".CodeEditorActivity"
-            android:screenOrientation="portrait"
-            android:exported="false" />
-
-        <activity
-            android:name=".ExerciseActivity"
-            android:screenOrientation="portrait"
-            android:exported="false" />
-
-        <activity
-            android:name=".ProfileActivity"
-            android:screenOrientation="portrait"
-            android:exported="false" />
-
-        <activity
-            android:name=".LessonActivity"
-            android:screenOrientation="portrait"
-            android:exported="false" />
-
-        <activity
-            android:name=".LevelActivity"
-            android:screenOrientation="portrait"
-            android:exported="false" />
+        <activity android:name=".ProjectActivity" android:screenOrientation="portrait" android:exported="false" />
+        <activity android:name=".PracticeCodingActivity" android:screenOrientation="portrait" android:exported="false" />
+        <activity android:name=".PracticalLessonsActivity" android:screenOrientation="portrait" android:exported="false" />
+        <activity android:name=".CodeEditorActivity" android:screenOrientation="portrait" android:exported="false" />
+        <activity android:name=".ExerciseActivity" android:screenOrientation="portrait" android:exported="false" />
+        <activity android:name=".ProfileActivity" android:screenOrientation="portrait" android:exported="false" />
+        <activity android:name=".LessonActivity" android:screenOrientation="portrait" android:exported="false" />
+        <activity android:name=".LevelActivity" android:screenOrientation="portrait" android:exported="false" />
 
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait"
             android:exported="true">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
-
     </application>
-
 </manifest>
