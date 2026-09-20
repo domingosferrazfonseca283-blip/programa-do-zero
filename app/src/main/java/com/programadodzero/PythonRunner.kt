@@ -366,7 +366,8 @@ object PythonRunner {
                         output,
                         inputs,
                         inputIndex,
-                        functions
+                        functions,
+                        files
                     )
                     i++
                     continue
@@ -610,7 +611,7 @@ object PythonRunner {
     ): String {
         val value = expression.trim()
 
-        val attrRead = Regex("([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)").matchEntire(value)
+        val attrRead = Regex("([A-Za-z_][A-Za-z0-9_]*)\\.([A-Za-z_][A-Za-z0-9_]*)").matchEntire(value)
         if (attrRead != null) {
             val ref = variables[attrRead.groupValues[1]] ?: throw IllegalArgumentException("Objeto não encontrado.")
             val obj = objects[ref] ?: throw IllegalArgumentException("Variável não é um objeto.")
@@ -806,7 +807,7 @@ object PythonRunner {
             for (index in 1 until multiplyDivide.size) {
                 val (operator, term) = multiplyDivide[index]
                 val right = evaluateArithmetic(
-                    term, variables, inputs, inputIndex, functions
+                    term, variables, inputs, inputIndex, functions, objects, classes, files
                 ) ?: evaluate(term, variables, inputs, inputIndex, functions)
                 val leftNumber = result.toIntOrNull() ?: return null
                 val rightNumber = right.toIntOrNull() ?: return null
