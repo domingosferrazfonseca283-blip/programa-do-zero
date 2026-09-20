@@ -21,7 +21,7 @@ object ChallengeValidator {
             1 -> hasAssignment(code) && execution.output.isNotBlank()
             2 -> hasTextAndNumberAssignment(code)
             3 -> hasAdultCondition(code) && execution.output.isNotBlank()
-            4 -> execution.output.trim() == "0\\n1\\n2\\n3\\n4"
+            4 -> execution.output.trim() == "0\n1\n2\n3\n4"
             5 -> hasFunction(code) && execution.output.trim() == "Olá, Ana"
             6 -> hasListWithAtLeastTwoItems(code, execution.output)
             7 -> hasInputConditionAndOutput(code) && execution.output.isNotBlank()
@@ -52,9 +52,9 @@ object ChallengeValidator {
     private fun hasAdultCondition(code: String): Boolean =
         code.lines().any { line ->
             val clean = line.trim().replace(" ", "")
-            clean.startsWith("if") &&
-                (clean.contains(">=18") || clean.contains("18<=") || clean.contains("18<=idade")) &&
-                clean.endsWith(":")
+            val isIfLine = clean.startsWith("if") && clean.endsWith(":")
+            val comparesWithEighteen = clean.contains(">=18") || clean.contains("18<=")
+            isIfLine && comparesWithEighteen
         }
 
     private fun hasFunction(code: String): Boolean =
@@ -71,8 +71,22 @@ object ChallengeValidator {
             listOutput.endsWith("]") && listOutput.contains(",")
     }
 
-    private fun hasInputConditionAndOutput(code: String): Boolean =
-        code.contains("input(") &&
-            code.lines().any { it.trim().startsWith("if ") && it.contains(":") } &&
+    private fun hasInputConditionAndOutput(code: String): Boolean {
+        val inputVariable = code.lines()
+            .map { it.trim() }
+            .mapNotNull { line ->
+                val match = Regex("^([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*input\\(").find(line)
+                match?.groupValues?.get(1)
+            }
+            .firstOrNull()
+
+        return inputVariable != null &&
+            code.lines().any { line ->
+                val clean = line.trim()
+                clean.startsWith("if ") &&
+                    clean.contains(":") &&
+                    clean.contains(inputVariable)
+            } &&
             code.contains("print(")
+    }
 }
