@@ -98,6 +98,9 @@ class ProfileActivity : Activity() {
                 }
 
                 screen.addView(Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
                     text = "📌 Revisar: $topic" + (lesson?.let { "\n▶ " + it.title } ?: "")
                     isAllCaps = false
                     setOnClickListener {
@@ -117,10 +120,13 @@ class ProfileActivity : Activity() {
         val examScore = ProgressManager.finalExamScore(this, language)
         val examTotal = ContentRepository.finalExamFor(language).size
         val examButton = Button(this).apply { text = if (examScore == null) "🎓 Fazer avaliação final" else "🎓 Avaliação final: " + examScore + "/" + examTotal; isAllCaps = false; setOnClickListener { startActivity(Intent(this@ProfileActivity, FinalExamActivity::class.java).apply { putExtra("language", language) }) } }
-        screen.addView(examButton, LinearLayout.LayoutParams(-1, 60))
+        screen.addView(examButton, LinearLayout.LayoutParams(-1, -2))
 
         if (complete) {
             val certificate = Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
                 text = "📜 Gerar meu certificado profissional em PDF"
                 isAllCaps = false
                 setOnClickListener {
@@ -148,10 +154,13 @@ class ProfileActivity : Activity() {
                     }
                 }
             }
-            screen.addView(certificate, LinearLayout.LayoutParams(-1, 60))
+            screen.addView(certificate, LinearLayout.LayoutParams(-1, -2))
         }
 
         val back = Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
             text = "← Voltar"
             isAllCaps = false
             setOnClickListener { finish() }
@@ -169,6 +178,9 @@ class ProfileActivity : Activity() {
         screen.addView(missionView)
         if (mission.completed) {
             val claim = Button(this).apply {
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(16, 10, 16, 10)
                 text = "🎁 Resgatar recompensa"
                 isAllCaps = false
                 setOnClickListener {
@@ -188,7 +200,7 @@ class ProfileActivity : Activity() {
         }
         screen.addView(badges)
         screen.addView(message, LinearLayout.LayoutParams(-1, 0, 1f))
-        screen.addView(back, LinearLayout.LayoutParams(-1, 60))
+        screen.addView(back, LinearLayout.LayoutParams(-1, -2))
         setContentView(screen)
     }
 
