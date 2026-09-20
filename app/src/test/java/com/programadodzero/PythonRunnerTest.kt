@@ -166,6 +166,22 @@ class PythonRunnerTest {
     }
 
     @Test
+    fun valoresBooleanosFuncionamEmCondicoes() {
+        val result = PythonRunner.run(
+            """
+            ativo = True
+            bloqueado = False
+            if ativo and not bloqueado:
+                print("ativo")
+            if bloqueado:
+                print("não deveria aparecer")
+            """.trimIndent()
+        )
+        assertTrue(result.success)
+        assertEquals("ativo", result.output)
+    }
+
+    @Test
     fun divisaoPorZeroMostraErro() {
         val result = PythonRunner.run("print(10 / 0)")
         assertFalse(result.success)
