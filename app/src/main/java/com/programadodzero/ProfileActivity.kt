@@ -20,6 +20,8 @@ class ProfileActivity : Activity() {
         val level = ProgressManager.getLevel(this)
         val levelXp = ProgressManager.xpIntoLevel(this)
         val reviews = ProgressManager.completedReviewCount(this, language)
+        val streak = ProgressManager.registerStudyDay(this)
+        val achievements = ProgressManager.achievements(this, language)
         val lessonIds = ContentRepository.lessonsFor(language).map { it.id }
         val total = lessonIds.size
         val lessons = ProgressManager.completedCount(this, language, lessonIds)
@@ -51,7 +53,7 @@ class ProfileActivity : Activity() {
         }
 
         val stats = TextView(this).apply {
-            text = "⭐ XP: $xp\n🔥 Nível do programador: $level\n📊 XP do nível: $levelXp/100\n📝 Revisões acertadas: $reviews\n📚 Aulas concluídas: $lessons/$total\n🧩 Exercícios concluídos: $exercises/$total\n📈 Progresso: $percent%"
+            text = "⭐ XP: $xp\n🔥 Nível do programador: $level\n📊 XP do nível: $levelXp/100\n📝 Revisões acertadas: $reviews\n📚 Aulas concluídas: $lessons/$total\n🧩 Exercícios concluídos: $exercises/$total\n📈 Progresso: $percent%\n🔥 Sequência de estudo: $streak dias"
             textSize = 20f
             setTextColor(Color.WHITE)
             setPadding(0, 20, 0, 30)
@@ -74,6 +76,13 @@ class ProfileActivity : Activity() {
         screen.addView(title)
         screen.addView(subtitle)
         screen.addView(stats)
+        val badges = TextView(this).apply {
+            text = if (achievements.isEmpty()) "🏅 Conquistas\n\nContinue estudando para desbloquear suas primeiras conquistas." else "🏅 Conquistas desbloqueadas\n\n" + achievements.joinToString("\n")
+            textSize = 17f
+            setTextColor(Color.WHITE)
+            setPadding(0, 10, 0, 20)
+        }
+        screen.addView(badges)
         screen.addView(message, LinearLayout.LayoutParams(-1, 0, 1f))
         screen.addView(back, LinearLayout.LayoutParams(-1, 60))
         setContentView(screen)
