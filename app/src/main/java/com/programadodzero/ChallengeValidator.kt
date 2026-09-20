@@ -42,14 +42,24 @@ object ChallengeValidator {
             "python-10" -> code.contains(".upper()") && code.contains("print(")
             "python-11" -> code.contains("try:") && code.contains("except")
             "python-12" -> code.contains("open(") || (code.contains("dados.txt") && code.contains("#"))
-            "python-13" -> code.contains("class Pessoa") &&
-                code.contains("__init__") && code.contains("self.nome") &&
-                code.contains("Pessoa(")
-            "python-14" -> code.contains("class Conta") &&
-                code.contains("__init__") && code.contains("self.saldo") &&
-                code.contains("Conta(")
+            "python-13" -> validateOopPerson(code)
+            "python-14" -> validateOopAccount(code)
             else -> false
         }
+    }
+
+    
+    private fun validateOopPerson(code: String): Boolean {
+        if (!code.contains("class Pessoa") || !code.contains("__init__") || !code.contains("self.nome")) return false
+        val result = PythonRunner.run(code)
+        return result.success && result.output.contains("Ana")
+    }
+
+    private fun validateOopAccount(code: String): Boolean {
+        if (!code.contains("class Conta") || !code.contains("__init__") ||
+            !code.contains("self.saldo") || !code.contains("depositar")) return false
+        val result = PythonRunner.run(code)
+        return result.success && result.output.lines().any { it.trim() == "150" }
     }
 
     private fun hasAssignment(code: String): Boolean =
