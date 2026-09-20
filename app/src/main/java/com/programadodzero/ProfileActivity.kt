@@ -22,6 +22,7 @@ class ProfileActivity : Activity() {
         val reviews = ProgressManager.completedReviewCount(this, language)
         val streak = ProgressManager.registerStudyDay(this)
         val achievements = ProgressManager.achievements(this, language)
+        val mission = ProgressManager.dailyMission(this, language)
         val lessonIds = ContentRepository.lessonsFor(language).map { it.id }
         val total = lessonIds.size
         val lessons = ProgressManager.completedCount(this, language, lessonIds)
@@ -76,6 +77,26 @@ class ProfileActivity : Activity() {
         screen.addView(title)
         screen.addView(subtitle)
         screen.addView(stats)
+        val missionView = TextView(this).apply {
+            text = "🎯 Missão de hoje\n\n${mission.title}\nProgresso: ${mission.progress}/${mission.target}\n🎁 Recompensa: +${mission.rewardXp} XP"
+            textSize = 18f
+            setTextColor(Color.WHITE)
+            setPadding(0, 10, 0, 18)
+        }
+        screen.addView(missionView)
+        if (mission.completed) {
+            val claim = Button(this).apply {
+                text = "🎁 Resgatar recompensa"
+                isAllCaps = false
+                setOnClickListener {
+                    if (ProgressManager.claimDailyMission(this@ProfileActivity, language)) {
+                        text = "✅ Recompensa resgatada"
+                        isEnabled = false
+                    }
+                }
+            }
+            screen.addView(claim)
+        }
         val badges = TextView(this).apply {
             text = if (achievements.isEmpty()) "🏅 Conquistas\n\nContinue estudando para desbloquear suas primeiras conquistas." else "🏅 Conquistas desbloqueadas\n\n" + achievements.joinToString("\n")
             textSize = 17f
