@@ -397,21 +397,133 @@ object PythonRunner {
         variables[value]?.let { return it }
         if (value.matches(Regex("-?\\d+"))) return value
 
-        val pieces = splitPlus(value)
-        if (pieces.size > 1) {
-            val evaluatedPieces = pieces.map {
-                evaluate(it, variables, inputs, inputIndex, functions)
-            }
-
-            val numbers = evaluatedPieces.map { it.toIntOrNull() }
-            if (numbers.all { it != null }) {
-                return numbers.filterNotNull().sum().toString()
-            }
-
-            return evaluatedPieces.joinToString("")
-        }
+        val arithmetic = evaluateArithmetic(value, variables, inputs, inputIndex, functions)
+        if (arithmetic != null) return arithmetic
 
         throw IllegalArgumentException("Não entendi a expressão: " + value)
+    }
+
+    
+    private fun evaluateArithmetic(
+        expression: String,
+        variables: Map<String, String>,
+        inputs: List<String>,
+        inputIndex: IntArray,
+        functions: MutableMap<String, FunctionDef>
+    ): String? {
+        val plusMinus = splitOperator(expression, setOf('+', '-'))
+        if (plusMinus.size > 1) {
+            var result = evaluateArithmetic(plusMinus[0], variables, inputs, inputIndex, functions)
+                ?: return null
+
+            for (index in 1 until plusMinus.size) {
+                val (operator, term) = plusMinus[index]
+                val right = evaluateArithmetic(term, variables, inputs, inputIndex, functions)
+                    ?: return null
+                val leftNumber = result.toIntOrNull() ?: return null
+                val rightNumber = right.toIntOrNull() ?: return null
+                result = if (operator == '+') {
+                    (leftNumber + rightNumber).toString()
+                } else {
+                    (leftNumber - rightNumber).toString()
+                }
+            }
+            return result
+        }
+
+        val multiplyDivide = splitOperator(expression, setOf('*', '/'))
+        if (multiplyDivide.size > 1) {
+            var result = evaluateArithmetic(multiplyDivide[0], variables, inputs, inputIndex, functions)
+                ?: return null
+
+            for (index in 1 until multiplyDivide.size) {
+                val (operator, term) = multiplyDivide[index]
+                val right = evaluateArithmetic(term, variables, inputs, inputIndex, functions)
+                    ?: return null
+                val leftNumber = result.toIntOrNull() ?: return null
+                val rightNumber = right.toIntOrNull() ?: return null
+
+                result = when (operator) {
+                    '*' -> (leftNumber * rightNumber).toString()
+                    '/' -> {
+                        if (rightNumber == 0) {
+                            throw IllegalArgumentException("Não é possível dividir por zero.")
+                        }
+                        (leftNumber / rightNumber).toString()
+                    }
+                    else -> return null
+                }
+            }
+            return result
+        }
+
+        return null
+    }
+
+    private fun splitOperator(text: String, operators: Set<Char>): List<Pair<Char, String>> {
+        val result = mutableListOf<Pair<Char, String>>()
+        var current = StringBuilder()
+        var quote: Char? = null
+        var depth = 0
+        var foundOperator = false
+
+        for (char in text) {
+            if ((char == ''' || char == '"') && (quote == null || quote == char)) {
+                quote = if (quote == null) char else null
+            }
+
+            if (quote == null) {
+                if (char == '(' || char == '[') depth++
+                if (char == ')' || char == ']') depth--
+            }
+
+            val isOperator = quote == null && depth == 0 && char in operators
+            val isUnaryMinus = char == '-' && current.toString().trim().isEmpty()
+
+            if (isOperator && !isUnaryMinus) {
+                result.add('+' to current.toString().trim())
+                current = StringBuilder()
+                result[result.lastIndex] = result.last().first.let { previous ->
+                    previous to result.last().second
+                }
+                result[result.lastIndex] = char to ""
+                foundOperator = true
+            } else {
+                current.append(char)
+            }
+        }
+
+        if (!foundOperator) return emptyList()
+
+        val rebuilt = mutableListOf<Pair<Char, String>>()
+        var first = true
+        var term = StringBuilder()
+        var pending: Char? = null
+        for (char in text) {
+            if ((char == ''' || char == '"') && (quote == null || quote == char)) {
+                quote = if (quote == null) char else null
+            }
+            val isOperator = quote == null && depth == 0 && char in operators && !(char == '-' && term.isBlank())
+            if (quote == null) {
+                if (char == '(' || char == '[') depth++
+                if (char == ')' || char == ']') depth--
+            }
+            if (isOperator) {
+                if (first) {
+                    rebuilt.add('+' to term.toString().trim())
+                    first = false
+                } else {
+                    rebuilt.add(pending!! to term.toString().trim())
+                }
+                pending = char
+                term = StringBuilder()
+            } else {
+                term.append(char)
+            }
+        }
+        if (first) return emptyList()
+        rebuilt.add(pending!! to term.toString().trim())
+        return rebuilt
     }
 
     private fun callFunction(
