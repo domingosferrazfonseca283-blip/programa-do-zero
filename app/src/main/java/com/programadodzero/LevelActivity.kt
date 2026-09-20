@@ -13,7 +13,7 @@ import android.widget.Toast
 class LevelActivity : Activity() {
     companion object {
         const val EXTRA_LANGUAGE = "language"
-        private const val TOTAL_LESSONS = 8
+        
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,6 +22,7 @@ class LevelActivity : Activity() {
         val linguagem = intent.getStringExtra(EXTRA_LANGUAGE) ?: "Linguagem"
         val active = ProgressManager.getActiveLanguage(this)
         val available = ContentRepository.isLanguageAvailable(linguagem)
+        val lessonIds = ContentRepository.lessonsFor(linguagem).map { it.id }
 
         val tela = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -66,7 +67,7 @@ class LevelActivity : Activity() {
                 textSize = 17f
                 isAllCaps = false
                 isEnabled = available && ProgressManager.canStartLanguage(
-                    this@LevelActivity, linguagem, TOTAL_LESSONS
+                    this@LevelActivity, linguagem, lessonIds
                 )
             }
 
@@ -75,7 +76,7 @@ class LevelActivity : Activity() {
             })
 
             botao.setOnClickListener {
-                if (ProgressManager.selectLanguage(this, linguagem, TOTAL_LESSONS)) {
+                if (ProgressManager.selectLanguage(this, linguagem, lessonIds)) {
                     startActivity(android.content.Intent(this, LessonActivity::class.java).apply {
                         putExtra(LessonActivity.EXTRA_LANGUAGE, linguagem)
                         putExtra(LessonActivity.EXTRA_LEVEL, nivel)
