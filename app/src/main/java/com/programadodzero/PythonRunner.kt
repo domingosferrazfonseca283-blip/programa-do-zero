@@ -637,12 +637,12 @@ object PythonRunner {
             return ref
         }
 
-        val classCall = Regex("([A-Za-z_][A-Za-z0-9_]*)\((.*)\)").matchEntire(value)
+        val classCall = Regex("""([A-Za-z_][A-Za-z0-9_]*)\((.*)\)""").matchEntire(value)
         if (classCall != null && classes.containsKey(classCall.groupValues[1])) {
             val ref = "@obj" + System.nanoTime()
             objects[ref] = ObjectInstance(classCall.groupValues[1], mutableMapOf())
             val init = classes[classCall.groupValues[1]]?.methods?.get("__init__")
-            if (init != null) callMethod(ref, "__init__", classCall.groupValues[2], variables, objects, classes, mutableListOf(), inputs, inputIndex, functions, files)
+            if (init != null) callMethod(ref, "__init__", classCall.groupValues[2], variables.toMutableMap(), objects, classes, mutableListOf(), inputs, inputIndex, functions, files)
             return ref
         }
 
