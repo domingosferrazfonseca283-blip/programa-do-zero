@@ -86,7 +86,6 @@ class LessonActivity : Activity() {
         screen.removeView(body)
         screen.removeView(code)
         screen.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
-        screen.addView(code, LinearLayout.LayoutParams(-1, -2))
         screen.addView(nextButton, LinearLayout.LayoutParams(-1, 65))
         screen.addView(backButton, LinearLayout.LayoutParams(-1, 60))
         setContentView(screen)
