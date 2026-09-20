@@ -285,6 +285,35 @@ class ChallengeValidatorTest {
         assertFalse(ChallengeValidator.validate(4, """for numero in range(4):\n    print(numero)"""))
     }
 
+
+    @Test
+    fun aulaDeFuncaoAceitaNomeDeFuncaoDiferente() {
+        assertTrue(
+            ChallengeValidator.validate(
+                5,
+                """
+                def cumprimentar(pessoa):
+                    return "Bem-vindo, " + pessoa
+                print(cumprimentar("Ana"))
+                """.trimIndent()
+            )
+        )
+    }
+
+    @Test
+    fun aulaDeFuncaoRejeitaFuncaoQueNaoUsaParametro() {
+        assertFalse(
+            ChallengeValidator.validate(
+                5,
+                """
+                def cumprimentar(pessoa):
+                    return "Olá"
+                print(cumprimentar("Ana"))
+                """.trimIndent()
+            )
+        )
+    }
+
     @Test
     fun exigeFuncaoQueRealmenteProduzaSaudacao() {
         assertTrue(ChallengeValidator.validate(5, """def cumprimentar(nome):\n    return "Olá, " + nome\nprint(cumprimentar("Ana"))"""))
