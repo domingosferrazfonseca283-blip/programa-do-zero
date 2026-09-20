@@ -71,7 +71,11 @@ class ProfileActivity : Activity() {
             setPadding(0, 10, 0, 30)
         }
 
-        val examScore = ProgressManager.finalExamScore(this, language)
+        val topicSuggestions = ContentRepository.questionBank(language).groupBy { it.topic }.map { (topic, questions) -> topic to questions.sumOf { ProgressManager.examTopicScore(this, language, it.topic) } }.filter { it.second < 0 }.sortedBy { it.second }.take(3)
+
+if (topicSuggestions.isNotEmpty()) { screen.addView(TextView(this).apply { text = "🧠 Recomendações de revisão"; textSize = 20f; setPadding(0, 24, 0, 8) }); topicSuggestions.forEach { (topic, _) -> screen.addView(TextView(this).apply { text = "📌 Revise: $topic"; textSize = 16f; setPadding(0, 4, 0, 4) }) } }
+
+val examScore = ProgressManager.finalExamScore(this, language)
         val examButton = Button(this).apply { text = if (examScore == null) "🎓 Fazer avaliação final" else "🎓 Avaliação final: " + examScore + "/10"; isAllCaps = false; setOnClickListener { startActivity(Intent(this@ProfileActivity, FinalExamActivity::class.java).apply { putExtra("language", language) }) } }
         screen.addView(examButton, LinearLayout.LayoutParams(-1, 60))
 
