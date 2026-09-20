@@ -49,6 +49,18 @@ class MainActivity : Activity() {
         }
         tela.addView(progresso, LinearLayout.LayoutParams(-1, -2))
 
+        val biblioteca = Button(this).apply {
+            text = "📚 Biblioteca offline"
+            textSize = 16f
+            isAllCaps = false
+            setOnClickListener {
+                startActivity(Intent(this@MainActivity, LibraryActivity::class.java))
+            }
+        }
+        tela.addView(biblioteca, LinearLayout.LayoutParams(-1, 60).apply {
+            setMargins(0, 0, 0, 10)
+        })
+
         val pratica = Button(this).apply {
             text = "🧪 Aulas práticas"
             textSize = 16f
