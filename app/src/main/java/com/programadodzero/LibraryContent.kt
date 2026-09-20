@@ -11,26 +11,31 @@ object LibraryRepository {
         return LibraryBook(id, language, title, description, chapters)
     }
 
-    private fun chapterText(language: String, topic: String): String = """
-        $topic
-
-        Este capítulo faz parte de um livro didático original criado para o Programa do Zero. A ideia é aprender o conceito, observar exemplos e depois voltar ao curso para praticar.
-
-        O que você deve entender:
-        • Qual problema o conceito resolve.
-        • Como ele aparece em programas reais.
-        • Como ler e explicar um exemplo.
-        • Quando vale a pena usar essa técnica.
-
-        Exemplo conceitual em $language:
-        Comece com um problema pequeno, identifique os dados de entrada, descreva o processamento e defina a saída esperada. Em seguida, transforme cada passo em código e teste com casos diferentes.
-
-        Dica de estudo:
-        Não tente decorar tudo. Leia o capítulo, escreva um pequeno exemplo no editor do aplicativo e depois explique com suas próprias palavras o que aconteceu.
-
-        Próximo passo:
-        Volte para a trilha de aulas da linguagem e procure uma aula relacionada a este assunto. A leitura complementa a prática.
-    """.trimIndent()
+    private fun chapterText(language: String, topic: String): String {
+        if (language == "🐍  Python") {
+            val texts = mapOf(
+                "Pensamento computacional e sintaxe" to "Transforme problemas em entradas, processamento e saídas. Divida a solução em passos pequenos e testáveis. Em Python, comece com instruções simples e avance para estruturas de controle.",
+                "Variáveis e tipos de dados" to "Variáveis guardam valores. Os tipos iniciais mais importantes são int, float, str e bool. Use nomes claros e escolha o tipo adequado ao dado.",
+                "Entrada, saída e conversões" to "input() lê texto. Para trabalhar com números, use conversões como int() e float(). Valide entradas quando elas puderem ser inválidas.",
+                "Condições e tomada de decisão" to "if, elif e else permitem escolher caminhos. Operadores como ==, !=, <, >, <= e >= expressam comparações.",
+                "Repetições e laços" to "for percorre sequências e range cria intervalos. while repete enquanto uma condição for verdadeira. Controle a condição para evitar laços infinitos.",
+                "Funções e parâmetros" to "Funções agrupam responsabilidades. Parâmetros recebem dados e return devolve resultados. Prefira funções pequenas e reutilizáveis.",
+                "Listas e operações" to "Listas armazenam sequências. Índices começam em zero; append adiciona itens e len informa o tamanho. Pratique criação, leitura e alteração.",
+                "Dicionários e dados estruturados" to "Dicionários representam pares chave-valor e são úteis para dados com propriedades nomeadas. Pense em cada chave como um campo.",
+                "Strings e processamento de texto" to "Strings representam texto. upper(), lower(), strip() e len() são operações fundamentais para normalizar e analisar entradas.",
+                "Erros e tratamento de exceções" to "Erros fazem parte de programas reais. try/except permite tratar situações previsíveis e apresentar uma recuperação clara ao usuário.",
+                "Arquivos e persistência" to "Arquivos permitem preservar dados entre execuções. Use with open(...) para controlar o recurso e trate falhas de leitura e escrita.",
+                "Classes e objetos" to "Classes modelam dados e comportamentos. __init__ inicializa objetos e self representa a instância atual. Use orientação a objetos quando ela simplificar o domínio.",
+                "Organização de sistemas" to "Separe entrada, regras, persistência e apresentação. Responsabilidades bem definidas tornam sistemas maiores mais fáceis de testar e manter.",
+                "Algoritmos e complexidade" to "Um algoritmo é uma sequência de passos para resolver um problema. Observe como o custo cresce com o tamanho da entrada e compare estratégias.",
+                "Testes e qualidade" to "Teste casos normais, limites e entradas inválidas. Funções pequenas e previsíveis são mais fáceis de verificar automaticamente.",
+                "Projeto profissional" to "Um projeto completo combina requisitos, organização, implementação, validação, testes e documentação. Comece pequeno e evolua por etapas."
+            )
+            val explanation = texts[topic] ?: "Estude o conceito, pratique com exemplos pequenos e depois aplique-o em um projeto."
+            return "$topic\n\n$explanation\n\nComo estudar:\n1. Reescreva um exemplo.\n2. Modifique uma parte.\n3. Teste diferentes entradas.\n4. Explique o resultado com suas próprias palavras.\n\nPrática: crie um pequeno programa que use este conceito e valide pelo menos dois casos diferentes."
+        }
+        return "$topic\n\nEste capítulo apresenta o conceito de forma progressiva. Entenda o problema que a técnica resolve, observe exemplos pequenos e pratique antes de avançar.\n\nPrática: escreva um exemplo simples, altere uma parte e compare os resultados."
+    }
 
     val books: List<LibraryBook> = listOf(
         book("python-fundamentos", "🐍  Python", "Python do Zero ao Código", "Livro introdutório original para acompanhar a trilha de Python.", listOf("Pensamento computacional e sintaxe", "Variáveis e tipos de dados", "Entrada, saída e conversões", "Condições e tomada de decisão", "Repetições e laços", "Funções e parâmetros", "Listas e operações", "Dicionários e dados estruturados", "Strings e processamento de texto", "Erros e tratamento de exceções", "Arquivos e persistência", "Classes e objetos", "Organização de sistemas", "Algoritmos e complexidade", "Testes e qualidade", "Projeto profissional")),
