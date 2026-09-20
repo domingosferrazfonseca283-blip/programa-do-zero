@@ -586,8 +586,14 @@ object PythonRunner {
             val mode = if (args.size > 1) evaluate(args[1], variables, inputs, inputIndex, functions, objects, classes, files) else "r"
             if (mode !in listOf("r", "w", "a")) throw IllegalArgumentException("Modo de arquivo inválido.")
             val ref = "@file" + files.size
-            val existing = files[name]?.content ?: ""
-            files[ref] = VirtualFile(name, if (mode == "w") "" else existing, mode)
+            val canonical = files[name]
+            val file = if (canonical != null && mode != "w") {
+                VirtualFile(name, canonical.content, mode)
+            } else {
+                VirtualFile(name, "", mode)
+            }
+            files[ref] = file
+            files[name] = file
             return ref
         }
 
