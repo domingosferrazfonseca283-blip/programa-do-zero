@@ -45,6 +45,32 @@ class LessonActivity : Activity() {
         levelNumber = intent.getIntExtra(EXTRA_LEVEL_NUMBER, 1)
         moduleNumber = intent.getIntExtra(EXTRA_MODULE, 1)
         lessons = ContentRepository.lessonsForModule(language, levelNumber, moduleNumber)
+        if (lessons.isEmpty()) {
+            val message = TextView(this).apply {
+                text = "📚 Este módulo ainda não possui aulas disponíveis.\n\nVolte e escolha outro módulo."
+                textSize = 19f
+                setTextColor(Color.WHITE)
+                gravity = Gravity.CENTER
+                setPadding(32, 48, 32, 48)
+            }
+            val back = Button(this).apply {
+                text = "← Voltar aos módulos"
+                isAllCaps = false
+                gravity = Gravity.CENTER
+                includeFontPadding = false
+                setOnClickListener { finish() }
+            }
+            val emptyScreen = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER
+                setPadding(32, 40, 32, 32)
+                setBackgroundColor(Color.rgb(15, 23, 42))
+                addView(message, LinearLayout.LayoutParams(-1, 0, 1f))
+                addView(back, LinearLayout.LayoutParams(-1, 64))
+            }
+            setContentView(emptyScreen)
+            return
+        }
         val requestedLessonId = intent.getStringExtra(EXTRA_LESSON_ID)
         currentLesson = if (requestedLessonId != null) lessons.indexOfFirst { it.id == requestedLessonId }.coerceAtLeast(0) else intent.getIntExtra(EXTRA_LESSON, firstIncompleteLesson())
 
