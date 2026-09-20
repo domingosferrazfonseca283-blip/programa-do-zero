@@ -28,6 +28,10 @@ class LibraryReaderActivity : Activity() {
         book = LibraryRepository.find(bookId) ?: run { finish(); return }
 
         val prefs = getSharedPreferences("library", MODE_PRIVATE)
+        if (book.chapters.isEmpty()) {
+            showEmptyResource()
+            return
+        }
         chapterIndex = prefs.getInt("chapter_" + bookId, 0).coerceIn(0, book.chapters.lastIndex)
 
         val root = LinearLayout(this).apply {
@@ -49,6 +53,13 @@ class LibraryReaderActivity : Activity() {
             setPadding(0, 8, 0, 10)
         }
         root.addView(progress)
+        root.addView(TextView(this).apply {
+            text = "Fonte: " + book.source + "  •  Licença: " + book.license
+            textSize = 13f
+            setTextColor(Color.LTGRAY)
+            gravity = Gravity.CENTER
+            setPadding(0, 0, 0, 10)
+        })
 
         favoriteButton = Button(this).apply {
             isAllCaps = false
@@ -121,6 +132,32 @@ class LibraryReaderActivity : Activity() {
 
         setContentView(root)
         render()
+    }
+
+    private fun showEmptyResource() {
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(28, 40, 28, 28)
+            setBackgroundColor(Color.rgb(15, 23, 42))
+        }
+        root.addView(TextView(this).apply {
+            text = "📖 " + book.title
+            textSize = 24f
+            setTextColor(Color.WHITE)
+            setTypeface(null, Typeface.BOLD)
+        })
+        root.addView(TextView(this).apply {
+            text = "\\nFonte: " + book.source + "\\nLicença: " + book.license + "\\n\\nEste recurso foi catalogado, mas ainda não possui capítulos incorporados ao aplicativo."
+            textSize = 17f
+            setTextColor(Color.LTGRAY)
+            setPadding(0, 24, 0, 24)
+        })
+        root.addView(Button(this).apply {
+            text = "← Biblioteca"
+            isAllCaps = false
+            setOnClickListener { finish() }
+        })
+        setContentView(root)
     }
 
     private fun saveAndRender() {
