@@ -800,7 +800,7 @@ object PythonRunner {
         val multiplyDivide = splitOperator(expression, setOf('*', '/'))
         if (multiplyDivide.size > 1) {
             var result = evaluateArithmetic(
-                multiplyDivide[0].second, variables, inputs, inputIndex, functions, objects, classes
+                multiplyDivide[0].second, variables, inputs, inputIndex, functions, objects, classes, files
             ) ?: evaluate(multiplyDivide[0].second, variables, inputs, inputIndex, functions, objects, classes, files)
 
             for (index in 1 until multiplyDivide.size) {
