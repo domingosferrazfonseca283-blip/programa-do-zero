@@ -162,6 +162,46 @@ object PythonRunner {
                 continue
             }
 
+            val withMatch = Regex("""with\\s+open\\((.*)\\)\\s+as\\s+([A-Za-z_][A-Za-z0-9_]*)s*:""").matchEntire(line)
+            if (withMatch != null) {
+                val cursor = findBlockEnd(lines, i + 1, end, indent)
+                val args = splitArguments(withMatch.groupValues[1])
+                if (args.isEmpty()) throw IllegalArgumentException("with open() precisa de um nome de arquivo.")
+                val name = evaluate(args[0], variables, inputs, inputIndex, functions, objects, classes, files)
+                val mode = if (args.size > 1) {
+                    evaluate(args[1], variables, inputs, inputIndex, functions, objects, classes, files)
+                } else {
+                    "r"
+                }
+                if (mode !in listOf("r", "w", "a")) {
+                    throw IllegalArgumentException("Modo de arquivo inválido.")
+                }
+
+                val ref = "@file" + files.size
+                val canonical = files[name]
+                val file = if (canonical != null && mode != "w") {
+                    VirtualFile(name, canonical.content, mode)
+                } else {
+                    VirtualFile(name, "", mode)
+                }
+                files[ref] = file
+                files[name] = file
+                variables[withMatch.groupValues[2]] = ref
+
+                try {
+                    executeBlock(
+                        lines, i + 1, cursor, indent + 4,
+                        variables, output, inputs, inputIndex,
+                        functions, classes, objects, files
+                    )
+                } finally {
+                    file.closed = true
+                }
+
+                i = cursor
+                continue
+            }
+
             if (line == "try:") {
                 val tryEnd = findBlockEnd(lines, i + 1, end, indent)
                 var exceptIndex = tryEnd
