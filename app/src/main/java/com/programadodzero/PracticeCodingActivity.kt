@@ -14,19 +14,22 @@ class PracticeCodingActivity : Activity() {
         const val EXTRA_LANGUAGE = "language"
         const val EXTRA_LEVEL = "level"
         const val EXTRA_LESSON = "lesson"
+        const val EXTRA_LESSON_ID = "lesson_id"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val language = intent.getStringExtra(EXTRA_LANGUAGE) ?: "🐍  Python"
         val level = intent.getStringExtra(EXTRA_LEVEL) ?: "Prática"
-        val lesson = intent.getIntExtra(EXTRA_LESSON, 0)
+        val lessonIndex = intent.getIntExtra(EXTRA_LESSON, 0)
+        val lessonId = intent.getStringExtra(EXTRA_LESSON_ID)
         val challenges = ContentRepository.exercisesFor(language)
         if (challenges.isEmpty()) {
             finish()
             return
         }
-        val challenge = challenges[lesson.coerceIn(0, challenges.lastIndex)]
+        val challenge = if (lessonId != null) challenges.firstOrNull { it.id == lessonId } ?: run { finish(); return } else challenges[lessonIndex.coerceIn(0, challenges.lastIndex)]
+        val lesson = challenges.indexOf(challenge)
 
         val screen = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
