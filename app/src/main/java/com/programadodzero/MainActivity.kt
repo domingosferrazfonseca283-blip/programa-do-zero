@@ -12,6 +12,24 @@ import android.widget.ScrollView
 import android.widget.TextView
 
 class MainActivity : Activity() {
+    private val languageButtons = mutableMapOf<String, Button>()
+
+    override fun onResume() {
+        super.onResume()
+        val active = ProgressManager.getActiveLanguage(this)
+        val activeComplete = active?.let {
+            ProgressManager.isLanguageComplete(
+                this,
+                it,
+                ContentRepository.lessonsFor(it).map { lesson -> lesson.id }
+            )
+        } ?: false
+        for ((linguagem, botao) in languageButtons) {
+            val available = ContentRepository.isLanguageAvailable(linguagem)
+            botao.isEnabled = available && (active == null || active == linguagem || activeComplete)
+            botao.alpha = if (botao.isEnabled) 1f else 0.45f
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -135,6 +153,7 @@ class MainActivity : Activity() {
                     })
                 }
             }
+            languageButtons[linguagem] = botao
             tela.addView(botao, LinearLayout.LayoutParams(-1, -2).apply {
                 setMargins(0, 6, 0, 6)
             })
