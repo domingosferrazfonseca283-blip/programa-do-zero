@@ -4,6 +4,12 @@ plugins {
 }
 
 android {
+    sourceSets {
+        main {
+            assets.srcDirs += "$rootDir/courses/python/dias"
+        }
+    }
+
     namespace 'com.programadodzero'
     compileSdk 36
 
