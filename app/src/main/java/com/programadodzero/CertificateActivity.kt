@@ -47,7 +47,7 @@ class CertificateActivity : Activity() {
             setTypeface(null, Typeface.BOLD)
         })
         screen.addView(TextView(this).apply {
-            text = "✅ Curso concluído com sucesso.\\n\\nPDF criado offline.\\n\\nCódigo de verificação: \${verificationCode(language, student)}"
+            text = "✅ Curso concluído com sucesso.\n\nPDF criado offline.\n\nCódigo de emissão: ${verificationCode(language, student)}"
             textSize = 17f
             setTextColor(Color.WHITE)
             setPadding(0, 30, 0, 30)
@@ -120,7 +120,7 @@ class CertificateActivity : Activity() {
         text("incluindo aulas, exercícios práticos e avaliação da trilha.", 421f, 370f, 15f)
         text("Carga horária: formação prática offline", 421f, 392f, 12f, false, Color.DKGRAY)
         val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
-        text("Emitido em $date • Código \${verificationCode(language, student)}", 421f, 410f, 12f, false, Color.DKGRAY)
+        text("Emitido em $date • Código ${verificationCode(language, student)}", 421f, 410f, 12f, false, Color.DKGRAY)
 
         val seal = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 5f; color = Color.rgb(15, 118, 110) }
         canvas.drawCircle(150f, 455f, 58f, seal)
@@ -136,7 +136,7 @@ class CertificateActivity : Activity() {
         document.finishPage(page)
         val dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS) ?: filesDir
         if (!dir.exists()) dir.mkdirs()
-        val file = File(dir, "certificado-\${safe(language)}-\${verificationCode(language, student)}.pdf")
+        val file = File(dir, "certificado-${safe(language)}-${verificationCode(language, student)}.pdf")
         FileOutputStream(file).use { document.writeTo(it) }
         document.close()
         return file
