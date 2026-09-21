@@ -26,7 +26,7 @@ class FinalExamActivity : Activity() {
                 setTextColor(Color.WHITE)
             })
             root.addView(TextView(this).apply {
-                text = "Conclua todas as aulas e exercícios da trilha antes de fazer a avaliação final.\n\nAulas: $completedLessons/${lessonIds.size}\nExercícios: $completedExercises/${lessonIds.size\}"
+                text = "Conclua todas as aulas e exercícios da trilha antes de fazer a avaliação final.\n\nAulas: $completedLessons/${lessonIds.size}\nExercícios: $completedExercises/${lessonIds.size}"
                 textSize = 18f
                 setTextColor(Color.LTGRAY)
                 setPadding(0, 22, 0, 30)
