@@ -10,6 +10,36 @@ class FinalExamActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val language = intent.getStringExtra("language") ?: ProgressManager.getActiveLanguage(this) ?: "🐍  Python"
+        val lessonIds = ContentRepository.lessonsFor(language).map { it.id }
+        val completedLessons = ProgressManager.completedCount(this, language, lessonIds)
+        val completedExercises = ProgressManager.completedExerciseCount(this, language, lessonIds)
+
+        if (lessonIds.isEmpty() || completedLessons < lessonIds.size || completedExercises < lessonIds.size) {
+            val root = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(32, 50, 32, 32)
+                setBackgroundColor(Color.rgb(15, 23, 42))
+            }
+            root.addView(TextView(this).apply {
+                text = "🔒 Avaliação final bloqueada"
+                textSize = 27f
+                setTextColor(Color.WHITE)
+            })
+            root.addView(TextView(this).apply {
+                text = "Conclua todas as aulas e exercícios da trilha antes de fazer a avaliação final.\n\nAulas: \$completedLessons/\$\{lessonIds.size\}\nExercícios: \$completedExercises/\$\{lessonIds.size\}"
+                textSize = 18f
+                setTextColor(Color.LTGRAY)
+                setPadding(0, 22, 0, 30)
+            })
+            root.addView(Button(this).apply {
+                text = "← Voltar"
+                isAllCaps = false
+                setOnClickListener { finish() }
+            })
+            setContentView(root)
+            return
+        }
+
         val questions = ContentRepository.finalExamFor(language)
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(28, 35, 28, 28); setBackgroundColor(Color.rgb(15,23,42)) }
         root.addView(TextView(this).apply { text = "🎓 Avaliação final"; textSize = 28f; setTextColor(Color.WHITE) })
