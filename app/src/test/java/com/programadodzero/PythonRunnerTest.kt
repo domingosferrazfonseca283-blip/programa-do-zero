@@ -436,4 +436,31 @@ class PythonRunnerTest {
         )
     }
 
+
+    @Test
+    fun avaliacaoFinalSelecionaDezQuestoesEIndicesValidos() {
+        val prova = ContentRepository.finalExamFor("🐍  Python")
+
+        assertEquals(10, prova.size)
+        assertEquals(10, prova.map { it.id }.distinct().size)
+
+        prova.forEach { question ->
+            assertTrue(question.options.isNotEmpty())
+            assertTrue(question.answerIndex in question.options.indices)
+            assertTrue(question.options[question.answerIndex].isNotBlank())
+        }
+    }
+
+    @Test
+    fun avaliacaoFinalMantemAsMesmasQuestoesNoMesmoDia() {
+        val primeira = ContentRepository.finalExamFor("🐍  Python")
+        val segunda = ContentRepository.finalExamFor("🐍  Python")
+
+        assertEquals(primeira.map { it.id }, segunda.map { it.id })
+        assertEquals(
+            primeira.map { it.answerIndex to it.options },
+            segunda.map { it.answerIndex to it.options }
+        )
+    }
+
 }
