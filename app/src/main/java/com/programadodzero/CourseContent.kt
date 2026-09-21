@@ -183,7 +183,20 @@ object ContentRepository {
                 .sortedBy { it.id.hashCode() xor seed }
                 .take(amount)
 
+        fun shuffleOptions(question: ReviewQuestion): ReviewQuestion {
+            val indexed = question.options.mapIndexed { index, option -> index to option }
+                .sortedBy { (index, _) ->
+                    question.id.hashCode() xor seed xor (index * 1103515245)
+                }
+            val newAnswerIndex = indexed.indexOfFirst { it.first == question.answerIndex }
+            return question.copy(
+                options = indexed.map { it.second },
+                answerIndex = newAnswerIndex
+            )
+        }
+
         return (pick(1, 4) + pick(2, 3) + pick(3, 3))
+            .map(::shuffleOptions)
             .sortedBy { it.id.hashCode() xor seed }
     }
 
