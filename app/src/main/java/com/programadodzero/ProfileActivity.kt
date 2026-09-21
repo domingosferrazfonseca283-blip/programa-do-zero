@@ -23,7 +23,7 @@ class ProfileActivity : Activity() {
         val level = ProgressManager.getLevel(this)
         val levelXp = ProgressManager.xpIntoLevel(this)
         val reviews = ProgressManager.completedReviewCount(this, language)
-        val streak = ProgressManager.registerStudyDay(this)
+        val streak = ProgressManager.getStudyStreak(this)
         val achievements = ProgressManager.achievements(this, language)
         val mission = ProgressManager.dailyMission(this, language)
         val lessonIds = ContentRepository.lessonsFor(language).map { it.id }
