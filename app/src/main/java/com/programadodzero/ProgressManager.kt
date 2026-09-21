@@ -31,10 +31,24 @@ object ProgressManager {
 
     fun registerStudyDay(context: Context): Int {
         val p = prefs(context)
-        val today = java.time.LocalDate.now().toString()
+        val calendar = java.util.Calendar.getInstance()
+        val today = String.format(
+            java.util.Locale.US,
+            "%04d-%02d-%02d",
+            calendar.get(java.util.Calendar.YEAR),
+            calendar.get(java.util.Calendar.MONTH) + 1,
+            calendar.get(java.util.Calendar.DAY_OF_MONTH)
+        )
         val last = p.getString(LAST_STUDY_DAY, null)
         if (last == today) return getStudyStreak(context)
-        val yesterday = java.time.LocalDate.now().minusDays(1).toString()
+        calendar.add(java.util.Calendar.DAY_OF_YEAR, -1)
+        val yesterday = String.format(
+            java.util.Locale.US,
+            "%04d-%02d-%02d",
+            calendar.get(java.util.Calendar.YEAR),
+            calendar.get(java.util.Calendar.MONTH) + 1,
+            calendar.get(java.util.Calendar.DAY_OF_MONTH)
+        )
         val streak = if (last == yesterday) getStudyStreak(context) + 1 else 1
         p.edit().putString(LAST_STUDY_DAY, today).putInt(STUDY_STREAK, streak).apply()
         return streak
