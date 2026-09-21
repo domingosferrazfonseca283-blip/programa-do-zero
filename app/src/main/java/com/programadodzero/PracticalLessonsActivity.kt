@@ -13,16 +13,6 @@ import android.widget.TextView
 
 class PracticalLessonsActivity : Activity() {
 
-    private val lessonTitles = listOf(
-        "1. O que é programação?",
-        "2. Variáveis",
-        "3. Tipos de dados",
-        "4. Condições",
-        "5. Repetições",
-        "6. Funções",
-        "7. Listas",
-        "8. Primeiro projeto"
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +29,7 @@ class PracticalLessonsActivity : Activity() {
         }
 
         val title = TextView(this).apply {
-            text = "🧪 Aulas práticas"
+            text = "🧪 Aulas práticas (" + challenges.size + ")"
             textSize = 27f
             setTextColor(Color.WHITE)
             setTypeface(null, Typeface.BOLD)
@@ -55,8 +45,10 @@ class PracticalLessonsActivity : Activity() {
         screen.addView(title)
         screen.addView(subtitle)
 
-        lessonTitles.forEachIndexed { index, lessonTitle ->
-            val completed = ProgressManager.isExerciseCompleted(this, language, "python-0" + (index + 1))
+        val challenges = ContentRepository.exercisesFor(language)
+        challenges.forEachIndexed { index, challenge ->
+            val completed = ProgressManager.isExerciseCompleted(this, language, challenge.id)
+            val lessonTitle = challenge.title
 
             val button = Button(this).apply {
                 text = if (completed) "✅ $lessonTitle  •  concluída" else "🧩 $lessonTitle"
@@ -74,6 +66,7 @@ class PracticalLessonsActivity : Activity() {
                     startActivity(Intent(this@PracticalLessonsActivity, PracticeCodingActivity::class.java).apply {
                         putExtra(PracticeCodingActivity.EXTRA_LANGUAGE, language)
                         putExtra(PracticeCodingActivity.EXTRA_LEVEL, "Prática")
+                        putExtra(PracticeCodingActivity.EXTRA_LESSON_ID, challenge.id)
                         putExtra(PracticeCodingActivity.EXTRA_LESSON, index)
                     })
                 }
