@@ -302,4 +302,138 @@ class PythonRunnerTest {
         assertEquals("Ana", result.output)
     }
 
+
+    @Test
+    fun desafiosAvancados09A20AceitamSolucoesValidas() {
+        val validas = mapOf(
+            "python-09" to """
+                aluno = {"nome": "Ana", "idade": 20}
+                print(aluno["nome"])
+            """.trimIndent(),
+            "python-10" to """
+                nome = "Ana"
+                print(nome.upper())
+            """.trimIndent(),
+            "python-11" to """
+                try:
+                    numero = int("abc")
+                except:
+                    print("Entrada inválida")
+            """.trimIndent(),
+            "python-12" to """
+                with open("dados.txt", "w") as arquivo:
+                    arquivo.write("Olá, arquivo!")
+                with open("dados.txt", "r") as arquivo:
+                    print(arquivo.read())
+            """.trimIndent(),
+            "python-13" to """
+                class Pessoa:
+                    def __init__(self, nome):
+                        self.nome = nome
+                    def apresentar(self):
+                        print(self.nome)
+                pessoa = Pessoa("Ana")
+                pessoa.apresentar()
+            """.trimIndent(),
+            "python-14" to """
+                class Conta:
+                    def __init__(self, saldo):
+                        self.saldo = saldo
+                    def depositar(self, valor):
+                        self.saldo = self.saldo + valor
+                conta = Conta(100)
+                conta.depositar(50)
+                print(conta.saldo)
+            """.trimIndent(),
+            "python-15" to """
+                total = 0
+                for numero in range(1, 6):
+                    total = total + numero
+                print(total)
+            """.trimIndent(),
+            "python-16" to """
+                alvo = 3
+                for numero in range(1, 6):
+                    if numero == alvo:
+                        print("Encontrado")
+            """.trimIndent(),
+            "python-17" to """
+                idade = int(input("Idade: "))
+                if idade >= 0:
+                    print("Válida")
+                else:
+                    print("Inválida")
+            """.trimIndent(),
+            "python-18" to """
+                def dobro(numero):
+                    return numero + numero
+                print(dobro(5))
+            """.trimIndent(),
+            "python-19" to """
+                for numero in range(5):
+                    print(numero)
+            """.trimIndent(),
+            "python-20" to """
+                def calcular_total(preco, quantidade):
+                    return preco * quantidade
+                print(calcular_total(10, 3))
+            """.trimIndent()
+        )
+
+        validas.forEach { (id, code) ->
+            assertTrue("Falhou: $id", ChallengeValidator.validate(id, code))
+        }
+    }
+
+    @Test
+    fun desafiosAvancadosRejeitamSolucoesIncompletas() {
+        assertFalse(
+            ChallengeValidator.validate(
+                "python-09",
+                """
+                aluno = {"nome": "Ana", "idade": 20}
+                print(aluno)
+                """.trimIndent()
+            )
+        )
+        assertFalse(
+            ChallengeValidator.validate(
+                "python-12",
+                """
+                arquivo = open("dados.txt", "w")
+                arquivo.write("outra mensagem")
+                """.trimIndent()
+            )
+        )
+        assertFalse(
+            ChallengeValidator.validate(
+                "python-16",
+                """
+                alvo = 3
+                for numero in range(1, 6):
+                    print("Encontrado")
+                """.trimIndent()
+            )
+        )
+        assertFalse(
+            ChallengeValidator.validate(
+                "python-17",
+                """
+                idade = int(input("Idade: "))
+                print("Válida")
+                """.trimIndent()
+            )
+        )
+        assertFalse(
+            ChallengeValidator.validate(
+                "python-20",
+                """
+                def calcular_total(preco, quantidade):
+                    return 30
+                print(calcular_total(10, 3))
+                """.trimIndent()
+            )
+        )
+    }
+
 }
