@@ -134,6 +134,7 @@ class ProjectActivity : Activity() {
         startActivity(android.content.Intent(this, CodeEditorActivity::class.java).apply {
             putExtra("language", language)
             putExtra("project_mode", true)
+            putExtra("initial_code", editor.text.toString())
         })
     }
 }
