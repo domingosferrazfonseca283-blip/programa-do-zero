@@ -176,7 +176,7 @@ object ContentRepository {
         if (language != "🐍  Python") return emptyList()
 
         val all = questionBank(language)
-        val seed = java.time.LocalDate.now().toEpochDay().toInt()
+        val seed = java.text.SimpleDateFormat("yyyyMMdd", java.util.Locale.US).format(java.util.Date()).toInt()
 
         fun pick(difficulty: Int, amount: Int): List<ReviewQuestion> =
             all.filter { it.difficulty == difficulty }
