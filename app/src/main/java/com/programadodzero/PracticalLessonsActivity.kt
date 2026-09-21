@@ -21,6 +21,7 @@ class PracticalLessonsActivity : Activity() {
         window.navigationBarColor = Color.rgb(15, 23, 42)
 
         val language = intent.getStringExtra("language") ?: "🐍  Python"
+        val challenges = ContentRepository.exercisesFor(language)
 
         val screen = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -45,7 +46,6 @@ class PracticalLessonsActivity : Activity() {
         screen.addView(title)
         screen.addView(subtitle)
 
-        val challenges = ContentRepository.exercisesFor(language)
         challenges.forEachIndexed { index, challenge ->
             val completed = ProgressManager.isExerciseCompleted(this, language, challenge.id)
             val lessonTitle = challenge.title
