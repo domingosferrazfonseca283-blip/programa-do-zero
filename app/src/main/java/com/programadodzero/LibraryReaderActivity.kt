@@ -25,7 +25,7 @@ class LibraryReaderActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val bookId = intent.getStringExtra(EXTRA_BOOK_ID) ?: run { finish(); return }
-        book = LibraryRepository.find(bookId) ?: run { finish(); return }
+        book = LibraryRepository.find(this, bookId) ?: run { finish(); return }
 
         val prefs = getSharedPreferences("library", MODE_PRIVATE)
         if (book.chapters.isEmpty()) {
