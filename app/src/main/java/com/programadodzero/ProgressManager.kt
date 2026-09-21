@@ -14,6 +14,9 @@ object ProgressManager {
     private const val STUDY_STREAK = "study_streak"
     private const val DAILY_MISSION_DAY = "daily_mission_day"
     private const val DAILY_MISSION_XP = "daily_mission_xp"
+    private const val DAILY_LESSONS_COUNT = "daily_lessons_count:"
+    private const val DAILY_EXERCISES_COUNT = "daily_exercises_count:"
+    private const val DAILY_REVIEWS_COUNT = "daily_reviews_count:"
     private const val FINAL_EXAM_SCORE_PREFIX = "final_exam_score:"
     private const val FINAL_EXAM_ATTEMPTS_PREFIX = "final_exam_attempts:"
     private const val FINAL_EXAM_TOPIC_PREFIX = "final_exam_topic:"
@@ -29,16 +32,30 @@ object ProgressManager {
 
     fun getStudyStreak(context: Context): Int = prefs(context).getInt(STUDY_STREAK, 0)
 
-    fun registerStudyDay(context: Context): Int {
-        val p = prefs(context)
+    private fun todayKey(): String {
         val calendar = java.util.Calendar.getInstance()
-        val today = String.format(
+        return String.format(
             java.util.Locale.US,
             "%04d-%02d-%02d",
             calendar.get(java.util.Calendar.YEAR),
             calendar.get(java.util.Calendar.MONTH) + 1,
             calendar.get(java.util.Calendar.DAY_OF_MONTH)
         )
+    }
+
+    private fun incrementDailyCounter(context: Context, prefix: String, language: String) {
+        val p = prefs(context)
+        val key = prefix + language + ":" + todayKey()
+        p.edit().putInt(key, p.getInt(key, 0) + 1).apply()
+    }
+
+    private fun dailyCounter(context: Context, prefix: String, language: String): Int =
+        prefs(context).getInt(prefix + language + ":" + todayKey(), 0)
+
+    fun registerStudyDay(context: Context): Int {
+        val p = prefs(context)
+        val calendar = java.util.Calendar.getInstance()
+        val today = todayKey()
         val last = p.getString(LAST_STUDY_DAY, null)
         if (last == today) return getStudyStreak(context)
         calendar.add(java.util.Calendar.DAY_OF_YEAR, -1)
@@ -67,9 +84,9 @@ object ProgressManager {
         }
         val lessons = ContentRepository.lessonsFor(language).map { it.id }
         val progress = when (type) {
-            MissionType.LESSON -> completedCount(context, language, lessons)
-            MissionType.REVIEW -> completedReviewCount(context, language)
-            MissionType.EXERCISE -> completedExerciseCount(context, language, lessons)
+            MissionType.LESSON -> dailyCounter(context, DAILY_LESSONS_COUNT, language)
+            MissionType.REVIEW -> dailyCounter(context, DAILY_REVIEWS_COUNT, language)
+            MissionType.EXERCISE -> dailyCounter(context, DAILY_EXERCISES_COUNT, language)
         }
         val target = 1
         val title = when (type) {
@@ -114,6 +131,7 @@ object ProgressManager {
         if (!current.add(key(language, questionId))) return false
         p.edit().putStringSet(COMPLETED_REVIEWS, current).apply()
         addXp(context, 10)
+        incrementDailyCounter(context, DAILY_REVIEWS_COUNT, language)
         return true
     }
 
@@ -219,6 +237,7 @@ object ProgressManager {
         val current = p.getStringSet(COMPLETED_LESSONS, emptySet())?.toMutableSet() ?: mutableSetOf()
         if (current.add(key(language, lessonId))) {
             p.edit().putStringSet(COMPLETED_LESSONS, current).apply()
+            incrementDailyCounter(context, DAILY_LESSONS_COUNT, language)
             addXp(context, 25)
         }
     }
@@ -237,6 +256,7 @@ object ProgressManager {
         val current = p.getStringSet(COMPLETED_EXERCISES, emptySet())?.toMutableSet() ?: mutableSetOf()
         if (current.add(key(language, exerciseId))) {
             p.edit().putStringSet(COMPLETED_EXERCISES, current).apply()
+            incrementDailyCounter(context, DAILY_EXERCISES_COUNT, language)
             addXp(context, 25)
             return true
         }
