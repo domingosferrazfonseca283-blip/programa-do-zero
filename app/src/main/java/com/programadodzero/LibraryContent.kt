@@ -1,5 +1,9 @@
 package com.programadodzero
 
+import android.content.Context
+import java.util.Locale
+
+
 data class LibraryChapter(val id: String, val title: String, val content: String, val relatedLessonId: String? = null)
 data class LibraryBook(val id: String, val language: String, val title: String, val description: String, val chapters: List<LibraryChapter>, val source: String = "Conteúdo original do Programa do Zero", val license: String = "Conteúdo original")
 
@@ -103,7 +107,49 @@ object LibraryRepository {
         ,book("ciberseguranca", "🛡️  Cibersegurança", "Cibersegurança do Zero", "Introdução defensiva a segurança, privacidade e boas práticas.", listOf("Princípios de segurança", "Autenticação e senhas", "Redes e ameaças", "Defesa, logs e resposta a incidentes"))
     )
 
+    private fun dailyPythonBook(context: Context): LibraryBook? {
+        val files = context.assets.list("")?.filter {
+            it.endsWith(".md") && it.firstOrNull()?.isDigit() == true
+        }?.sorted() ?: return null
+        if (files.isEmpty()) return null
+
+        val chapters = files.mapNotNull { file ->
+            runCatching {
+                val content = context.assets.open(file).bufferedReader(Charsets.UTF_8).use { it.readText() }
+                val title = content.lineSequence()
+                    .firstOrNull { it.trim().startsWith("# ") }
+                    ?.trim()
+                    ?.removePrefix("# ")
+                    ?: file.removeSuffix(".md")
+                LibraryChapter("python-dia-$file", title, content)
+            }.getOrNull()
+        }
+        return LibraryBook(
+            "python-curso-completo",
+            "🐍  Python",
+            "Python — Curso completo offline",
+            "Conteúdo diário original do Programa do Zero, incorporado ao aplicativo para estudo sem internet.",
+            chapters,
+            "Programa do Zero — cursos/python/dias",
+            "Conteúdo original"
+        )
+    }
+
+    fun allBooks(context: Context): List<LibraryBook> =
+        listOfNotNull(dailyPythonBook(context)) + books + openResources
+
     fun allBooks(): List<LibraryBook> = books + openResources
+
+    fun search(context: Context, query: String): List<LibraryBook> {
+        val q = query.trim().lowercase(Locale.getDefault())
+        if (q.isBlank()) return allBooks(context)
+        return allBooks(context).filter {
+            it.title.lowercase(Locale.getDefault()).contains(q) ||
+            it.language.lowercase(Locale.getDefault()).contains(q) ||
+            it.description.lowercase(Locale.getDefault()).contains(q) ||
+            it.chapters.any { chapter -> chapter.title.lowercase(Locale.getDefault()).contains(q) }
+        }
+    }
 
     fun search(query: String): List<LibraryBook> {
         val q = query.trim().lowercase()
@@ -115,6 +161,9 @@ object LibraryRepository {
             it.chapters.any { chapter -> chapter.title.lowercase().contains(q) }
         }
     }
+
+    fun find(context: Context, bookId: String): LibraryBook? =
+        allBooks(context).firstOrNull { it.id == bookId }
 
     fun find(bookId: String): LibraryBook? = allBooks().firstOrNull { it.id == bookId }
 }
