@@ -76,8 +76,9 @@ object ProgressManager {
     data class DailyMission(val type: MissionType, val title: String, val target: Int, val progress: Int, val rewardXp: Int, val completed: Boolean)
 
     fun dailyMission(context: Context, language: String): DailyMission {
-        val day = java.time.LocalDate.now().toEpochDay()
-        val type = when ((day % 3).toInt()) {
+        val dayKey = todayKey()
+        val day = dayKey.replace("-", "").toInt()
+        val type = when (day % 3) {
             0 -> MissionType.LESSON
             1 -> MissionType.REVIEW
             else -> MissionType.EXERCISE
@@ -94,7 +95,6 @@ object ProgressManager {
             MissionType.REVIEW -> "Acerte 1 revisão hoje"
             MissionType.EXERCISE -> "Conclua 1 exercício hoje"
         }
-        val dayKey = day.toString()
         val p = prefs(context)
         if (p.getString(DAILY_MISSION_DAY, null) != dayKey) {
             p.edit().putString(DAILY_MISSION_DAY, dayKey).putInt(DAILY_MISSION_XP, 0).apply()
