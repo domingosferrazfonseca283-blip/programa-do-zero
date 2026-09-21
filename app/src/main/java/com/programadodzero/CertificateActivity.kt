@@ -78,7 +78,7 @@ class CertificateActivity : Activity() {
             setTypeface(null, Typeface.BOLD)
         })
         screen.addView(TextView(this).apply {
-            text = "\\nConclua todas as aulas e exercícios de $language para liberar o certificado."
+            text = "\nConclua todas as aulas e exercícios de $language para liberar o certificado."
             textSize = 18f
             setTextColor(Color.LTGRAY)
         })
