@@ -62,13 +62,13 @@ class LibraryActivity : Activity() {
         search.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                render(LibraryRepository.search(s?.toString().orEmpty()))
+                render(LibraryRepository.search(this@LibraryActivity, s?.toString().orEmpty()))
             }
             override fun afterTextChanged(s: android.text.Editable?) = Unit
         })
 
         setContentView(root)
-        render(LibraryRepository.allBooks())
+        render(LibraryRepository.allBooks(this))
     }
 
     private fun render(books: List<LibraryBook>) {
