@@ -24,6 +24,7 @@ class CodeEditorActivity : Activity() {
 
         val language = intent.getStringExtra("language") ?: "🐍  Python"
         projectMode = intent.getBooleanExtra("project_mode", false)
+        val initialCode = intent.getStringExtra("initial_code")
 
         val screen = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -50,7 +51,7 @@ class CodeEditorActivity : Activity() {
         }
 
         editor = EditText(this).apply {
-            setText(
+            setText(initialCode ?: (
                 "numero_secreto = 7\n" +
                     "tentativas = 0\n\n" +
                     "while tentativas < 5:\n" +
@@ -64,7 +65,7 @@ class CodeEditorActivity : Activity() {
                     "    else:\n" +
                     "        print(\"Muito baixo!\")\n\n" +
                     "print(\"Tentativas: \" + tentativas)"
-            )
+            ))
             textSize = 17f
             setTextColor(Color.WHITE)
             setHintTextColor(Color.LTGRAY)
